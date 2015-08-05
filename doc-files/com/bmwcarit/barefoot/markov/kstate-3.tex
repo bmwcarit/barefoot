@@ -1,0 +1,41 @@
+\documentclass{standalone}
+\usepackage{enumitem}
+\usepackage{tikz} % Required for drawings
+\usetikzlibrary{shapes}
+\usetikzlibrary{arrows}
+\usetikzlibrary{calc}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+
+\begin{document}
+	\tikzstyle{state}=[draw,shape=circle]
+	\tikzstyle{gstate}=[draw,shape=circle,mygreen]
+	\tikzstyle{edge}=[draw,latex'-]
+	\tikzstyle{gedge}=[draw,latex'-,mygreen]
+	\centering
+	\begin{tikzpicture}
+		\draw[opacity=0.0,very thick] (0.5,4) rectangle (3.5,-1);
+		
+		\node at (1,4.5){$\mathcal{S}_0$};	
+		\node at (2,4.5){$\mathcal{S}_1$};
+		
+		\node[gstate] (s00) at (1,0) {};
+		\node[gstate, dashed] (s01) at (1,1) {};
+		\node[gstate] (s02) at (1,2) {};
+		\node[gstate, dashed] (s03) at (1,3) {};
+		
+		\node[gstate] (s10) at (2,-0.5) {};
+		\node[gstate,ultra thick] (s11) at (2,0.5) {};
+		\node[gstate] (s12) at (2,1.5) {};
+		\node[gstate] (s13) at (2,2.5) {};
+		\node[gstate] (s14) at (2,3.5) {};
+		
+		\draw[gedge] (s00) -- (s10);
+		\draw[gedge] (s00) -- (s11);
+		\draw[gedge,ultra thick] (s00) -- (s12);
+		\draw[gedge] (s02) -- (s13);
+		\draw[gedge] (s02) -- (s14);
+		
+		\draw[mygreen,very thick] (1.5,4) rectangle (2.5,-1);
+	\end{tikzpicture}
+\end{document}

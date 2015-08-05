@@ -1,0 +1,85 @@
+\documentclass{standalone}
+\usepackage{enumitem}
+\usepackage{tikz} % Required for drawings
+\usetikzlibrary{shapes}
+\usetikzlibrary{arrows}
+\usetikzlibrary{calc}
+
+\begin{document}
+	\tikzstyle{state}=[draw,shape=circle,minimum size=10mm,inner sep=0pt]
+	\tikzstyle{emission}=[]
+	\tikzstyle{transition}=[draw,-latex']
+	
+	\begin{tikzpicture}[font=\sffamily]
+		\node at (0,4.5) {$\mathbf{\mathcal{S}_{0}}$};
+		\node at (2,4.5) {$\mathcal{S}_{1}$};
+		\node at (4,4.5) {$\dots$};
+		\node at (6,4.5) {$\mathcal{S}_{T-1}$};
+		\node at (8,4.5) {$\mathcal{S}_{T}$};
+	
+		\node[state] (r00) at (0,3.5) {$s^1_{0}$};
+		\node[state] (r01) at (0,2) {$s^2_{0}$};
+		\node (r02) at (0,1.1) {$\vdots$};
+		\node[state] (r03) at (0,0) {$s^{n_0}_{0}$};
+		
+		\node[state] (r10) at (2,3.5) {$s^1_{1}$};
+		\node[state] (r11) at (2,2) {$s^2_{1}$};
+		\node (r12) at (2,1.1) {$\vdots$};
+		\node[state] (r13) at (2,0) {$s^{n_1}_{1}$};
+		
+		\node[state,dashed] (r20) at (4,3.5) {$\dots$};
+		\node[state,dashed] (r21) at (4,2) {$\dots$};
+		
+		\node[state,dashed] (r23) at (4,0) {$\dots$};
+		
+		\node[state] (r30) at (6,3.5) {$s^1_{T-1}$};
+		\node[state] (r31) at (6,2) {$s^2_{T-1}$};
+		\node (r32) at (6,1.1) {$\vdots$};
+		\node[state] (r33) at (6,0) {$s^{n_{T-1}}_{T-1}$};
+		
+		\node[state] (r40) at (8,3.5) {$s^1_{T}$};
+		\node[state] (r41) at (8,2) {$s^2_{T}$};
+		\node (r42) at (8,1.1) {$\vdots$};
+		\node[state] (r43) at (8,0) {$s^{n_T}_{T}$};
+		
+		\path[transition] (r00) to (r10);
+		\path[transition] (r00) to (r11);
+		\path[transition] (r00) to (r13);
+		\path[transition] (r01) to (r10);
+		\path[transition] (r01) to (r11);
+		\path[transition] (r01) to (r13);
+		\path[transition] (r03) to (r10);
+		\path[transition] (r03) to (r11);
+		\path[transition] (r03) to (r13);
+		
+		\path[transition,dashed] (r10) to (r20);
+		\path[transition,dashed] (r10) to (r21);
+		\path[transition,dashed] (r10) to (r23);
+		\path[transition,dashed] (r11) to (r20);
+		\path[transition,dashed] (r11) to (r21);
+		\path[transition,dashed] (r11) to (r23);
+		\path[transition,dashed] (r13) to (r20);
+		\path[transition,dashed] (r13) to (r21);
+		\path[transition,dashed] (r13) to (r23);
+		
+		\path[transition,dashed] (r20) to (r30);
+		\path[transition,dashed] (r20) to (r31);
+		\path[transition,dashed] (r20) to (r33);
+		\path[transition,dashed] (r21) to (r30);
+		\path[transition,dashed] (r21) to (r31);
+		\path[transition,dashed] (r21) to (r33);
+		\path[transition,dashed] (r23) to (r30);
+		\path[transition,dashed] (r23) to (r31);
+		\path[transition,dashed] (r23) to (r33);
+		
+		\path[transition] (r30) to (r40);
+		\path[transition] (r30) to (r41);
+		\path[transition] (r30) to (r43);
+		\path[transition] (r31) to (r40);
+		\path[transition] (r31) to (r41);
+		\path[transition] (r31) to (r43);
+		\path[transition] (r33) to (r40);
+		\path[transition] (r33) to (r41);
+		\path[transition] (r33) to (r43);
+	\end{tikzpicture}
+\end{document}

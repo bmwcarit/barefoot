@@ -1,0 +1,15 @@
+internal/
+doc/
+target/
+.project
+.pydevproject
+.settings/
+.classpath
+.DS_Store
+*.osm.pbf
+*.bfmap
+*.pyc
+*.tar.gz
+*.log
+*.aux
+*~

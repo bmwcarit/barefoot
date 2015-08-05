@@ -1,0 +1,34 @@
+\documentclass{standalone}
+\usepackage{enumitem}
+\usepackage{tikz} % Required for drawings
+\usetikzlibrary{shapes}
+\usetikzlibrary{arrows}
+\usetikzlibrary{calc}
+
+\begin{document}
+	\tikzstyle{box}=[draw, rectangle, minimum height=1.5cm, minimum width=2.8cm]
+	\tikzstyle{flow}=[-latex,draw]
+	
+	\begin{tikzpicture}[font=\sffamily]
+		\node (source) at (0,2.5) {};
+		\node (sink) at (12,2.5) {};
+	
+		\node[box,align=center] (filter) at (3.5,2.5) {Matcher};
+		\node[box,align=center] (state) at (8.5,2.5) {State};
+		
+		\node[box,align=center] (map) at (3.5,0) {Map};
+		\node[box,align=center] (router) at (8.5,0) {Router};
+		
+		\draw[flow] (source) to node[above]{$z_t$} (filter);
+		\draw[flow] (state) to node[above]{$\bar{s}_t$} node[below]{$(s_0 \dots s_t)$} (sink);
+		
+		\draw[flow,transform canvas={yshift=0.1cm}] (state) to node[above]{$\mathcal{S}_{t-1}, z_{t-1}$} (filter);
+		\draw[flow,transform canvas={yshift=-0.1cm}] (filter) to node[below]{$\mathcal{S}_{t}, z_t, p$} (state);
+		
+		\draw[flow,transform canvas={xshift=-0.1cm}] (filter) to node[left]{$z_t$} (map);
+		\draw[flow,transform canvas={xshift=0.1cm}] (map) to node[right]{$\mathcal{S}_t$} (filter);
+		
+		\draw[flow,transform canvas={xshift=-0.08cm,yshift=-0.08cm}] (filter) to node[left,yshift=-0.1cm]{$(s_{t-1},s_t)$} (router);
+		\draw[flow,transform canvas={xshift=0.08cm,yshift=0.08cm}] (router) to node[right,yshift=0.1cm]{$\langle s_{t-1},s_t \rangle$} (filter);
+	\end{tikzpicture}
+\end{document}

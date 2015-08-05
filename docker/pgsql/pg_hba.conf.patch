@@ -1,0 +1,8 @@
+--- /etc/postgresql/9.3/main/pg_hba.conf.original	2014-10-25 19:55:37.469260394 +0000
++++ /etc/postgresql/9.3/main/pg_hba.conf	2014-10-25 20:13:38.676594184 +0000
+@@ -97,3 +97,4 @@
+ #local   replication     postgres                                peer
+ #host    replication     postgres        127.0.0.1/32            md5
+ #host    replication     postgres        ::1/128                 md5
++host	all		all		172.17.0.0/16		md5
+
