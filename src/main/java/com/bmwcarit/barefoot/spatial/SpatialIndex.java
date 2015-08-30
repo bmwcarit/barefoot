@@ -45,4 +45,13 @@ public interface SpatialIndex<T> {
      * @return Result set of object(s) that are within a the given radius or overlap the radius.
      */
     Set<T> radius(Point c, double r);
+
+    /**
+     * Gets <i>k</i> nearest objects stored in the index.
+     *
+     * @param c Point of reference for nearest search.
+     * @param k Number of objects to be searched.
+     * @return Result set of nearest objects (exactly k objects).
+     */
+    Set<T> knearest(Point c, int k);
 }

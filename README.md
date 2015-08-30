@@ -269,7 +269,7 @@ The provided spatial search operations are:
 
 - radius
 - nearest
-- (kNN can be implemented easily)
+- k-nearest neighbors
 
 ### Simple routing (Dijkstra)
 

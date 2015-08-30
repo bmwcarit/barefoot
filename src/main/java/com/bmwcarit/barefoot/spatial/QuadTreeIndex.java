@@ -14,10 +14,13 @@
 package com.bmwcarit.barefoot.spatial;
 
 import java.nio.ByteBuffer;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.PriorityQueue;
 import java.util.Set;
 
+import com.bmwcarit.barefoot.util.Triple;
 import com.bmwcarit.barefoot.util.Tuple;
 import com.esri.core.geometry.Envelope2D;
 import com.esri.core.geometry.Geometry.Type;
@@ -131,7 +134,7 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>> {
         }
 
         Set<Tuple<Integer, Double>> nearests = new HashSet<Tuple<Integer, Double>>();
-        double radius = 100, distance = Double.MAX_VALUE;
+        double radius = 100, min = Double.MAX_VALUE;
 
         do {
             Envelope2D env = spatial.envelope(c, radius);
@@ -150,12 +153,12 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>> {
                 Point p = spatial.interpolate(geometry, spatial.length(geometry), f);
                 double d = spatial.distance(p, c);
 
-                if (d > distance) {
+                if (d > min) {
                     continue;
                 }
 
-                if (d < distance) {
-                    distance = d;
+                if (d < min) {
+                    min = d;
                     nearests.clear();
                 }
 
@@ -183,8 +186,7 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>> {
             Polyline geometry =
                     (Polyline) OperatorImportFromWkb.local().execute(
                             WkbImportFlags.wkbImportDefaults, Type.Polyline,
-                            ByteBuffer.wrap(geometries.get(id)),
-                            null);
+                            ByteBuffer.wrap(geometries.get(id)), null);
 
             double f = spatial.intercept(geometry, c);
             Point p = spatial.interpolate(geometry, spatial.length(geometry), f);
@@ -196,5 +198,69 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>> {
         }
 
         return neighbors;
+    }
+
+    @Override
+    public Set<Tuple<Integer, Double>> knearest(Point c, int k) {
+        if (index.getElementCount() == 0) {
+            return null;
+        }
+
+        Set<Integer> visited = new HashSet<Integer>();
+
+        PriorityQueue<Triple<Integer, Double, Double>> queue =
+                new PriorityQueue<Triple<Integer, Double, Double>>(k,
+                        new Comparator<Triple<Integer, Double, Double>>() {
+                            @Override
+                            public int compare(Triple<Integer, Double, Double> left,
+                                    Triple<Integer, Double, Double> right) {
+                                return left.three() < right.three() ? -1
+                                        : left.three() > right.three() ? +1 : 0;
+                            }
+                        });
+
+        double radius = 100;
+
+        do {
+            Envelope2D env = spatial.envelope(c, radius);
+
+            QuadTreeIterator it = index.getIterator(env, 0);
+            int handle = -1;
+
+            while ((handle = it.next()) != -1) {
+                int id = index.getElement(handle);
+
+                if (visited.contains(id)) {
+                    continue;
+                }
+
+                Polyline geometry =
+                        (Polyline) OperatorImportFromWkb.local().execute(
+                                WkbImportFlags.wkbImportDefaults, Type.Polyline,
+                                ByteBuffer.wrap(geometries.get(id)), null);
+
+                double f = spatial.intercept(geometry, c);
+                Point p = spatial.interpolate(geometry, spatial.length(geometry), f);
+                double d = spatial.distance(p, c);
+
+                if (d < radius) { // Only within radius, we can be sure that we have semantically
+                                  // correct k-nearest neighbors.
+                    queue.add(new Triple<Integer, Double, Double>(id, f, d));
+                    visited.add(id);
+                }
+            }
+
+            radius *= 2;
+
+        } while (queue.size() < k);
+
+        Set<Tuple<Integer, Double>> result = new HashSet<Tuple<Integer, Double>>();
+
+        while (result.size() < k) {
+            Triple<Integer, Double, Double> e = queue.poll();
+            result.add(new Tuple<Integer, Double>(e.one(), e.two()));
+        }
+
+        return result;
     }
 }

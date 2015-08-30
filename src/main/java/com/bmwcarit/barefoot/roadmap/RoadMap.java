@@ -102,6 +102,11 @@ public class RoadMap extends Graph<Road> {
         public Set<RoadPoint> radius(Point c, double r) {
             return split(index.radius(c, r));
         }
+
+        @Override
+        public Set<RoadPoint> knearest(Point c, int k) {
+            return split(index.knearest(c, k));
+        }
     };
 
     /**

@@ -291,7 +291,7 @@ public class Gnomonic {
     rev.lat = pos.lat2;
     rev.lon = pos.lon2;
     rev.azi = pos.azi2;
-    rev.rk = pos.m12;
+    rev.rk = pos.M12;
 
     return rev;
   }
