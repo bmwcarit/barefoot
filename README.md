@@ -277,7 +277,7 @@ TBD.
 
 ### Spatial cluster analysis
 
-Spatial cluster analysis of trip start and target points for a New York City taxi driver in January 2013. New York City taxi data is provided by [Chris Whong](http://chriswhong.com/open-data/foil_nyc_taxi/). (The shown example is data of the New York hack license BA96DE419E711691B9445D6A6307C170.)
+Spatial cluster analysis of trip start and target points for a New York City taxi driver in January 2013. (The shown example is data of the New York hack license BA96DE419E711691B9445D6A6307C170. For details of the dataset, see below.)
 
 <p align="center">
 <img src="doc-files/com/bmwcarit/barefoot/analysis/dbscan-satellite.png?raw=true" width="700">
@@ -385,6 +385,11 @@ _These dependencies are linked only dynamically in the source of map server tool
   _Note: OpenJUMP project files included in directory openjump for test and debugging purposes._
 * Documents and graphics, CC BY 4.0 ([http://creativecommons.org/licenses/by/4.0/legalcode](http://creativecommons.org/licenses/by/4.0/legalcode))<br/>
   _Note: The documentation includes PNG, PDF, TikZ/LaTeX, and Markdown files for this project (mainly included in directory doc-files) and is licensed under CC BY 4.0._
+
+##### Datasets
+
+* Some tests and examples use an extract of NYC taxi data which is included in the source repository. The data is licensed under CC0 license (Public Domain). For details see:
+  _Brian Donovan and Daniel B. Work  “New York City Taxi Trip Data (2010-2013)”. 1.0. University of Illinois at Urbana-Champaign. Dataset. http://dx.doi.org/10.13012/J8PN93H8, 2014._
 
 ## References
 
