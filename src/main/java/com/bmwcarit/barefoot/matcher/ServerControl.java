@@ -70,46 +70,45 @@ public abstract class ServerControl {
 
         logger.info("initializing server");
 
-        String host = "", database = "", table = "", user = "", password = "", path = "";
-        int port = 0;
-
         try {
-            logger.info("initializing database settings with properties from {}", databaseFile);
+            logger.info("reading database properties from file {}", databaseFile);
             databaseProperties.load(new FileInputStream(databaseFile));
-
-            host = databaseProperties.getProperty("host");
-            port = Integer.parseInt(databaseProperties.getProperty("port"));
-            database = databaseProperties.getProperty("database");
-            table = databaseProperties.getProperty("table");
-            user = databaseProperties.getProperty("user");
-            password = databaseProperties.getProperty("password");
-            path = databaseProperties.getProperty("road-types");
         } catch (FileNotFoundException e) {
-            logger.error("properties file {} not found", databaseFile);
+            logger.error("file {} not found", databaseFile);
             System.exit(1);
         } catch (IOException e) {
-            logger.error("reading file {} - {}", databaseFile, e.getMessage());
-            System.exit(1);
-        } catch (Exception e) {
-            logger.error("reading database properties failed {}", e.getMessage());
+            logger.error("reading database properties from file {} failed - {}", databaseFile,
+                    e.getMessage());
             System.exit(1);
         }
 
-        Map<Short, Tuple<Double, Integer>> config;
+        String host = databaseProperties.getProperty("host", "");
+        int port = Integer.parseInt(databaseProperties.getProperty("port", "0"));
+        String database = databaseProperties.getProperty("database");
+        String table = databaseProperties.getProperty("table");
+        String user = databaseProperties.getProperty("user");
+        String password = databaseProperties.getProperty("password");
+        String path = databaseProperties.getProperty("road-types");
+
+        if (host == null || port == 0 || database == null || table == null || user == null
+                || password == null || path == null) {
+            logger.info("database property not found");
+            System.exit(1);
+        }
+
+
+        Map<Short, Tuple<Double, Integer>> config = null;
         try {
             config = Configuration.read(path);
         } catch (JSONException | IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            logger.error("reading road type configuration from file {} failed - {}", path,
+                    e.getMessage());
+            System.exit(1);
         }
 
-        Router<Road, RoadPoint> router = new Dijkstra<Road, RoadPoint>();
-        Cost<Road> cost = new TimePriority();
-        SpatialOperator spatial = new Geography();
-
         File file = new File(database + ".bfmap");
-
         RoadMap map = null;
+
         if (!file.exists()) {
             logger.info("loading map from database {} at {}:{}", database, host, port);
             RoadReader reader =
@@ -133,53 +132,46 @@ public abstract class ServerControl {
             map = RoadMap.Load(new BfmapReader(file.getAbsolutePath()));
         }
 
+        Router<Road, RoadPoint> router = new Dijkstra<Road, RoadPoint>();
+        Cost<Road> cost = new TimePriority();
+        SpatialOperator spatial = new Geography();
         map.construct();
-
-        int portNumber = 0, maxRequestTime = 0, maxResponseTime = 0, maxConnectionCount = 0, numExecutorThreads =
-                0, matcherNumThreads = 0, matcherMinInterval = 0;
-        double matcherMaxRadius = 0, matcherMaxDistance = 0, matcherLambda = 0, matcherSigma = 0;
+        Matcher matcher = new Matcher(map, router, cost, spatial);
 
         try {
             logger.info("initializing server settings with properties from {}", serverFile);
             serverProperties.load(new FileInputStream(serverFile));
-
-            matcherMaxRadius = Double.parseDouble(serverProperties.getProperty("matcherMaxRadius"));
-            matcherMaxDistance =
-                    Double.parseDouble(serverProperties.getProperty("matcherMaxDistance"));
-            matcherLambda = Double.parseDouble(serverProperties.getProperty("matcherLambda"));
-            matcherSigma = Double.parseDouble(serverProperties.getProperty("matcherSigma"));
-            matcherMinInterval =
-                    Integer.parseInt(serverProperties.getProperty("matcherMinInterval"));
-            matcherNumThreads = Integer.parseInt(serverProperties.getProperty("matcherNumThreads"));
-            portNumber = Integer.parseInt(serverProperties.getProperty("portNumber"));
-            maxRequestTime = Integer.parseInt(serverProperties.getProperty("maxRequestTime"));
-            maxResponseTime = Integer.parseInt(serverProperties.getProperty("maxResponseTime"));
-            maxConnectionCount =
-                    Integer.parseInt(serverProperties.getProperty("maxConnectionCount"));
-            numExecutorThreads =
-                    Integer.parseInt(serverProperties.getProperty("numExecutorThreads"));
-
         } catch (FileNotFoundException e) {
             logger.error("file {} not found", serverFile);
             System.exit(1);
         } catch (IOException e) {
-            logger.error("reading file {} - {}", serverFile, e.getMessage());
-            System.exit(1);
-        } catch (Exception e) {
-            logger.error("reading server properties failed {}", e.getMessage());
+            logger.error("reading server properties from file {} failed - {}", databaseFile,
+                    e.getMessage());
             System.exit(1);
         }
 
-        Matcher matcher = new Matcher(map, router, cost, spatial);
-        matcher.setMaxRadius(matcherMaxRadius);
-        matcher.setMaxDistance(matcherMaxDistance);
-        matcher.setLambda(matcherLambda);
-        matcher.setSigma(matcherSigma);
-        StaticScheduler.reset(matcherNumThreads);
+        matcher.setMaxRadius(Double.parseDouble(serverProperties.getProperty("matcherMaxRadius",
+                Double.toString(matcher.getMaxRadius()))));
+        matcher.setMaxDistance(Double.parseDouble(serverProperties.getProperty(
+                "matcherMaxDistance", Double.toString(matcher.getMaxDistance()))));
+        matcher.setLambda(Double.parseDouble(serverProperties.getProperty("matcherLambda",
+                Double.toString(matcher.getLambda()))));
+        matcher.setSigma(Double.parseDouble(serverProperties.getProperty("matcherSigma",
+                Double.toString(matcher.getSigma()))));
 
         matcherServer =
-                new Server(portNumber, maxRequestTime, maxResponseTime, maxConnectionCount,
-                        numExecutorThreads, matcherMinInterval, map, matcher, input, output);
+                new Server(
+                        Integer.parseInt(serverProperties.getProperty("portNumber", "1234")),
+                        Integer.parseInt(serverProperties.getProperty("maxRequestTime", "15000")),
+                        Integer.parseInt(serverProperties.getProperty("maxResponseTime", "60000")),
+                        Integer.parseInt(serverProperties.getProperty("maxConnectionCount", "20")),
+                        Integer.parseInt(serverProperties.getProperty("numExecutorThreads", "40")),
+                        Integer.parseInt(serverProperties.getProperty("matcherMinInterval", "5000")),
+                        Integer.parseInt(serverProperties.getProperty("matcherMinDistance", "10")),
+                        map, matcher, input, output);
+
+        StaticScheduler.reset(Integer.parseInt(serverProperties.getProperty("matcherNumThreads",
+                "8")));
     }
 
     /**
@@ -226,16 +218,19 @@ public abstract class ServerControl {
 
         if (args.length > 2) {
             for (int i = 0; i < args.length - 2; ++i) {
-                if (args[i].compareTo("--debug") == 0) {
-                    output = new DebugJSONOutputFormatter();
-                }
-
-                if (args[i].compareTo("--slimjson") == 0) {
-                    output = new SlimJSONOutputFormatter();
-                }
-
-                if (args[i].compareTo("--geojson") == 0) {
-                    output = new GeoJSONOutputFormatter();
+                switch (args[i]) {
+                    case "--debug":
+                        output = new DebugJSONOutputFormatter();
+                        break;
+                    case "--slimjson":
+                        output = new SlimJSONOutputFormatter();
+                        break;
+                    case "--geojson":
+                        output = new GeoJSONOutputFormatter();
+                        break;
+                    default:
+                        logger.warn("invalid option {} ignored", args[i]);
+                        break;
                 }
             }
         }

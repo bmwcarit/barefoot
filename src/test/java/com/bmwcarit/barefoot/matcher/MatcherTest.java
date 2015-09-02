@@ -1,14 +1,14 @@
 /*
-* Copyright (C) 2015, BMW Car IT GmbH
-* 
-* Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
-*
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-* in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
-* writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-* WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
-* language governing permissions and limitations under the License.
+ * Copyright (C) 2015, BMW Car IT GmbH
+ *
+ * Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
+ * writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
  */
 
 package com.bmwcarit.barefoot.matcher;
@@ -28,10 +28,6 @@ import java.util.Set;
 import org.json.JSONException;
 import org.junit.Test;
 
-import com.bmwcarit.barefoot.matcher.Matcher;
-import com.bmwcarit.barefoot.matcher.MatcherCandidate;
-import com.bmwcarit.barefoot.matcher.MatcherSample;
-import com.bmwcarit.barefoot.matcher.MatcherTransition;
 import com.bmwcarit.barefoot.road.BaseRoad;
 import com.bmwcarit.barefoot.road.RoadReader;
 import com.bmwcarit.barefoot.roadmap.Road;
@@ -39,6 +35,7 @@ import com.bmwcarit.barefoot.roadmap.RoadMap;
 import com.bmwcarit.barefoot.roadmap.RoadPoint;
 import com.bmwcarit.barefoot.roadmap.Route;
 import com.bmwcarit.barefoot.roadmap.Time;
+import com.bmwcarit.barefoot.roadmap.TimePriority;
 import com.bmwcarit.barefoot.spatial.Geography;
 import com.bmwcarit.barefoot.spatial.SpatialOperator;
 import com.bmwcarit.barefoot.topology.Cost;
@@ -91,9 +88,9 @@ public class MatcherTest {
                     Polyline geometry =
                             (Polyline) GeometryEngine.geometryFromWkt(entry.five(),
                                     WktImportFlags.wktImportDefaults, Type.Polyline);
-                    roads.add(new BaseRoad(entry.one(), entry.two(), entry.three(), entry.one(), entry
-                            .four(), (short) 0, 1.0f, 100.0f, 100.0f, (float) spatial
-                            .length(geometry), geometry));
+                    roads.add(new BaseRoad(entry.one(), entry.two(), entry.three(), entry.one(),
+                            entry.four(), (short) 0, 1.0f, 100.0f, 100.0f, (float) spatial
+                                    .length(geometry), geometry));
                 }
             }
 
@@ -134,7 +131,8 @@ public class MatcherTest {
     }
 
     private void assertTransition(Tuple<MatcherTransition, Double> transition,
-            Tuple<MatcherCandidate, MatcherSample> source, Tuple<MatcherCandidate, MatcherSample> target) {
+            Tuple<MatcherCandidate, MatcherSample> source,
+            Tuple<MatcherCandidate, MatcherSample> target, double lambda) {
         List<Road> edges = router.route(source.one().point(), target.one().point(), cost);
 
         if (edges == null) {
@@ -147,9 +145,14 @@ public class MatcherTest {
         assertEquals(route.source().edge().id(), transition.one().route().source().edge().id());
         assertEquals(route.target().edge().id(), transition.one().route().target().edge().id());
 
-        double lambda = 1d / 10d;
-        double dt = spatial.distance(source.two().point(), target.two().point());
-        double p = lambda * Math.exp((-1.0) * lambda * Math.abs(dt - route.length()));
+        double beta =
+                lambda == 0 ? (2.0 * (target.two().time() - source.two().time()) / 1000)
+                        : 1 / lambda;
+        double base = 1.0 * spatial.distance(source.two().point(), target.two().point()) / 60;
+        double p =
+                (1 / beta)
+                        * Math.exp((-1.0) * Math.max(0, route.cost(new TimePriority()) - base)
+                                / beta);
 
         assertEquals(transition.two(), p, 10E-6);
 
@@ -180,7 +183,7 @@ public class MatcherTest {
             Point sample = new Point(11.001, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
- filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new MatcherSample(0, sample));
 
             assertEquals(0, candidates.size());
         }
@@ -190,7 +193,7 @@ public class MatcherTest {
             Point sample = new Point(11.001, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
- filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new MatcherSample(0, sample));
 
             Set<Long> refset = new HashSet<Long>(Arrays.asList(0L, 1L));
             Set<Long> set = new HashSet<Long>();
@@ -210,7 +213,7 @@ public class MatcherTest {
             Point sample = new Point(11.010, 48.000);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
- filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new MatcherSample(0, sample));
 
             Set<Long> refset = new HashSet<Long>(Arrays.asList(0L, 3L));
             Set<Long> set = new HashSet<Long>();
@@ -231,7 +234,7 @@ public class MatcherTest {
             Point sample = new Point(11.011, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
- filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new MatcherSample(0, sample));
 
             Set<Long> refset = new HashSet<Long>(Arrays.asList(0L, 2L, 3L));
             Set<Long> set = new HashSet<Long>();
@@ -252,7 +255,7 @@ public class MatcherTest {
             Point sample = new Point(11.011, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
- filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new MatcherSample(0, sample));
 
             Set<Long> refset = new HashSet<Long>(Arrays.asList(0L, 2L, 3L, 8L));
             Set<Long> set = new HashSet<Long>();
@@ -273,7 +276,7 @@ public class MatcherTest {
             Point sample = new Point(11.019, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
- filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new MatcherSample(0, sample));
 
             Set<Long> refset = new HashSet<Long>(Arrays.asList(2L, 3L, 5L, 10L));
             Set<Long> set = new HashSet<Long>();
@@ -296,7 +299,7 @@ public class MatcherTest {
         filter.setMaxRadius(200);
         {
             MatcherSample sample1 = new MatcherSample(0, new Point(11.001, 48.001));
-            MatcherSample sample2 = new MatcherSample(0, new Point(11.019, 48.001));
+            MatcherSample sample2 = new MatcherSample(60000, new Point(11.019, 48.001));
 
             Set<MatcherCandidate> predecessors = new HashSet<MatcherCandidate>();
             Set<MatcherCandidate> candidates = new HashSet<MatcherCandidate>();
@@ -327,14 +330,14 @@ public class MatcherTest {
                         .getValue().entrySet()) {
                     assertTransition(target.getValue(), new Tuple<MatcherCandidate, MatcherSample>(
                             source.getKey(), sample1), new Tuple<MatcherCandidate, MatcherSample>(
-                            target.getKey(), sample2));
+                            target.getKey(), sample2), filter.getLambda());
                 }
 
             }
         }
         {
             MatcherSample sample1 = new MatcherSample(0, new Point(11.019, 48.001));
-            MatcherSample sample2 = new MatcherSample(0, new Point(11.001, 48.001));
+            MatcherSample sample2 = new MatcherSample(60000, new Point(11.001, 48.001));
 
             Set<MatcherCandidate> predecessors = new HashSet<MatcherCandidate>();
             Set<MatcherCandidate> candidates = new HashSet<MatcherCandidate>();
@@ -369,7 +372,7 @@ public class MatcherTest {
                         .getValue().entrySet()) {
                     assertTransition(target.getValue(), new Tuple<MatcherCandidate, MatcherSample>(
                             source.getKey(), sample1), new Tuple<MatcherCandidate, MatcherSample>(
-                            target.getKey(), sample2));
+                            target.getKey(), sample2), filter.getLambda());
                 }
             }
         }

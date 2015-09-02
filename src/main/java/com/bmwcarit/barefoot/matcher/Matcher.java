@@ -14,6 +14,8 @@
 package com.bmwcarit.barefoot.matcher;
 
 import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,14 +28,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bmwcarit.barefoot.markov.Filter;
+import com.bmwcarit.barefoot.markov.KState;
 import com.bmwcarit.barefoot.roadmap.Distance;
 import com.bmwcarit.barefoot.roadmap.Road;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
 import com.bmwcarit.barefoot.roadmap.RoadPoint;
 import com.bmwcarit.barefoot.roadmap.Route;
+import com.bmwcarit.barefoot.roadmap.TimePriority;
 import com.bmwcarit.barefoot.scheduler.StaticScheduler;
-import com.bmwcarit.barefoot.scheduler.Task;
 import com.bmwcarit.barefoot.scheduler.StaticScheduler.InlineScheduler;
+import com.bmwcarit.barefoot.scheduler.Task;
 import com.bmwcarit.barefoot.spatial.SpatialOperator;
 import com.bmwcarit.barefoot.topology.Cost;
 import com.bmwcarit.barefoot.topology.Router;
@@ -47,7 +51,7 @@ import com.esri.core.geometry.WktExportFlags;
  * and determines emission and transition probabilities for map matching with HMM.
  */
 public class Matcher extends Filter<MatcherCandidate, MatcherTransition, MatcherSample> {
-    private final static Logger logger = LoggerFactory.getLogger(Matcher.class);
+    private static final Logger logger = LoggerFactory.getLogger(Matcher.class);
 
     private final RoadMap map;
     private final Router<Road, RoadPoint> router;
@@ -56,16 +60,35 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
 
     private double sig2 = Math.pow(5d, 2);
     private double sqrt_2pi_sig2 = Math.sqrt(2d * Math.PI * sig2);
-    private double lambda = 1d / 10d;
-    private double radius = 100;
+    private double lambda = 0d;
+    private double radius = 200;
     private double distance = 15000;
 
+    /**
+     * Creates a HMM map matching filter for some map, router, cost function, and spatial operator.
+     *
+     * @param map {@link RoadMap} object of the map to be matched to.
+     * @param router {@link Router} object to be used for route estimation.
+     * @param cost Cost function to be used for routing.
+     * @param spatial Spatial operator for spatial calculations.
+     */
     public Matcher(RoadMap map, Router<Road, RoadPoint> router, Cost<Road> cost,
             SpatialOperator spatial) {
         this.map = map;
         this.router = router;
         this.cost = cost;
         this.spatial = spatial;
+    }
+
+    /**
+     * Gets standard deviation in meters of gaussian distribution that defines emission
+     * probabilities.
+     *
+     * @return Standard deviation in meters of gaussian distribution that defines emission
+     *         probabilities.
+     */
+    public double getSigma() {
+        return Math.sqrt(this.sig2);
     }
 
     /**
@@ -81,8 +104,18 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
     }
 
     /**
+     * Gets lambda parameter of negative exponential distribution defining transition probabilities.
+     *
+     * @return Lambda parameter of negative exponential distribution defining transition
+     *         probabilities.
+     */
+    public double getLambda() {
+        return this.lambda;
+    }
+
+    /**
      * Sets lambda parameter of negative exponential distribution defining transition probabilities
-     * (default is 1/5).
+     * (default is 0.0). Adaptive parameterization is enabled if lambda is set to 0.0.
      *
      * @param lambda Lambda parameter of negative exponential distribution defining transition
      *        probabilities.
@@ -92,12 +125,30 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
     }
 
     /**
+     * Gets maximum radius for candidate selection in meters.
+     *
+     * @return Maximum radius for candidate selection in meters.
+     */
+    public double getMaxRadius() {
+        return this.radius;
+    }
+
+    /**
      * Sets maximum radius for candidate selection in meters (default is 100 meters).
      *
      * @param radius Maximum radius for candidate selection in meters.
      */
     public void setMaxRadius(double radius) {
         this.radius = radius;
+    }
+
+    /**
+     * Gets maximum transition distance in meters.
+     *
+     * @return Maximum transition distance in meters.
+     */
+    public double getMaxDistance() {
+        return this.distance;
     }
 
     /**
@@ -119,7 +170,8 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
 
         Set<RoadPoint> points_ = map.spatial().radius(sample.point(), radius);
         Set<RoadPoint> points = Minset.minimize(points_);
-        Set<Tuple<MatcherCandidate, Double>> candidates = new HashSet<Tuple<MatcherCandidate, Double>>();
+        Set<Tuple<MatcherCandidate, Double>> candidates =
+                new HashSet<Tuple<MatcherCandidate, Double>>();
 
         logger.trace("{} ({}) candidates", points.size(), points_.size());
 
@@ -137,7 +189,8 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
     }
 
     @Override
-    protected Tuple<MatcherTransition, Double> transition(Tuple<MatcherSample, MatcherCandidate> predecessor,
+    protected Tuple<MatcherTransition, Double> transition(
+            Tuple<MatcherSample, MatcherCandidate> predecessor,
             Tuple<MatcherSample, MatcherCandidate> candidate) {
 
         return null;
@@ -167,7 +220,11 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         final AtomicInteger count = new AtomicInteger();
         final Map<MatcherCandidate, Map<MatcherCandidate, Tuple<MatcherTransition, Double>>> transitions =
                 new ConcurrentHashMap<MatcherCandidate, Map<MatcherCandidate, Tuple<MatcherTransition, Double>>>();
-        final double dt = spatial.distance(predecessors.one().point(), candidates.one().point());
+        final double base =
+                1.0 * spatial.distance(predecessors.one().point(), candidates.one().point()) / 60;
+        final double bound =
+                Math.max(1000d, Math.min(distance, ((candidates.one().time() - predecessors.one()
+                        .time()) / 1000) * 100));
 
         InlineScheduler scheduler = StaticScheduler.scheduler();
         for (final MatcherCandidate predecessor : predecessors.two()) {
@@ -179,8 +236,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
                     Stopwatch sw = new Stopwatch();
                     sw.start();
                     Map<RoadPoint, List<Road>> routes =
-                            router.route(predecessor.point(), targets, cost, new Distance(),
-                                    distance);
+                            router.route(predecessor.point(), targets, cost, new Distance(), bound);
                     sw.stop();
 
                     logger.trace("{} routes ({} ms)", routes.size(), sw.ms());
@@ -198,15 +254,21 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
                         // Math.exp((-1.0) * lambda * Math.abs(dt - route.length())), however, we
                         // experimentally choose lambda * Math.exp((-1.0) * lambda * Math.max(0,
                         // route.length() - dt)) to avoid unnecessary routes in case of u-turns.
+
+                        double beta =
+                                lambda == 0 ? (2.0 * (candidates.one().time() - predecessors.one()
+                                        .time()) / 1000) : 1 / lambda;
+
                         double transition =
-                                lambda
-                                        * Math.exp((-1.0) * lambda
-                                                * Math.max(0, route.length() - dt));
+                                (1 / beta)
+                                        * Math.exp((-1.0)
+                                                * Math.max(0, route.cost(new TimePriority()) - base)
+                                                / beta);
 
-                        map.put(candidate, new Tuple<MatcherTransition, Double>(new MatcherTransition(
-                                route), transition));
+                        map.put(candidate, new Tuple<MatcherTransition, Double>(
+                                new MatcherTransition(route), transition));
 
-                        logger.trace("{} -> {} {} {} {}", predecessor.id(), candidate.id(), dt,
+                        logger.trace("{} -> {} {} {} {}", predecessor.id(), candidate.id(), base,
                                 route.length(), transition);
                         count.incrementAndGet();
                     }
@@ -224,5 +286,42 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         logger.trace("{} transitions ({} ms)", count.get(), sw.ms());
 
         return transitions;
+    }
+
+    /**
+     * Matches a full sequence of samples, {@link MatcherSample} objects and returns state
+     * representation of the full matching which is a {@link KState} object.
+     *
+     * @param samples Sequence of samples, {@link MatcherSample} objects.
+     * @param minDistance Minimum distance in meters between subsequent samples as criterion to
+     *        match a sample. (Avoids unnecessary matching where samples are more dense than
+     *        necessary.)
+     * @param minInterval Minimum time interval in milliseconds between subsequent samples as
+     *        criterion to match a sample. (Avoids unnecessary matching where samples are more dense
+     *        than necessary.)
+     * @return State representation of the full matching which is a {@link KState} object.
+     */
+    public MatcherKState mmatch(List<MatcherSample> samples, double minDistance, int minInterval) {
+        Collections.sort(samples, new Comparator<MatcherSample>() {
+            @Override
+            public int compare(MatcherSample left, MatcherSample right) {
+                return (int) (left.time() - right.time());
+            }
+        });
+
+        MatcherKState state = new MatcherKState();
+
+        for (MatcherSample sample : samples) {
+            if (state.sample() != null
+                    && (spatial.distance(sample.point(), state.sample().point()) < Math.max(0,
+                            minDistance) || (sample.time() - state.sample().time()) < Math.max(0,
+                            minInterval))) {
+                continue;
+            }
+            Set<MatcherCandidate> vector = execute(state.vector(), state.sample(), sample);
+            state.update(vector, sample);
+        }
+
+        return state;
     }
 }

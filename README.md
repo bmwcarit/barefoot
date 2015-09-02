@@ -30,7 +30,7 @@ Fast and easy setup of Barefoot map server (as Docker container) with any OpenSt
 
 #### Barefoot library
 
-Java library for integrating the map into software and services with map-matching as basis for spatio-temporal analysis on the map.
+The core is a Java library that integrates the map into software and services with map-matching as basis for spatio-temporal data analysis on the map. This comes with an extensive set of functions for geographic operations (GeographicLib), spatial operations and standard formats (ESRI Geometry API).
 
 #### Map-matching server (stand-alone)
 
@@ -124,7 +124,7 @@ mvn compile assembly:single
 2. Start server with standard configuration for map server and map matching, and option for GeoJSON output format.
 
   ``` bash
-java -jar target/barefoot-0.0.1-jar-with-dependencies.jar --geojson config/server.properties config/oberbayern.properties
+java -jar target/barefoot-0.0.2-jar-with-dependencies.jar --geojson config/server.properties config/oberbayern.properties
   ```
 
   _Note: Stop server with Ctrl-c._
@@ -393,10 +393,10 @@ _These dependencies are linked only dynamically in the source of map server tool
 
 ## References
 
-[1] P. Newson and J. Krumm. Hidden Markov Map Matching Through Noise and Sparseness. In _Proceedings of International Conference on Advances in Geographic Information Systems_, 2009.
+[1] P. Newson and J. Krumm. [Hidden Markov Map Matching Through Noise and Sparseness](http://research.microsoft.com/en-us/um/people/jckrumm/Publications%202009/map%20matching%20ACM%20GIS%20camera%20ready.pdf). In _Proceedings of International Conference on Advances in Geographic Information Systems_, 2009.
 
-[2] C.Y. Goh, J. Dauwels, N. Mitrovic, M.T. Asif, A. Oran, and P. Jaillet. Online map-matching based on Hidden Markov model for real-time traffic sensing applications. In _International IEEE Conference on Intelligent Transportation Systems_, 2012.
+[2] C.Y. Goh, J. Dauwels, N. Mitrovic, M.T. Asif, A. Oran, and P. Jaillet. [Online map-matching based on Hidden Markov model for real-time traffic sensing applications](http://www.mit.edu/~jaillet/general/map_matching_itsc2012-final.pdf). In _International IEEE Conference on Intelligent Transportation Systems_, 2012.
 
-[3] S. Mattheis, K. Al-Zahid, B. Engelmann, A. Hildisch, S. Holder, O. Lazarevych, D. Mohr, F. Sedlmeier, and R. Zinck. Putting the car on the map: A scalable map matching system for the Open Source Community. In _INFORMATIK 2014: Workshop Automotive Software Engineering_, 2014.
+[3] S. Mattheis, K. Al-Zahid, B. Engelmann, A. Hildisch, S. Holder, O. Lazarevych, D. Mohr, F. Sedlmeier, and R. Zinck. [Putting the car on the map: A scalable map matching system for the Open Source Community](http://subs.emis.de/LNI/Proceedings/Proceedings232/2109.pdf). In _INFORMATIK 2014: Workshop Automotive Software Engineering_, 2014.
 
-[4] M. Ester, H.-P. Kriegel, J. Sander, X. Xu. A Density-based algorithm for discovering clusters in large spatial databases with noise. In _Proceedings of the Second International Conference on Knowledge Discovery and Data Mining (KDD-96)_, 1996. 
+[4] M. Ester, H.-P. Kriegel, J. Sander, X. Xu. [A Density-based algorithm for discovering clusters in large spatial databases with noise](https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf). In _Proceedings of the Second International Conference on Knowledge Discovery and Data Mining (KDD-96)_, 1996. 

@@ -17,22 +17,22 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bmwcarit.barefoot.markov.KState;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
 import com.bmwcarit.barefoot.scheduler.StaticScheduler;
-import com.bmwcarit.barefoot.scheduler.Task;
 import com.bmwcarit.barefoot.scheduler.StaticScheduler.InlineScheduler;
+import com.bmwcarit.barefoot.scheduler.Task;
 import com.bmwcarit.barefoot.util.AbstractServer;
 import com.bmwcarit.barefoot.util.Stopwatch;
-import com.esri.core.geometry.GeometryEngine;
-import com.esri.core.geometry.WktExportFlags;
 
 /**
  * Server (stand-alone) for Hidden Markov Model offline map matching. It is a {@link AbstractServer}
@@ -46,8 +46,8 @@ public class Server extends AbstractServer {
     public final Matcher matcher;
 
     /**
-     * Default input formatter for reading a JSON array of {@link MatcherSample} objects as input for map
-     * matching.
+     * Default input formatter for reading a JSON array of {@link MatcherSample} objects as input
+     * for map matching.
      */
     public static class InputFormatter {
         /**
@@ -61,10 +61,18 @@ public class Server extends AbstractServer {
             List<MatcherSample> samples = new LinkedList<MatcherSample>();
 
             try {
+                Object jsoninput = new JSONTokener(input).nextValue();
+                JSONArray jsonsamples = null;
+
+                if (jsoninput instanceof JSONObject) {
+                    jsonsamples = ((JSONObject) jsoninput).getJSONArray("request");
+                } else {
+                    jsonsamples = ((JSONArray) jsoninput);
+                }
+
                 Set<Long> times = new HashSet<Long>();
-                JSONArray jsonrequest = new JSONArray(input);
-                for (int i = 0; i < jsonrequest.length(); ++i) {
-                    MatcherSample sample = new MatcherSample(jsonrequest.getJSONObject(i));
+                for (int i = 0; i < jsonsamples.length(); ++i) {
+                    MatcherSample sample = new MatcherSample(jsonsamples.getJSONObject(i));
                     samples.add(sample);
                     if (times.contains(sample.time())) {
                         throw new RuntimeException("multiple samples for same time");
@@ -90,10 +98,10 @@ public class Server extends AbstractServer {
          * Converts map matching output from a {@link KState} object into a response message.
          *
          * @param request String message of input data.
-         * @param output {@link KState} object with the map matching of the input.
-         * @return Output message with map matching result.
+         * @param output {@link MatcherKState} object with the map matching of the input.
+         * @return Response message.
          */
-        public String format(String request, KState<MatcherCandidate, MatcherTransition, MatcherSample> output) {
+        public String format(String request, MatcherKState output) {
             try {
                 return output.toJSON().toString();
             } catch (JSONException e) {
@@ -108,24 +116,9 @@ public class Server extends AbstractServer {
      */
     public static class SlimJSONOutputFormatter extends OutputFormatter {
         @Override
-        public String format(String request, KState<MatcherCandidate, MatcherTransition, MatcherSample> output) {
+        public String format(String request, MatcherKState output) {
             try {
-                JSONArray jsonsequence = new JSONArray();
-                if (output.sequence() != null) {
-                    for (MatcherCandidate candidate : output.sequence()) {
-                        JSONObject jsoncandidate = new JSONObject();
-                        jsoncandidate.put("road", candidate.point().edge().id());
-                        jsoncandidate.put("frac", candidate.point().fraction());
-                        if (candidate.transition() != null) {
-                            jsoncandidate.put(
-                                    "route",
-                                    GeometryEngine.geometryToWkt(candidate.transition().route()
-                                            .geometry(), WktExportFlags.wktExportLineString));
-                        }
-                        jsonsequence.put(jsoncandidate);
-                    }
-                }
-                return jsonsequence.toString();
+                return output.toSlimJSON().toString();
             } catch (JSONException e) {
                 throw new RuntimeException("creating JSON response");
             }
@@ -138,24 +131,9 @@ public class Server extends AbstractServer {
      */
     public static class GeoJSONOutputFormatter extends OutputFormatter {
         @Override
-        public String format(String request, KState<MatcherCandidate, MatcherTransition, MatcherSample> output) {
+        public String format(String request, MatcherKState output) {
             try {
-                JSONObject json = new JSONObject();
-                json.put("type", "MultiLineString");
-                JSONArray jsonsequence = new JSONArray();
-                if (output.sequence() != null) {
-                    for (MatcherCandidate candidate : output.sequence()) {
-                        if (candidate.transition() == null) {
-                            continue;
-                        }
-                        JSONObject jsoncandidate =
-                                new JSONObject(GeometryEngine.geometryToGeoJson(candidate
-                                        .transition().route().geometry()));
-                        jsonsequence.put(jsoncandidate.getJSONArray("coordinates"));
-                    }
-                }
-                json.put("coordinates", jsonsequence);
-                return json.toString();
+                return output.toGeoJSON().toString();
             } catch (JSONException e) {
                 throw new RuntimeException("creating JSON response");
             }
@@ -168,53 +146,46 @@ public class Server extends AbstractServer {
      */
     public static class DebugJSONOutputFormatter extends OutputFormatter {
         @Override
-        public String format(String request, KState<MatcherCandidate, MatcherTransition, MatcherSample> output) {
+        public String format(String request, MatcherKState output) {
             try {
-                StringBuilder response = new StringBuilder();
+                return output.toDebugJSON();
+            } catch (JSONException e) {
+                throw new RuntimeException("creating JSON response: " + e.getMessage());
+            }
+        }
+    }
 
-                JSONArray jsonsamples = new JSONArray();
-                if (output.samples() != null) {
-                    for (int i = 0; i < output.samples().size(); ++i) {
-                        JSONObject jsonsample = new JSONObject();
-                        jsonsample.put("id", output.samples().get(i).id());
-                        jsonsample.put("geom", GeometryEngine.geometryToWkt(output.samples().get(i)
-                                .point(), WktExportFlags.wktExportPoint));
-                        jsonsample.put("time", output.samples().get(i).time() / 1000);
-                        jsonsamples.put(jsonsample);
-                    }
-                }
-                response.append(jsonsamples.toString());
-                response.append("\n");
+    private static class AdaptiveOutputFormatter extends OutputFormatter {
+        private final OutputFormatter defaultFormatter;
 
-                JSONArray jsonsequence = new JSONArray();
-                if (output.sequence() != null) {
-                    for (int i = 0; i < output.sequence().size(); ++i) {
-                        MatcherCandidate candidate = output.sequence().get(i);
-                        JSONObject jsoncandidate = new JSONObject();
-                        jsoncandidate.put("id", candidate.id());
-                        jsoncandidate.put("time", output.samples().get(i).time() / 1000);
-                        jsoncandidate.put("road", candidate.point().edge().id());
-                        jsoncandidate.put("frac", candidate.point().fraction());
-                        if (candidate.transition() != null) {
-                            jsoncandidate.put(
-                                    "geom",
-                                    GeometryEngine.geometryToWkt(candidate.transition().route()
-                                            .geometry(), WktExportFlags.wktExportLineString));
-                            StringBuilder roads = new StringBuilder();
-                            for (int j = 0; j < candidate.transition().route().size(); ++j) {
-                                roads.append(candidate.transition().route().get(j).id() + " ");
-                            }
-                            jsoncandidate.put("roads", roads);
-                        } else {
-                            jsoncandidate.put("geom", GeometryEngine.geometryToWkt(candidate.point()
-                                    .geometry(), WktExportFlags.wktExportPoint));
+        public AdaptiveOutputFormatter(OutputFormatter defaultFormatter) {
+            this.defaultFormatter = defaultFormatter;
+        }
+
+        @Override
+        public String format(String request, MatcherKState output) {
+            try {
+                Object jsonrequest = new JSONTokener(request).nextValue();
+
+                if (jsonrequest instanceof JSONObject) {
+                    String jsonformat = ((JSONObject) jsonrequest).optString("format");
+                    if (jsonformat != null) {
+                        switch (jsonformat) {
+                            case "json":
+                                return new OutputFormatter().format(request, output);
+                            case "slimjson":
+                                return new SlimJSONOutputFormatter().format(request, output);
+                            case "geojson":
+                                return new GeoJSONOutputFormatter().format(request, output);
+                            case "debug":
+                                return new DebugJSONOutputFormatter().format(request, output);
+                            default:
+                                break;
                         }
-                        jsonsequence.put(jsoncandidate);
                     }
                 }
-                response.append(jsonsequence.toString());
 
-                return response.toString();
+                return defaultFormatter.format(request, output);
             } catch (JSONException e) {
                 throw new RuntimeException("creating JSON response: " + e.getMessage());
             }
@@ -231,6 +202,8 @@ public class Server extends AbstractServer {
      * @param numIOThreads Number of threads for connections (I/O).
      * @param matcherMinInterval Minimum time interval between samples for being accepted as map
      *        matching input.
+     * @param matcherMinDistance Minimum distance between samples for being accepted as map matching
+     *        input.
      * @param map {@link RoadMap} object with the map to be matched with.
      * @param matcher {@link Matcher} object to be used for map matching (with respective
      *        parameterization).
@@ -238,10 +211,11 @@ public class Server extends AbstractServer {
      * @param output {@link OutputFormatter} object for output formatting.
      */
     public Server(int portNumber, int maxRequestTime, int maxResponseTime, int maxConnectionCount,
-            int numIOThreads, int matcherMinInterval, RoadMap map, Matcher matcher,
-            InputFormatter input, OutputFormatter output) {
+            int numIOThreads, int matcherMinInterval, double matcherMinDistance, RoadMap map,
+            Matcher matcher, InputFormatter input, OutputFormatter output) {
         super(portNumber, maxRequestTime, maxResponseTime, maxConnectionCount, numIOThreads,
-                new MatcherResponseFactory(matcher, input, output, matcherMinInterval, 100));
+                new MatcherResponseFactory(matcher, input, output, matcherMinInterval,
+                        matcherMinDistance));
         this.map = map;
         this.matcher = matcher;
     }
@@ -257,9 +231,9 @@ public class Server extends AbstractServer {
                 OutputFormatter output, int minInterval, double minDistance) {
             this.matcher = matcher;
             this.input = input;
-            this.output = output;
-            this.minInterval = Math.max(0, minInterval);
-            this.minDistance = Math.max(0, minDistance);
+            this.output = new AdaptiveOutputFormatter(output);
+            this.minInterval = minInterval;
+            this.minDistance = minDistance;
         }
 
         @Override
@@ -272,32 +246,21 @@ public class Server extends AbstractServer {
                         sw.start();
 
                         final List<MatcherSample> samples = input.format(request);
-                        final KState<MatcherCandidate, MatcherTransition, MatcherSample> state =
-                                new KState<MatcherCandidate, MatcherTransition, MatcherSample>();
+                        final AtomicReference<MatcherKState> state =
+                                new AtomicReference<MatcherKState>();
 
                         InlineScheduler scheduler = StaticScheduler.scheduler();
                         scheduler.spawn(new Task() {
                             @Override
                             public void run() {
-                                MatcherSample previous = null;
-                                for (MatcherSample sample : samples) {
-                                    if (previous != null
-                                            && (sample.time() - previous.time()) < minInterval) {
-                                        continue;
-                                    }
-
-                                    Set<MatcherCandidate> vector =
-                                            matcher.execute(state.vector(), state.sample(), sample);
-                                    state.update(vector, sample);
-                                    previous = sample;
-                                }
+                                state.set(matcher.mmatch(samples, minDistance, minInterval));
                             }
                         });
                         if (!scheduler.sync()) {
                             return RESULT.ERROR;
                         }
 
-                        String result = output.format(request, state);
+                        String result = output.format(request, state.get());
                         response.append(result);
 
                         sw.stop();

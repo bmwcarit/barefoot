@@ -206,7 +206,7 @@ mvn compile assembly:single
   A map matching server is a Java process that is accessible via TCP/IP socket and requires configuration for access to the map server and settings of the map matching server.
 
   ``` bash
-java -jar target/barefoot-0.0.1-jar-with-dependencies.jar [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties
+java -jar target/barefoot-0.0.2-jar-with-dependencies.jar [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties
   ```
 
   - Map server properties contains access information to map server.
@@ -219,10 +219,10 @@ java -jar target/barefoot-0.0.1-jar-with-dependencies.jar [--slimjson|--debug|--
 
 ### Usage
 
-A map matching request is sent to the server via TCP/IP connection. For simple testing, `netcat` can be used to send requests. An example request is included at `src/test/resources/barefoot/matcher/x0001-015.json`. 
+A map matching request is sent to the server via TCP/IP connection. For simple testing, `netcat` can be used to send requests. An example request is included at `src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json`. 
 
 ``` bash
-cat src/test/resources/barefoot/matcher/x0001-015.json | netcat 127.0.0.1 1234
+cat src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json | netcat 127.0.0.1 1234
 ```
 
 #### Request format (default)
@@ -241,28 +241,44 @@ A map matching request is a text message with a JSON array of JSON objects in th
 
 #### Response formats
 
-The default response format is the JSON representation of the full state data structure, see [k-State data structure](MANUAL.md#k-state-data-structure). Other output formats are available as options of the server process.
+Default response format is the JSON representation of the k-state data structure, see [k-State data structure](MANUAL.md#k-state-data-structure). To change default output format, use the following options:
 
   - `--slimjson`: Server outputs JSON format with map matched positions, consisting of road id and fraction as precise position on the road, and routes between positions as sequences of road ids.
   - `--debug`: Server outputs a JSON format similar to slim JSON format, but with timestamps of the measurements and geometries of the routes in WKT format.
   - `--geojson`: Server outputs the geometry of the map matching on the map in GeoJSON format.
 
+A request may demand another response format by encapsulating the request in a JSON object of the form:
+
+``` json
+{
+	"format": "<format>",
+	"request": <request>
+}
+```
+
+For example, a request using `netcat` may be as follows: 
+
+``` bash
+echo "{\"format\": \"geojson\", \"request\": $(cat src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json | tr -d '\n\r')}" | netcat 127.0.0.1 1234
+```
+
 ### Server settings
 
 The server properties includes configuration of the server, e.g. TCP/IP port number, number of threads, etc., and parameter settings of the map matching.
 
-| Parameter | Example value | Description |
+| Parameter | Default value | Description |
 |:-----------:|:---------:|-------------|
 | portNumber | 1234 | The port of the map matching server. |
 | maxRequestTime | 15000 | Maximum time in milliseconds of waiting for a request after connection has been established. |
 | maxResponseTime | 60000 | Maximum time in milliseconds of waiting for reponse processing before a timeout is triggered and processing is aborted. |
 | maxConnectionCount | 20 | Maximum number of connections to be established by clients. |
-| numExecutorThreads | 20 | Number of executor threads for reponse handling (I/O), which should be a multiple of the number of processors/cores of the machine to fully exploit the machine's performance. |
+| numExecutorThreads | 40 | Number of executor threads for reponse handling (I/O), which should be a multiple of the number of processors/cores of the machine to fully exploit the machine's performance. |
 | matcherSigma | 5 | Standard deviation of the position measurement error in meters, which is usually 5 meters for standard GPS error, as probability measure of matching candidates for position measurements on the map. |
-| matcherLambda | 0.1 | Rate parameter of the negative exponential distribution for probability measure of routes between matching candidates. The lambda defines the reciprocal of the standard deviation for the difference between line of sight distance between position measurements and the respective route length on the map. |
+| matcherLambda | 0.0 | Rate parameter of negative exponential distribution for probability measure of routes between matching candidates. (The default is 0.0 which enables adaptive parameter setting, depending on sampling rate and input data, other values (manually fixed) may be 0.1, 0.01, 0.001 ...) |
 | matcherMaxDistance | 15000 | Maximum length of routes to be searched in the map for transitions between matching candidates in meters. (This avoids searching the full map for candidates that are for some reason not connected in the map, e.g. due to missing road links.) |
-| matcherMaxRadius | 100 | Maximum radius for matching candidates to be searched in the map for respective position measurements in meters. |
-| matcherMinInterval | 5000 | Minimum time interval in milliseconds for measurements to be considered for matching. Any measurement taken in less than the minimum interval after the most recent measurement is skipped. (This avoids unnnecessary matching of positions with very high measuremnt rate if e.g. the measurement rate varies.) |
+| matcherMaxRadius | 200 | Maximum radius for matching candidates to be searched in the map for respective position measurements in meters. |
+| matcherMinInterval | 5000 | Minimum time interval in milliseconds for measurements to be considered for matching. Any measurement taken in less than the minimum interval after the most recent measurement is skipped. (This avoids unnnecessary matching of positions with very high measuremnt rate, useful e.g. if the measurement rate varies.) |
+| matcherMinDistance | 10 | Minimum distance in meters for measurements to be considered for matching. Any measurement taken in less than the minimum distance from the most recent measurement is skipped. (This avoids unnnecessary matching of positions with very high measurement rate, useful e.g. if the object speed varies.) |
 | matcherNumThreads | 8 | Number of executor threads for reponse processing (map matching), which should at least the number of processors/cores of the machine to fully exploit the machine's performance. |
 
 ## Barefoot library
@@ -277,7 +293,7 @@ _Note: Barefoot library requires Java 7 or higher._
 <dependency>
 		<groupId>de.bmw-carit.barefoot</groupId>
 		<artifactId>barefoot</artifactId>
-		<version>0.0.1</version>
+		<version>0.0.2</version>
 </dependency>
   ```
 
@@ -312,7 +328,7 @@ mvn install -DskipTests
 <dependency>
 		<groupId>com.bmw-carit</groupId>
 		<artifactId>barefoot</artifactId>
-		<version>0.0.1</version>
+		<version>0.0.2</version>
 </dependency>
   ```
 
