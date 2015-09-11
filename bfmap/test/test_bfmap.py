@@ -21,6 +21,7 @@ import unittest
 import binascii
 import bfmap
 
+
 class TestBfmap(unittest.TestCase):
 
     def test_waysort(self):
@@ -98,6 +99,32 @@ class TestBfmap(unittest.TestCase):
 
         segments = bfmap.segment(config, 0, row)
         self.assertEquals(2, len(segments))
+
+    def test_maxspeed(self):
+        tags = {"maxspeed": "60 mph"}
+        (fwd, bwd) = bfmap.maxspeed(tags)
+        self.assertEquals(60 * 1.609, fwd)
+        self.assertEquals(60 * 1.609, bwd)
+
+        tags = {"maxspeed": "60"}
+        (fwd, bwd) = bfmap.maxspeed(tags)
+        self.assertEquals(60, fwd)
+        self.assertEquals(60, bwd)
+
+        tags = {"maxspeed:forward": "60 mph", "maxspeed:backward": "60 mph"}
+        (fwd, bwd) = bfmap.maxspeed(tags)
+        self.assertEquals(60 * 1.609, fwd)
+        self.assertEquals(60 * 1.609, bwd)
+
+        tags = {"maxspeed:forward": "60", "maxspeed:backward": "60"}
+        (fwd, bwd) = bfmap.maxspeed(tags)
+        self.assertEquals(60, fwd)
+        self.assertEquals(60, bwd)
+
+        tags = {"maxspeed": "60mph"}
+        (fwd, bwd) = bfmap.maxspeed(tags)
+        self.assertEquals("null", fwd)
+        self.assertEquals("null", bwd)
 
     def test_ways2bfmap(self):
         properties = dict(line.strip().split('=')

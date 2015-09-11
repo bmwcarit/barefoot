@@ -25,6 +25,7 @@ import json
 
 # Import OSM (osmosis) to route
 
+
 def ways2bfmap(src_host, src_port, src_database, src_table, src_user, src_password,
                tgt_host, tgt_port, tgt_database, tgt_table, tgt_user, tgt_password,
                config, printonly):
@@ -109,11 +110,11 @@ def type(config, tags):
     key = None
     value = None
     for tag in tags.keys():
-    	tag_ = tag.decode('utf-8')
+        tag_ = tag.decode('utf-8')
         if tag_ in config.keys():
-        	if tags[tag_] in config[tag_].keys():
-				key = tag_
-				value = tags[tag_]
+            if tags[tag_] in config[tag_].keys():
+                key = tag_
+                value = tags[tag_]
 
     return (key, value)
 
@@ -134,12 +135,18 @@ def maxspeed(tags):
     forward = "null"
     if ("maxspeed" in tags.keys()):
         try:
-            forward = int(tags["maxspeed"])
+            if "mph" in tags["maxspeed"]:
+                forward = int(tags["maxspeed"].split(" ")[0]) * 1.609
+            else:
+                forward = int(tags["maxspeed"])
         except:
             pass
     if ("maxspeed:forward" in tags.keys()):
         try:
-            forward = int(tags["maxspeed:forward"])
+            if "mph" in tags["maxspeed:forward"]:
+                forward = int(tags["maxspeed:forward"].split(" ")[0]) * 1.609
+            else:
+                forward = int(tags["maxspeed:forward"])
         except:
             pass
 
@@ -147,12 +154,18 @@ def maxspeed(tags):
     backward = "null"
     if ("maxspeed" in tags.keys()):
         try:
-            backward = int(tags["maxspeed"])
+            if "mph" in tags["maxspeed"]:
+                backward = int(tags["maxspeed"].split(" ")[0]) * 1.609
+            else:
+                backward = int(tags["maxspeed"])
         except:
             pass
     if ("maxspeed:backward" in tags.keys()):
         try:
-            backward = int(tags["maxspeed:backward"])
+            if "mph" in tags["maxspeed:backward"]:
+                backward = int(tags["maxspeed:backward"].split(" ")[0]) * 1.609
+            else:
+                backward = int(tags["maxspeed:backward"])
         except:
             pass
 
