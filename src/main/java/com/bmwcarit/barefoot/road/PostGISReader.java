@@ -56,7 +56,8 @@ public class PostGISReader extends PostgresSource implements RoadReader {
      * @param table Name of the table.
      * @param user User for accessing the database.
      * @param password Password of the user.
-     * @param config Mapping of road class identifiers to priority factor and default maximum speed (see {@link Configuration}).
+     * @param config Mapping of road class identifiers to priority factor and default maximum speed
+     *        (see {@link Configuration}).
      */
     public PostGISReader(String host, int port, String database, String table, String user,
             String password, Map<Short, Tuple<Double, Integer>> config) {
@@ -124,8 +125,7 @@ public class PostGISReader extends PostgresSource implements RoadReader {
             String query =
                     "SELECT gid,osm_id,class_id,source,target,"
                             + "length,reverse,maxspeed_forward,maxspeed_backward,"
-                            + "priority, ST_AsBinary(geom) as geom FROM "
-                            + table + where + ";";
+                            + "priority, ST_AsBinary(geom) as geom FROM " + table + where + ";";
 
             logger.info("execute query");
             logger.trace("query string: {}", query);
@@ -158,7 +158,8 @@ public class PostGISReader extends PostgresSource implements RoadReader {
                 int maxspeedBackward =
                         result_set.getObject(9) == null ? config.get(classId).two() : Integer
                                 .parseInt(result_set.getString(9));
-                float priority = Float.parseFloat(result_set.getString(10));
+                float priority = (float) config.get(classId).one().doubleValue();
+                // float priority = Float.parseFloat(result_set.getString(10));
                 byte[] wkb = result_set.getBytes(11);
                 Polyline geometry =
                         (Polyline) OperatorImportFromWkb.local().execute(
