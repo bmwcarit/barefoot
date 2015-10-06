@@ -571,7 +571,74 @@ A matching candidate `candidate` further includes a position in the map `point`,
 
 #### Scalable map matching
 
-TBD.
+Barefoot is designed for use in parallel and distributed systems. This includes features such as:
+
+- serializable road map (store road map as serialized object in HDFS or send it from one machine to another)
+- JSON format of KState data structure (interchangeable and human readable map matching state information)
+- container-based map server setup (flexible to be used on high-end server systems or in low-end environments for development)
+
+The following code example shows a simple map matching application for use in an Apache Spark cluster. It distributes a map matcher object as broadcast variable (BroadcastMatcher.scala is a simple wrapper class), which loads map data from a map server (as an alternative map data can be stored/loaded as serialized object via HDFS).
+
+``` scala
+// Instantiate map matcher as broadcast variable in Spark Context (sc).
+val matcher = sc.broadcast(new BroadcastMatcher(host, port, database, user, pass, config))
+ 
+// Load trace data as RDD from CSV file asset of tuples:
+// (object-id: String, time: Long, position: Point)
+val traces = sc.textFile("traces.csv").map(x => {
+  val y = x.split(",")
+  (y(0), y(1).toLong, new Point(y(2).toDouble, y(3).toDouble))
+})
+ 
+// Run a map job on RDD that uses the matcher instance.
+val matches = traces.groupBy(x => x._1).map(x => {
+  val trip = x._2.map({
+    x => new MatcherSample(x._1, x._2, x._3)
+  }).toList
+  matcher.mmatch(trip)
+)
+```
+
+The example code uses a simple wrapper of Barefoot's matcher. It initializes matcher as static member (Singleton) and loads map data on first matching invocation.
+
+``` scala
+object BroadcastMatcher {
+  private var instance = null: Matcher
+ 
+  private def initialize(host: String, port: Int, name: String, user: String, pass: String, config: String) {
+    if (instance != null) return
+    this.synchronized {
+      if (instance == null) { // initialize map matcher once per Executor (JVM process/cluster node)
+        val reader = new PostGISReader(host, port, name, "bfmap_ways", user, pass, Configuration.read(new JSONObject(config)))
+        val map = RoadMap.Load(reader)
+ 
+        map.construct();
+ 
+        val router = new Dijkstra[Road, RoadPoint]()
+        val cost = new TimePriority()
+        val spatial = new Geography()
+ 
+        instance = new Matcher(map, router, cost, spatial)
+      }
+    }
+  }
+}
+ 
+@SerialVersionUID(1L)
+class BroadcastMatcher(host: String, port: Int, name: String, user: String, pass: String, config: String) extends Serializable {
+ 
+  def mmatch(samples: List[MatcherSample]): MatcherKState = {
+    mmatch(samples, 0, 0)
+  }
+ 
+  def mmatch(samples: List[MatcherSample], minDistance: Double, minInterval: Int): MatcherKState = {
+    BroadcastMatcher.initialize(host, port, name, user, pass, config)
+    BroadcastMatcher.instance.mmatch(new ArrayList[MatcherSample](samples.asJava), minDistance, minInterval)
+  }
+}
+```
+
+_Note: The shown example initializes a matcher instance for each Spark Executor. That means that if your Spark cluster configuration uses two Executors per machine, a machine instantiates two matcher and two map objects. To reduce memory consumption, one might configure only one Executor per machine._
 
 ## References
 

@@ -1,44 +1,26 @@
 # Barefoot
 
-An open source java library (Apache 2.0) for integrating the map into software and services with state-of-the-art map matching that can be used stand-alone and in the cloud. Together with OpenStreetMap data it provides a versatile foundation for scalable location-based services, spatio-temporal data analysis and machine learning on the map.
+An open source Java library for online and offline map matching with OpenStreetMap. Together with its extensive set of geometric and spatial functions, an in-memory map data structure and basic machine learning functions, it is a versatile basis for scalable location-based services and spatio-temporal data analysis on the map. It is designed for use in parallel and distributed systems and, hence, includes a stand-alone map matching server and can be used in distributed systems for map matching services in the cloud.
 
-#### Extensive
+#### Open source and open data
 
-Extensive set of functions for geographic operations (GeographicLib), spatial operations and standard formats (ESRI Geometry API) with access to map data (OpenStreetMap).
+Barefoot is licensed under the business-friendly Apache License 2.0 and uses only business-friendly open source software with open map data from OpenStreetMap.
 
-#### Versatile
+#### State-of-the-art map matching
 
-Use as programming library, stand-alone map matching service or in scalable environments such as Apache Hadoop, Apache Spark, and Apache Storm, cf. [3].
+Barefoot uses a Hidden Markov Model map matching algorithm, proposed by Newson and Krumm (Microsoft Research) in [1], together with OpenStreetMap data. It supports both, offline and online map matching [2]. Most applications rely on offline map matching, which matches a recorded GPS trace in a single step. In contrast, online map matching determines object positions and movements iteratively from live GPS position updates in real-time.
 
-#### Open
+#### Flexible and extensive
 
-Brings together Open Source software (GeographicLib, ESRI Geometry API, ...) and Open Data (OpenStreetMap) under Apache 2.0.
-
-#### State-of-the-art
-
-Provides state-of-the-art solutions to map matching (Hidden Markov Model map matching, cf. [1] and [2]) and spatial cluster analysis (DBSCAN, cf. [4]).
-
-## Barefoot (eco-)system
+The Barefoot (eco-) system consists of a software library and a container-based (Docker) map server setup (Figure 3), which is flexible to be used as a central map repository in a distributed system or side-by-side with Barefoot's stand-alone map matching server in a single node system. Access to map data is provided with a fast and flexible in-memory map data structure. Together with GeographicLib [3] (to which we contributed in the course of the project) and ESRI's geometry API [4], it provides an extensive set of geographic and geometric operations for spatial data analysis on the map.
 
 <p align="center">
 <img src="doc-files/com/bmwcarit/barefoot/barefoot-ecosystem.png?raw=true" width="650">
 </p>
 
-#### Barefoot map
+#### Scalable and versatile
 
-Fast and easy setup of Barefoot map server (as Docker container) with any OpenStreetMap extract you need. Automatic installation of database (PostgreSQL/PostGIS) and map/import tools (Osmosis and Barefoot).
-
-#### Barefoot library
-
-The core is a Java library that integrates the map into software and services with map-matching as basis for spatio-temporal data analysis on the map. This comes with an extensive set of functions for geographic operations (GeographicLib), spatial operations and standard formats (ESRI Geometry API).
-
-#### Map-matching server (stand-alone)
-
-Quick and easy to deploy stand-alone map matching service for requests over the network locally or in the cloud.
-
-#### Scale and distribute
-
-Support for integration in scalable and distributed environments for offline/batch processing, e.g. Apache Hadoop and Apache Spark, and online services, e.g. Apache Storm and Apache Spark Streaming, cf. [3]
+Barefoot is desgined for use in parallel and distributed high-throughput systems [5]. For processing large amounts of data batches (offline map matching), it can be easily integrated in Apache Hadoop or Apache Spark (see example below), whereas Apache Storm and Apache Spark Streaming provide a runtime environment for processing massive data streams (online map matching). To support other data analysis functions, Barefoot comes with basic machine learning support, e.g., DBSCAN for spatial cluster analysis [6]. Further machine learning support is planned for future releases.
 
 ## Documentation
 
@@ -397,6 +379,10 @@ _These dependencies are linked only dynamically in the source of map server tool
 
 [2] C.Y. Goh, J. Dauwels, N. Mitrovic, M.T. Asif, A. Oran, and P. Jaillet. [Online map-matching based on Hidden Markov model for real-time traffic sensing applications](http://www.mit.edu/~jaillet/general/map_matching_itsc2012-final.pdf). In _International IEEE Conference on Intelligent Transportation Systems_, 2012.
 
-[3] S. Mattheis, K. Al-Zahid, B. Engelmann, A. Hildisch, S. Holder, O. Lazarevych, D. Mohr, F. Sedlmeier, and R. Zinck. [Putting the car on the map: A scalable map matching system for the Open Source Community](http://subs.emis.de/LNI/Proceedings/Proceedings232/2109.pdf). In _INFORMATIK 2014: Workshop Automotive Software Engineering_, 2014.
+[3] [GeographicLib](http://geographiclib.sourceforge.net/).
 
-[4] M. Ester, H.-P. Kriegel, J. Sander, X. Xu. [A Density-based algorithm for discovering clusters in large spatial databases with noise](https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf). In _Proceedings of the Second International Conference on Knowledge Discovery and Data Mining (KDD-96)_, 1996. 
+[4] [ESRI's Geometry API](https://github.com/Esri/geometry-api-java).
+
+[5] S. Mattheis, K. Al-Zahid, B. Engelmann, A. Hildisch, S. Holder, O. Lazarevych, D. Mohr, F. Sedlmeier, and R. Zinck. [Putting the car on the map: A scalable map matching system for the Open Source Community](http://subs.emis.de/LNI/Proceedings/Proceedings232/2109.pdf). In _INFORMATIK 2014: Workshop Automotive Software Engineering_, 2014.
+
+[6] M. Ester, H.-P. Kriegel, J. Sander, X. Xu. [A Density-based algorithm for discovering clusters in large spatial databases with noise](https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf). In _Proceedings of the Second International Conference on Knowledge Discovery and Data Mining (KDD-96)_, 1996. 

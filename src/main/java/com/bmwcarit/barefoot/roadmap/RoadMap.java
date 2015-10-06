@@ -12,6 +12,7 @@
  */
 package com.bmwcarit.barefoot.roadmap;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -42,9 +43,10 @@ import com.esri.core.geometry.SpatialReference;
  * <b>Note:</b> Since {@link Road} objects are directed representations of {@link BaseRoad} objects,
  * identifiers have a special mapping, see {@link Road}.
  */
-public class RoadMap extends Graph<Road> {
-    private final static Logger logger = LoggerFactory.getLogger(RoadMap.class);
-    private final Index index = new Index();
+public class RoadMap extends Graph<Road> implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private static final Logger logger = LoggerFactory.getLogger(RoadMap.class);
+    private transient Index index = null;
 
     static Collection<Road> split(BaseRoad base) {
         ArrayList<Road> roads = new ArrayList<Road>();
@@ -58,7 +60,8 @@ public class RoadMap extends Graph<Road> {
         return roads;
     }
 
-    private class Index implements SpatialIndex<RoadPoint> {
+    private class Index implements SpatialIndex<RoadPoint>, Serializable {
+        private static final long serialVersionUID = 1L;
         private final QuadTreeIndex index = new QuadTreeIndex();
 
         public void put(Road road) {
@@ -147,7 +150,7 @@ public class RoadMap extends Graph<Road> {
             }
         }
 
-        logger.info("insterted {} ({}) roads and finished", osmcounter, counter);
+        logger.info("inserted {} ({}) roads and finished", osmcounter, counter);
 
         reader.close();
 
@@ -158,8 +161,6 @@ public class RoadMap extends Graph<Road> {
 
         return roadmap;
     }
-
-
 
     /**
      * Constructs road network topology and spatial index.
@@ -175,6 +176,7 @@ public class RoadMap extends Graph<Road> {
 
         super.construct();
 
+        index = new Index();
         for (Road road : edges.values()) {
             index.put(road);
         }
@@ -198,6 +200,7 @@ public class RoadMap extends Graph<Road> {
         super.deconstruct();
 
         index.clear();
+        index = null;
 
         logger.info("destructed");
     }
@@ -210,7 +213,10 @@ public class RoadMap extends Graph<Road> {
      *         {@link RoadMap#deconstruct()}).
      */
     public SpatialIndex<RoadPoint> spatial() {
-        return index;
+        if (index == null)
+            throw new RuntimeException("index not constructed");
+        else
+            return index;
     }
 
     /**
