@@ -2,17 +2,13 @@
 
 An open source Java library for online and offline map matching with OpenStreetMap. Together with its extensive set of geometric and spatial functions, an in-memory map data structure and basic machine learning functions, it is a versatile basis for scalable location-based services and spatio-temporal data analysis on the map. It is designed for use in parallel and distributed systems and, hence, includes a stand-alone map matching server and can be used in distributed systems for map matching services in the cloud.
 
-#### Open source and open data
-
-Barefoot is licensed under the business-friendly Apache License 2.0 and uses only business-friendly open source software with open map data from OpenStreetMap.
-
 #### State-of-the-art map matching
 
 Barefoot uses a Hidden Markov Model map matching algorithm, proposed by Newson and Krumm (Microsoft Research) in [1], together with OpenStreetMap data. It supports both, offline and online map matching [2]. Most applications rely on offline map matching, which matches a recorded GPS trace in a single step. In contrast, online map matching determines object positions and movements iteratively from live GPS position updates in real-time.
 
 #### Flexible and extensive
 
-The Barefoot (eco-) system consists of a software library and a container-based (Docker) map server setup (Figure 3), which is flexible to be used as a central map repository in a distributed system or side-by-side with Barefoot's stand-alone map matching server in a single node system. Access to map data is provided with a fast and flexible in-memory map data structure. Together with GeographicLib [3] (to which we contributed in the course of the project) and ESRI's geometry API [4], it provides an extensive set of geographic and geometric operations for spatial data analysis on the map.
+The Barefoot (eco-) system consists of a software library and a container-based (Docker) map server setup (Figure 3), which is flexible to be used as a central map repository in a distributed system or side-by-side with Barefoot's stand-alone map matching server in a single node system. Access to map data is provided with a fast and flexible in-memory map data structure. Together with GeographicLib [3] and ESRI's geometry API [4], it provides an extensive set of geographic and geometric operations for spatial data analysis on the map.
 
 <p align="center">
 <img src="doc-files/com/bmwcarit/barefoot/barefoot-ecosystem.png?raw=true" width="650">
@@ -21,6 +17,10 @@ The Barefoot (eco-) system consists of a software library and a container-based 
 #### Scalable and versatile
 
 Barefoot is desgined for use in parallel and distributed high-throughput systems [5]. For processing large amounts of data batches (offline map matching), it can be easily integrated in Apache Hadoop or Apache Spark (see example below), whereas Apache Storm and Apache Spark Streaming provide a runtime environment for processing massive data streams (online map matching). To support other data analysis functions, Barefoot comes with basic machine learning support, e.g., DBSCAN for spatial cluster analysis [6]. Further machine learning support is planned for future releases.
+
+#### Open source and open data
+
+Barefoot is licensed under the business-friendly Apache License 2.0 and uses only business-friendly open source software with open map data from OpenStreetMap.
 
 ## Documentation
 
