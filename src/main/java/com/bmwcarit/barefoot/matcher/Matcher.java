@@ -161,7 +161,8 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
     }
 
     @Override
-    protected Set<Tuple<MatcherCandidate, Double>> candidates(MatcherSample sample) {
+    protected Set<Tuple<MatcherCandidate, Double>> candidates(Set<MatcherCandidate> predecessors,
+            MatcherSample sample) {
         if (logger.isTraceEnabled()) {
             logger.trace("finding candidates for sample {} {}", new SimpleDateFormat(
                     "yyyy-MM-dd HH:mm:ssZ").format(sample.time()), GeometryEngine.geometryToWkt(
@@ -169,11 +170,25 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         }
 
         Set<RoadPoint> points_ = map.spatial().radius(sample.point(), radius);
-        Set<RoadPoint> points = Minset.minimize(points_);
+        Set<RoadPoint> points = new HashSet<RoadPoint>(Minset.minimize(points_));
+
+        Map<Long, RoadPoint> map = new HashMap<Long, RoadPoint>();
+        for (RoadPoint point : points) {
+            map.put(point.edge().id(), point);
+        }
+
+        for (MatcherCandidate predecessor : predecessors) {
+            RoadPoint point = map.get(predecessor.point().edge().id());
+            if (point != null && point.fraction() < predecessor.point().fraction()) {
+                points.remove(point);
+                points.add(predecessor.point());
+            }
+        }
+
         Set<Tuple<MatcherCandidate, Double>> candidates =
                 new HashSet<Tuple<MatcherCandidate, Double>>();
 
-        logger.trace("{} ({}) candidates", points.size(), points_.size());
+        logger.debug("{} ({}) candidates", points.size(), points_.size());
 
         for (RoadPoint point : points) {
             double dz = spatial.distance(sample.point(), point.geometry());
@@ -256,8 +271,8 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
                         // route.length() - dt)) to avoid unnecessary routes in case of u-turns.
 
                         double beta =
-                                lambda == 0 ? (2.0 * (candidates.one().time() - predecessors.one()
-                                        .time()) / 1000) : 1 / lambda;
+                                lambda == 0 ? (2.0 * Math.max(1d, candidates.one().time()
+                                        - predecessors.one().time()) / 1000) : 1 / lambda;
 
                         double transition =
                                 (1 / beta)

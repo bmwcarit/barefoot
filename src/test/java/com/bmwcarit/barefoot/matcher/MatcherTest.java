@@ -51,6 +51,8 @@ import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.WktImportFlags;
 
+;
+
 public class MatcherTest {
     private final SpatialOperator spatial = new Geography();
     private final Router<Road, RoadPoint> router = new Dijkstra<Road, RoadPoint>();
@@ -183,7 +185,7 @@ public class MatcherTest {
             Point sample = new Point(11.001, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
-                    filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new HashSet<MatcherCandidate>(), new MatcherSample(0, sample));
 
             assertEquals(0, candidates.size());
         }
@@ -193,7 +195,7 @@ public class MatcherTest {
             Point sample = new Point(11.001, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
-                    filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new HashSet<MatcherCandidate>(), new MatcherSample(0, sample));
 
             Set<Long> refset = new HashSet<Long>(Arrays.asList(0L, 1L));
             Set<Long> set = new HashSet<Long>();
@@ -213,7 +215,7 @@ public class MatcherTest {
             Point sample = new Point(11.010, 48.000);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
-                    filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new HashSet<MatcherCandidate>(), new MatcherSample(0, sample));
 
             Set<Long> refset = new HashSet<Long>(Arrays.asList(0L, 3L));
             Set<Long> set = new HashSet<Long>();
@@ -234,7 +236,7 @@ public class MatcherTest {
             Point sample = new Point(11.011, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
-                    filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new HashSet<MatcherCandidate>(), new MatcherSample(0, sample));
 
             Set<Long> refset = new HashSet<Long>(Arrays.asList(0L, 2L, 3L));
             Set<Long> set = new HashSet<Long>();
@@ -255,7 +257,7 @@ public class MatcherTest {
             Point sample = new Point(11.011, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
-                    filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new HashSet<MatcherCandidate>(), new MatcherSample(0, sample));
 
             Set<Long> refset = new HashSet<Long>(Arrays.asList(0L, 2L, 3L, 8L));
             Set<Long> set = new HashSet<Long>();
@@ -276,7 +278,7 @@ public class MatcherTest {
             Point sample = new Point(11.019, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates =
-                    filter.candidates(new MatcherSample(0, sample));
+                    filter.candidates(new HashSet<MatcherCandidate>(), new MatcherSample(0, sample));
 
             Set<Long> refset = new HashSet<Long>(Arrays.asList(2L, 3L, 5L, 10L));
             Set<Long> set = new HashSet<Long>();
@@ -304,11 +306,13 @@ public class MatcherTest {
             Set<MatcherCandidate> predecessors = new HashSet<MatcherCandidate>();
             Set<MatcherCandidate> candidates = new HashSet<MatcherCandidate>();
 
-            for (Tuple<MatcherCandidate, Double> candidate : filter.candidates(sample1)) {
+            for (Tuple<MatcherCandidate, Double> candidate : filter.candidates(
+                    new HashSet<MatcherCandidate>(), sample1)) {
                 predecessors.add(candidate.one());
             }
 
-            for (Tuple<MatcherCandidate, Double> candidate : filter.candidates(sample2)) {
+            for (Tuple<MatcherCandidate, Double> candidate : filter.candidates(
+                    new HashSet<MatcherCandidate>(), sample2)) {
                 candidates.add(candidate.one());
             }
 
@@ -342,11 +346,13 @@ public class MatcherTest {
             Set<MatcherCandidate> predecessors = new HashSet<MatcherCandidate>();
             Set<MatcherCandidate> candidates = new HashSet<MatcherCandidate>();
 
-            for (Tuple<MatcherCandidate, Double> candidate : filter.candidates(sample1)) {
+            for (Tuple<MatcherCandidate, Double> candidate : filter.candidates(
+                    new HashSet<MatcherCandidate>(), sample1)) {
                 predecessors.add(candidate.one());
             }
 
-            for (Tuple<MatcherCandidate, Double> candidate : filter.candidates(sample2)) {
+            for (Tuple<MatcherCandidate, Double> candidate : filter.candidates(
+                    new HashSet<MatcherCandidate>(), sample2)) {
                 candidates.add(candidate.one());
             }
 

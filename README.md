@@ -314,6 +314,7 @@ limitations under the License.
 - Muthu Kumar Kumar (visualization for debugging)
 - Sahbi Chaieb (map matching evaluation)
 - Bastian Beggel (in-memory road map review and evaluation)
+- Heiko Greiner, TU Dresden (feedback and testing data for bugfixing high sampling rate map-matching)
 
 ## Dependencies
 

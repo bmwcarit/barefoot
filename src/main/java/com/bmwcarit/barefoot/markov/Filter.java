@@ -39,10 +39,11 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
      * Gets state vector, i.e. a set of {@link StateCandidate} objects and with its emission
      * probability.
      *
+     * @param predecessors Predecessor state candidate <i>s<sub>t-1</sub></i>.
      * @param sample Measurement sample.
      * @return Set of tuples consisting of a {@link StateCandidate} and its emission probability.
      */
-    protected abstract Set<Tuple<C, Double>> candidates(S sample);
+    protected abstract Set<Tuple<C, Double>> candidates(Set<C> predecessors, S sample);
 
     /**
      * Gets transition and its transition probability for a pair of {@link StateCandidate}s, i.e. a
@@ -125,7 +126,7 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
         assert (sample != null);
 
         Set<C> result = new HashSet<C>();
-        Set<Tuple<C, Double>> candidates = candidates(sample);
+        Set<Tuple<C, Double>> candidates = candidates(predecessors, sample);
         logger.trace("{} state candidates", candidates.size());
 
         double normsum = 0;
