@@ -52,7 +52,7 @@ fi
 echo "Done."
 
 echo "Start population of OSM data (osmosis) ..."
-psql -h localhost -d ${database} -U ${user} -f /mnt/osm/pgsql_simple_schema_0.6.sql
+psql -h localhost -d ${database} -U ${user} -f /mnt/osm/pgsnapshot_schema_0.6.sql
 rm -r /mnt/osm/tmp
 mkdir /mnt/osm/tmp
 if [ -z "$JAVACMD_OPTIONS" ]; then
