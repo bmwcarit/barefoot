@@ -112,7 +112,7 @@ public class ServerTest {
         InetAddress host = InetAddress.getLocalHost();
         Properties properties = new Properties();
         properties.load(ServerTest.class.getResource("server.properties").openStream());
-        int port = Integer.parseInt(properties.getProperty("portNumber"));
+        int port = Integer.parseInt(properties.getProperty("server.port"));
 
         serverThread.start();
         {

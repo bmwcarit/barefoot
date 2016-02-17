@@ -82,13 +82,13 @@ public abstract class ServerControl {
             System.exit(1);
         }
 
-        String host = databaseProperties.getProperty("host", "");
-        int port = Integer.parseInt(databaseProperties.getProperty("port", "0"));
-        String database = databaseProperties.getProperty("database");
-        String table = databaseProperties.getProperty("table");
-        String user = databaseProperties.getProperty("user");
-        String password = databaseProperties.getProperty("password");
-        String path = databaseProperties.getProperty("road-types");
+        String host = databaseProperties.getProperty("database.host");
+        int port = Integer.parseInt(databaseProperties.getProperty("database.port", "0"));
+        String database = databaseProperties.getProperty("database.name");
+        String table = databaseProperties.getProperty("database.table");
+        String user = databaseProperties.getProperty("database.user");
+        String password = databaseProperties.getProperty("database.password");
+        String path = databaseProperties.getProperty("database.road-types");
 
         if (host == null || port == 0 || database == null || table == null || user == null
                 || password == null || path == null) {
@@ -150,28 +150,25 @@ public abstract class ServerControl {
             System.exit(1);
         }
 
-        matcher.setMaxRadius(Double.parseDouble(serverProperties.getProperty("matcherMaxRadius",
+        matcher.setMaxRadius(Double.parseDouble(serverProperties.getProperty("matcher.radius.max",
                 Double.toString(matcher.getMaxRadius()))));
         matcher.setMaxDistance(Double.parseDouble(serverProperties.getProperty(
-                "matcherMaxDistance", Double.toString(matcher.getMaxDistance()))));
-        matcher.setLambda(Double.parseDouble(serverProperties.getProperty("matcherLambda",
+                "matcher.distance.max", Double.toString(matcher.getMaxDistance()))));
+        matcher.setLambda(Double.parseDouble(serverProperties.getProperty("matcher.lambda",
                 Double.toString(matcher.getLambda()))));
-        matcher.setSigma(Double.parseDouble(serverProperties.getProperty("matcherSigma",
+        matcher.setSigma(Double.parseDouble(serverProperties.getProperty("matcher.sigma",
                 Double.toString(matcher.getSigma()))));
 
-        matcherServer =
-                new Server(
-                        Integer.parseInt(serverProperties.getProperty("portNumber", "1234")),
-                        Integer.parseInt(serverProperties.getProperty("maxRequestTime", "15000")),
-                        Integer.parseInt(serverProperties.getProperty("maxResponseTime", "60000")),
-                        Integer.parseInt(serverProperties.getProperty("maxConnectionCount", "20")),
-                        Integer.parseInt(serverProperties.getProperty("numExecutorThreads", "40")),
-                        Integer.parseInt(serverProperties.getProperty("matcherMinInterval", "5000")),
-                        Integer.parseInt(serverProperties.getProperty("matcherMinDistance", "10")),
-                        map, matcher, input, output);
+        matcherServer = new Server(serverProperties, map, matcher, input, output);
 
-        StaticScheduler.reset(Integer.parseInt(serverProperties.getProperty("matcherNumThreads",
-                "8")));
+        String matcherThreads = serverProperties.getProperty("matcher.threads", "8");
+        StaticScheduler.reset(Integer.parseInt(matcherThreads));
+
+        logger.info("matcher.radius.max={}", matcher.getMaxRadius());
+        logger.info("matcher.distance.max={}", matcher.getMaxDistance());
+        logger.info("matcher.lambda={}", matcher.getLambda());
+        logger.info("matcher.sigma={}", matcher.getSigma());
+        logger.info("matcher.threads={}", matcherThreads);
     }
 
     /**
@@ -187,9 +184,8 @@ public abstract class ServerControl {
      * Starts/runs server.
      */
     public static void runServer() {
-        logger.info("starting server on port {} with map {}",
-                serverProperties.getProperty("portNumber"),
-                databaseProperties.getProperty("database"));
+        logger.info("starting server on port {} with map {}", matcherServer.getPortNumber(),
+                databaseProperties.getProperty("database.name"));
 
         matcherServer.runServer();
         logger.info("server stopped");

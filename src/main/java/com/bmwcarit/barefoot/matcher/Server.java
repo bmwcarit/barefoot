@@ -16,6 +16,7 @@ package com.bmwcarit.barefoot.matcher;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -195,27 +196,18 @@ public class Server extends AbstractServer {
     /**
      * Creates a {@link Server} object as stand-alone offline map matching server.
      *
-     * @param portNumber Port number of the server.
-     * @param maxRequestTime Maximum request waiting time until a timeout is returned.
-     * @param maxResponseTime Maximum response processing time until a timeout is returned.
-     * @param maxConnectionCount Maximum number of connections being accepted by the server.
-     * @param numIOThreads Number of threads for connections (I/O).
-     * @param matcherMinInterval Minimum time interval between samples for being accepted as map
-     *        matching input.
-     * @param matcherMinDistance Minimum distance between samples for being accepted as map matching
-     *        input.
+     * @param serverProperties {@link Properties} object containing all necessary server settings.
      * @param map {@link RoadMap} object with the map to be matched with.
      * @param matcher {@link Matcher} object to be used for map matching (with respective
      *        parameterization).
      * @param input {@link InputFormatter} object for input formatting.
      * @param output {@link OutputFormatter} object for output formatting.
      */
-    public Server(int portNumber, int maxRequestTime, int maxResponseTime, int maxConnectionCount,
-            int numIOThreads, int matcherMinInterval, double matcherMinDistance, RoadMap map,
-            Matcher matcher, InputFormatter input, OutputFormatter output) {
-        super(portNumber, maxRequestTime, maxResponseTime, maxConnectionCount, numIOThreads,
-                new MatcherResponseFactory(matcher, input, output, matcherMinInterval,
-                        matcherMinDistance));
+    public Server(Properties serverProperties, RoadMap map, Matcher matcher, InputFormatter input,
+            OutputFormatter output) {
+        super(serverProperties,
+                new MatcherResponseFactory(matcher, input, output, serverProperties));
+
         this.map = map;
         this.matcher = matcher;
     }
@@ -228,12 +220,17 @@ public class Server extends AbstractServer {
         private final double minDistance;
 
         public MatcherResponseFactory(Matcher matcher, InputFormatter input,
-                OutputFormatter output, int minInterval, double minDistance) {
+                OutputFormatter output, Properties serverProperties) {
             this.matcher = matcher;
             this.input = input;
             this.output = new AdaptiveOutputFormatter(output);
-            this.minInterval = minInterval;
-            this.minDistance = minDistance;
+            this.minInterval =
+                    Integer.parseInt(serverProperties.getProperty("matcher.interval.min", "5000"));
+            this.minDistance =
+                    Integer.parseInt(serverProperties.getProperty("matcher.distance.min", "10"));
+
+            logger.info("matcher.interval.min={}", getMinInterval());
+            logger.info("matcher.distance.min={}", getMinDistance());
         }
 
         @Override
@@ -274,6 +271,14 @@ public class Server extends AbstractServer {
                     }
                 }
             };
+        }
+
+        public int getMinInterval() {
+            return this.minInterval;
+        }
+
+        public double getMinDistance() {
+            return this.minDistance;
         }
     }
 }

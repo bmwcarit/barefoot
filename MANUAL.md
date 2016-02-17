@@ -268,18 +268,17 @@ The server properties includes configuration of the server, e.g. TCP/IP port num
 
 | Parameter | Default value | Description |
 |:-----------:|:---------:|-------------|
-| portNumber | 1234 | The port of the map matching server. |
-| maxRequestTime | 15000 | Maximum time in milliseconds of waiting for a request after connection has been established. |
-| maxResponseTime | 60000 | Maximum time in milliseconds of waiting for reponse processing before a timeout is triggered and processing is aborted. |
-| maxConnectionCount | 20 | Maximum number of connections to be established by clients. |
-| numExecutorThreads | 40 | Number of executor threads for reponse handling (I/O), which should be a multiple of the number of processors/cores of the machine to fully exploit the machine's performance. |
-| matcherSigma | 5 | Standard deviation of the position measurement error in meters, which is usually 5 meters for standard GPS error, as probability measure of matching candidates for position measurements on the map. |
-| matcherLambda | 0.0 | Rate parameter of negative exponential distribution for probability measure of routes between matching candidates. (The default is 0.0 which enables adaptive parameter setting, depending on sampling rate and input data, other values (manually fixed) may be 0.1, 0.01, 0.001 ...) |
-| matcherMaxDistance | 15000 | Maximum length of routes to be searched in the map for transitions between matching candidates in meters. (This avoids searching the full map for candidates that are for some reason not connected in the map, e.g. due to missing road links.) |
-| matcherMaxRadius | 200 | Maximum radius for matching candidates to be searched in the map for respective position measurements in meters. |
-| matcherMinInterval | 5000 | Minimum time interval in milliseconds for measurements to be considered for matching. Any measurement taken in less than the minimum interval after the most recent measurement is skipped. (This avoids unnnecessary matching of positions with very high measuremnt rate, useful e.g. if the measurement rate varies.) |
-| matcherMinDistance | 10 | Minimum distance in meters for measurements to be considered for matching. Any measurement taken in less than the minimum distance from the most recent measurement is skipped. (This avoids unnnecessary matching of positions with very high measurement rate, useful e.g. if the object speed varies.) |
-| matcherNumThreads | 8 | Number of executor threads for reponse processing (map matching), which should at least the number of processors/cores of the machine to fully exploit the machine's performance. |
+| server.port | 1234 | The port of the map matching server. |
+| server.timeout.request | 15000 | Maximum time in milliseconds of waiting for a request after connection has been established. |
+| server.timeout.response | 60000 | Maximum time in milliseconds of waiting for reponse processing before a timeout is triggered and processing is aborted. |
+| server.connections | 20 | Maximum number of connections to be established by clients. Also number of executor threads for reponse handling (I/O), which should be a multiple of the number of processors/cores of the machine to fully exploit the machine's performance.|
+| matcher.sigma | 5.0 | Standard deviation of the position measurement error in meters, which is usually 5 meters for standard GPS error, as probability measure of matching candidates for position measurements on the map. |
+| matcher.lambda | 0.0 | Rate parameter of negative exponential distribution for probability measure of routes between matching candidates. (The default is 0.0 which enables adaptive parameter setting, depending on sampling rate and input data, other values (manually fixed) may be 0.1, 0.01, 0.001 ...) |
+| matcher.distance.max | 15000 | Maximum length of routes to be searched in the map for transitions between matching candidates in meters. (This avoids searching the full map for candidates that are for some reason not connected in the map, e.g. due to missing road links.) |
+| matcher.radius.max | 200 | Maximum radius for matching candidates to be searched in the map for respective position measurements in meters. |
+| matcher.interval.min | 5000 | Minimum time interval in milliseconds for measurements to be considered for matching. Any measurement taken in less than the minimum interval after the most recent measurement is skipped. (This avoids unnnecessary matching of positions with very high measuremnt rate, useful e.g. if the measurement rate varies.) |
+| matcher.distance.min | 0 | Minimum distance in meters for measurements to be considered for matching. Any measurement taken in less than the minimum distance from the most recent measurement is skipped. (This avoids unnnecessary matching of positions with very high measurement rate, useful e.g. if the object speed varies.) |
+| matcher.threads | 8 | Number of executor threads for reponse processing (map matching), which should at least the number of processors/cores of the machine to fully exploit the machine's performance. |
 
 ## Barefoot library
 

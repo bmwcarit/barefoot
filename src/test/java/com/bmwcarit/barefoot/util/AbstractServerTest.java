@@ -1,14 +1,14 @@
 /*
-* Copyright (C) 2015, BMW Car IT GmbH
-*
-* Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
-*
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-* in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
-* writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-* WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
-* language governing permissions and limitations under the License.
+ * Copyright (C) 2015, BMW Car IT GmbH
+ * 
+ * Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
+ * writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
  */
 
 package com.bmwcarit.barefoot.util;
@@ -25,6 +25,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 import org.junit.Test;
 
@@ -32,10 +33,8 @@ public class AbstractServerTest {
 
     private static class TestServer extends AbstractServer {
 
-        public TestServer(int portNumber, int maxRequestTime, int maxResponseTime,
-                int maxConnectionCount, int numExecutorThreads, boolean success) {
-            super(portNumber, maxRequestTime, maxResponseTime, maxConnectionCount,
-                    numExecutorThreads, new ResponseFactory(success));
+        public TestServer(Properties serverProperties, boolean success) {
+            super(serverProperties, new ResponseFactory(success));
         }
 
         public static class ResponseFactory extends AbstractServer.ResponseFactory {
@@ -63,11 +62,25 @@ public class AbstractServerTest {
                 };
             }
         }
+
+        public static Properties createServerProperty(int portNumber, int maxRequestTime,
+                int maxResponseTime, int maxConnectionCount) {
+            Properties serverProperties = new Properties();
+            serverProperties.setProperty("server.port", Integer.toString(portNumber));
+            serverProperties
+                    .setProperty("server.timeout.request", Integer.toString(maxRequestTime));
+            serverProperties.setProperty("server.timeout.response",
+                    Integer.toString(maxResponseTime));
+            serverProperties
+                    .setProperty("server.connections", Integer.toString(maxConnectionCount));
+            return serverProperties;
+        }
     }
 
     @Test
     public void StartStopTest() {
-        final TestServer server = new TestServer(12345, 200, 400, 2, 2, true);
+        final TestServer server =
+                new TestServer(TestServer.createServerProperty(12345, 200, 400, 2), true);
         Thread thread = new Thread() {
             @Override
             public void run() {
@@ -92,7 +105,8 @@ public class AbstractServerTest {
 
     @Test
     public void ReponseSuccessTest() {
-        final TestServer server = new TestServer(12345, 200, 400, 2, 2, true);
+        final TestServer server =
+                new TestServer(TestServer.createServerProperty(12345, 200, 400, 2), true);
         Thread thread = new Thread() {
             @Override
             public void run() {
@@ -143,7 +157,8 @@ public class AbstractServerTest {
 
     @Test
     public void ReponseErrorTest() {
-        final TestServer server = new TestServer(12345, 200, 400, 2, 2, false);
+        final TestServer server =
+                new TestServer(TestServer.createServerProperty(12345, 200, 400, 2), false);
         Thread thread = new Thread() {
             @Override
             public void run() {
@@ -192,7 +207,8 @@ public class AbstractServerTest {
 
     @Test
     public void RequestTimeoutTest() {
-        final TestServer server = new TestServer(12345, 200, 400, 2, 2, true);
+        final TestServer server =
+                new TestServer(TestServer.createServerProperty(12345, 200, 400, 2), true);
         Thread thread = new Thread() {
             @Override
             public void run() {
@@ -233,7 +249,8 @@ public class AbstractServerTest {
 
     @Test
     public void ReponseTimeoutTest() {
-        final TestServer server = new TestServer(12345, 200, 400, 2, 2, true);
+        final TestServer server =
+                new TestServer(TestServer.createServerProperty(12345, 200, 400, 2), true);
         Thread thread = new Thread() {
             @Override
             public void run() {
@@ -282,7 +299,8 @@ public class AbstractServerTest {
 
     @Test
     public void ReponseConnectionCountTest() {
-        final TestServer server = new TestServer(12345, 200, 400, 2, 2, true);
+        final TestServer server =
+                new TestServer(TestServer.createServerProperty(12345, 200, 400, 2), true);
         Thread thread = new Thread() {
             @Override
             public void run() {

@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -38,11 +39,10 @@ import org.slf4j.LoggerFactory;
 public class AbstractServer {
     private final static Logger logger = LoggerFactory.getLogger(AbstractServer.class);
 
-    private int portNumber = 12345;
-    private int maxRequestTime = 1000;
-    private int maxResponseTime = 9000;
-    private int maxConnectionCount = 20;
-    private int numExecutorThreads = 8;
+    private final int portNumber;
+    private final int maxRequestTime;
+    private final int maxResponseTime;
+    private final int maxConnectionCount;
 
     private ResponseFactory responseFactory = null;
 
@@ -60,25 +60,25 @@ public class AbstractServer {
     /**
      * Creates a {@link AbstractServer} object.
      *
-     * @param portNumber Number of the server port.
-     * @param maxRequestTime Maximum time in milliseconds between client connection and reception of
-     *        a request before connection is closed and timeout is returned.
-     * @param maxResponseTime Maximum time in milliseconds between reception of request message and
-     *        finishing of request processing before processing is stopped and timeout is returned.
-     * @param maxConnectionCount Maximum number of client connections to be accepted.
-     * @param numExecutorThreads Number of threads handling client requests.
+     * @param serverProperties {@link Properties} object containing all necessary server settings.
      * @param responseFactory {@link ResponseFactory} object that generates a
      *        {@link ResponseHandler} for each request message which, in turn, processes requests
      *        and creates response messages.
      */
-    public AbstractServer(int portNumber, int maxRequestTime, int maxResponseTime,
-            int maxConnectionCount, int numExecutorThreads, ResponseFactory responseFactory) {
-        this.portNumber = portNumber;
-        this.maxRequestTime = maxRequestTime;
-        this.maxResponseTime = maxResponseTime;
-        this.maxConnectionCount = maxConnectionCount;
-        this.numExecutorThreads = numExecutorThreads;
+    public AbstractServer(Properties serverProperties, ResponseFactory responseFactory) {
+        this.portNumber = Integer.parseInt(serverProperties.getProperty("server.port", "1234"));
+        this.maxRequestTime =
+                Integer.parseInt(serverProperties.getProperty("server.timeout.request", "15000"));
+        this.maxResponseTime =
+                Integer.parseInt(serverProperties.getProperty("server.timeout.response", "60000"));
+        this.maxConnectionCount =
+                Integer.parseInt(serverProperties.getProperty("server.connections", "20"));
         this.responseFactory = responseFactory;
+
+        logger.info("server.port={}", portNumber);
+        logger.info("server.timeout.request={}", maxRequestTime);
+        logger.info("server.timeout.response={}", maxResponseTime);
+        logger.info("server.connections={}", maxConnectionCount);
     }
 
     private static class RequestHandler implements Callable<String> {
@@ -251,7 +251,7 @@ public class AbstractServer {
             throw new RuntimeException();
         }
 
-        executor = Executors.newFixedThreadPool(numExecutorThreads);
+        executor = Executors.newFixedThreadPool(maxConnectionCount);
         openConnectionCount = new AtomicInteger();
 
         try {
@@ -326,4 +326,42 @@ public class AbstractServer {
             }
         }
     }
+
+    /**
+     * Gets portNumber of the specific server.
+     *
+     * @return Port number of the specific server.
+     */
+    public int getPortNumber() {
+        return this.portNumber;
+    }
+
+    /**
+     * Gets maximum request time for the specific server.
+     *
+     * @return Maximum request time for the specific server.
+     */
+    public double getMaxRequestTime() {
+        return this.maxRequestTime;
+    }
+
+    /**
+     * Gets maximum response time for the specific server.
+     *
+     * @return Maximum response time for the specific server.
+     */
+    public double getMaxResponseTime() {
+        return this.maxResponseTime;
+    }
+
+    /**
+     * Gets maximum connection count for the specific server.
+     *
+     * @return Maximum connection count for the specific server.
+     */
+    public double getMaxConnectionCount() {
+        return this.maxConnectionCount;
+    }
+
+
 }
