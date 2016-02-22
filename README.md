@@ -324,26 +324,27 @@ limitations under the License.
 
 ## Dependencies
 
-##### Barefoot library
+#### Barefoot library
 
-_These dependencies are linked only dynamically in the Java source of Barefoot. They can be resolved usually automatically with Maven. For details, see [NOTICE.txt](NOTICE.txt)._
+_The following dependencies are linked only dynamically in the Java source of Barefoot. They can be resolved usually automatically with Maven. For details, see [NOTICE.txt](NOTICE.txt)._
 
-* ESRI Geometry API, Apache License 2.0 ([https://github.com/Esri/geometry-api-java](https://github.com/Esri/geometry-api-java))
- * Java JSON (see below)
- * Jackson, Apache License 2.0 ([https://github.com/FasterXML/jackson-core](https://github.com/FasterXML/jackson-core))
-* GeographicLib-Java, MIT License ([http://geographiclib.sourceforge.net/](http://geographiclib.sourceforge.net/))
-* Java JSON, MIT License with extra clause "The Software shall be used for Good, not Evil." ([http://www.json.org](http://www.json.org))
-* PostgreSQL JDBC, BSD 3-Clause ([http://jdbc.postgresql.org/about/license.html](http://jdbc.postgresql.org/about/license.html))
-* JUnit, CPL-1.0 ([https://github.com/junit-team/junit](https://github.com/junit-team/junit))
- * Hamcrest, BSD 3-Clause ([https://github.com/hamcrest/JavaHamcrest](https://github.com/hamcrest/JavaHamcrest))
-* SLF4J, MIT License ([http://slf4j.org](http://slf4j.org))
-* Logback, LGPL 2.1 ([http://logback.qos.ch](http://logback.qos.ch/))
- * SLF4J (see above)
- * Logback core, LGPL 2.1 ([http://logback.qos.ch](http://logback.qos.ch/))
+* ESRI Geometry API, 1.1, Apache-2.0 ([https://github.com/Esri/geometry-api-java](https://github.com/Esri/geometry-api-java))
+ * Java, JSON 20090211 (see below)
+ * Jackson, 1.9.12, Apache-2.0 ([https://github.com/FasterXML/jackson-core](https://github.com/FasterXML/jackson-core))
+* GeographicLib-Java, 1.43, MIT License ([http://geographiclib.sourceforge.net/](http://geographiclib.sourceforge.net/))
+* Java JSON, 20090211, MIT License with extra clause "The Software shall be used for Good, not Evil." ([http://www.json.org](http://www.json.org))
+* PostgreSQL JDBC, 9.2-1003-jdbc4, BSD 3-Clause ([http://jdbc.postgresql.org/about/license.html](http://jdbc.postgresql.org/about/license.html))
+* JUnit, 4.11, CPL-1.0 ([https://github.com/junit-team/junit](https://github.com/junit-team/junit))
+ * Hamcrest, 1.3, BSD 3-Clause ([https://github.com/hamcrest/JavaHamcrest](https://github.com/hamcrest/JavaHamcrest))
+* SLF4J, 1.7.10, MIT License ([http://slf4j.org](http://slf4j.org))
+* Logback, 1.0.9, LGPL-2.1 ([http://logback.qos.ch](http://logback.qos.ch/))
+ * SLF4J, 1.7.10 (see above)
+ * Logback core, 1.0.9, LGPL-2.1 ([http://logback.qos.ch](http://logback.qos.ch/))
+* JeroMQ, 0.3.5, LGPL-3.0 ([https://github.com/zeromq/jeromq](https://github.com/zeromq/jeromq))
 
-##### Barefoot map
+#### Barefoot map
 
-_These dependencies are not linked in any source but used for setting up map servers._
+_The following dependencies are not linked in any source but used for setting up map servers._
 
 * Docker, Apache License 2.0 ([https://www.docker.com](https://www.docker.com))<br/>
   _Note: Docker is used only as a tool for setting up map databases, e.g. in the test setup._
@@ -356,7 +357,7 @@ _These dependencies are not linked in any source but used for setting up map ser
 
 ##### Barefoot map tools
 
-_These dependencies are linked only dynamically in the source of map server tools for populating data to the map server._
+_The following dependencies are linked only dynamically in the Python source of map server tools for importing data into the map server._
 
 * psycopg 'psycopg2', LGPL-3.0 ([http://initd.org/psycopg/license/](http://initd.org/psycopg/license/))
 * NumPy 'numpy', BSD 3-Clause ([http://www.numpy.org/](http://www.numpy.org/))
@@ -368,6 +369,39 @@ _These dependencies are linked only dynamically in the source of map server tool
  * 'binascii' ([https://docs.python.org/2/library/binascii.html](https://docs.python.org/2/library/binascii.html))
  * 'json' ([https://docs.python.org/2/library/json.html](https://docs.python.org/2/library/json.html))
  * 'unittest' ([https://docs.python.org/2/library/unittest.html](https://docs.python.org/2/library/unittest.html))
+
+#### Barefoot utilities
+
+##### Barefoot monitor
+
+_The following dependencies are linked only dynamically in the NodeJS source of the monitor._
+
+* Socket.io, 1.4.4, and packages, MIT License ([http://socket.io/](http://socket.io/))
+* Express, 4.13.4, and packages, MIT License ([https://github.com/strongloop/express](https://github.com/strongloop/express))
+  * inherits, 2.0.1, ISC License ([https://www.npmjs.com/package/inherits](https://www.npmjs.com/package/inherits))
+  * qs, 4.0.0, BSD 3-Clause ([https://www.npmjs.com/package/qs](https://www.npmjs.com/package/qs))
+* ZeroMQ (NodeJS binding), 2.14.0, MIT License ([https://github.com/JustinTulloss/zeromq.node](https://github.com/JustinTulloss/zeromq.node))
+  * ZeroMQ (C++), LGPL-3.0 ([https://github.com/zeromq/libzmq](https://github.com/zeromq/libzmq))
+
+_The following dependencies are linked only dynamically in the Javascript source of the monitor._
+
+* OpenLayers 3, BSD 2-Clause ([https://github.com/openlayers/ol3](https://github.com/openlayers/ol3))
+* jQuery, MIT License ([http://jquery.com/](http://jquery.com/))
+* Socket.io.js, MIT License ([http://socket.io/](http://socket.io/))
+
+##### Job submission scripts
+
+_The following dependencies are linked only dynamically in the Python source of the submission scripts._
+
+* Requests, 2.6.2, Apache License 2.0 ([https://github.com/kennethreitz/requests](https://github.com/kennethreitz/requests))
+* Python Standard Library 2.7.3, Python License ([https://docs.python.org/2/license.html](https://docs.python.org/2/license.html))
+  * 'os' ([https://docs.python.org/2/library/os.html](https://docs.python.org/2/library/os.html))
+  * 'sys' ([https://docs.python.org/2/library/sys.html](https://docs.python.org/2/library/sys.html))
+  * 'optparse' ([https://docs.python.org/2/library/optparse.html](https://docs.python.org/2/library/optparse.html))
+  * 'json' ([https://docs.python.org/2/library/json.html](https://docs.python.org/2/library/json.html))
+  * 'subprocess' ([https://docs.python.org/2/library/subprocess.html](https://docs.python.org/2/library/subprocess.html))
+  * 'time' ([https://docs.python.org/2/library/time.html](https://docs.python.org/2/library/time.html))
+  * 'datetime' ([https://docs.python.org/2/library/datetime.html](https://docs.python.org/2/library/datetime.html))
 
 ##### Documentation
 * OpenJUMP, GPL-2.0 ([http://www.openjump.org](http://www.openjump.org))<br/>

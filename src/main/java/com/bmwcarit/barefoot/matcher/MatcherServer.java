@@ -28,23 +28,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bmwcarit.barefoot.markov.KState;
+import com.bmwcarit.barefoot.roadmap.Road;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
+import com.bmwcarit.barefoot.roadmap.RoadPoint;
+import com.bmwcarit.barefoot.roadmap.TimePriority;
 import com.bmwcarit.barefoot.scheduler.StaticScheduler;
 import com.bmwcarit.barefoot.scheduler.StaticScheduler.InlineScheduler;
 import com.bmwcarit.barefoot.scheduler.Task;
+import com.bmwcarit.barefoot.spatial.Geography;
+import com.bmwcarit.barefoot.topology.Dijkstra;
 import com.bmwcarit.barefoot.util.AbstractServer;
 import com.bmwcarit.barefoot.util.Stopwatch;
 
 /**
- * Server (stand-alone) for Hidden Markov Model offline map matching. It is a {@link AbstractServer}
- * that uses map matching components matcher, state, router, and map; and is configurable via
- * properties files. It can be customized to use arbitrary input and output formats by inheriting
- * and customizing {@link InputFormatter} and {@link OutputFormatter} classes.
+ * Matcher server (stand-alone) for Hidden Markov Model offline map matching. It is a
+ * {@link AbstractServer} that performs map matching; and is configurable with a properties file. It
+ * can be customized to use arbitrary input and output formats by inheriting and customizing
+ * {@link InputFormatter} and {@link OutputFormatter} classes.
  */
-public class Server extends AbstractServer {
-    private final static Logger logger = LoggerFactory.getLogger(Server.class);
-    public final RoadMap map;
-    public final Matcher matcher;
+public class MatcherServer extends AbstractServer {
+    private final static Logger logger = LoggerFactory.getLogger(MatcherServer.class);
+    private final RoadMap map;
 
     /**
      * Default input formatter for reading a JSON array of {@link MatcherSample} objects as input
@@ -194,41 +198,81 @@ public class Server extends AbstractServer {
     }
 
     /**
-     * Creates a {@link Server} object as stand-alone offline map matching server.
+     * Creates a {@link MatcherServer} object as stand-alone offline map matching server. The
+     * provided {@link Properties} object may provide the following properties:
+     * <ul>
+     * <li>server properties: see {@link AbstractServer#AbstractServer(Properties, ResponseFactory)}
+     * </li>
+     * <li>matcher.radius.max (see {@link Matcher#setMaxRadius(double)})</li>
+     * <li>matcher.distance.max (see {@link Matcher#setMaxDistance(double)})</li>
+     * <li>matcher.lambda (see {@link Matcher#setLambda(double)})</li>
+     * <li>matcher.sigma (see {@link Matcher#setSigma(double)})</li>
+     * <li>matcher.interval.min (milliseconds, optional, default: 1000, sets a minimum time interval
+     * of samples to ignore samples that are below minimum interval to reduce workload if data is
+     * extremely high sampled)</li>
+     * <li>matcher.distance.min (meters, optional, default: 0, sets minimum distance of samples to
+     * ignore samples that are below minimum distance to avoid workload if object is moving too
+     * little)</li>
+     * </ul>
      *
-     * @param serverProperties {@link Properties} object containing all necessary server settings.
+     * @param properties {@link Properties} object with (optional) server and matcher settings.
      * @param map {@link RoadMap} object with the map to be matched with.
-     * @param matcher {@link Matcher} object to be used for map matching (with respective
-     *        parameterization).
      * @param input {@link InputFormatter} object for input formatting.
      * @param output {@link OutputFormatter} object for output formatting.
      */
-    public Server(Properties serverProperties, RoadMap map, Matcher matcher, InputFormatter input,
+    public MatcherServer(Properties properties, RoadMap map, InputFormatter input,
             OutputFormatter output) {
-        super(serverProperties,
-                new MatcherResponseFactory(matcher, input, output, serverProperties));
-
+        super(properties, new MatcherResponseFactory(properties, map, input, output));
         this.map = map;
-        this.matcher = matcher;
+    }
+
+    /**
+     * Gets {@link RoadMap} object of the server.
+     *
+     * @return {@link RoadMap} object of the server.
+     */
+    public RoadMap getMap() {
+        return this.map;
     }
 
     private static class MatcherResponseFactory extends ResponseFactory {
         private final Matcher matcher;
         private final InputFormatter input;
         private final OutputFormatter output;
-        private final int minInterval;
-        private final double minDistance;
+        private final int interval;
+        private final double distance;
 
-        public MatcherResponseFactory(Matcher matcher, InputFormatter input,
-                OutputFormatter output, Properties serverProperties) {
-            this.matcher = matcher;
+        public MatcherResponseFactory(Properties properties, RoadMap map, InputFormatter input,
+                OutputFormatter output) {
+            matcher =
+                    new Matcher(map, new Dijkstra<Road, RoadPoint>(), new TimePriority(),
+                            new Geography());
+
+            matcher.setMaxRadius(Double.parseDouble(properties.getProperty("matcher.radius.max",
+                    Double.toString(matcher.getMaxRadius()))));
+            matcher.setMaxDistance(Double.parseDouble(properties.getProperty(
+                    "matcher.distance.max", Double.toString(matcher.getMaxDistance()))));
+            matcher.setLambda(Double.parseDouble(properties.getProperty("matcher.lambda",
+                    Double.toString(matcher.getLambda()))));
+            matcher.setSigma(Double.parseDouble(properties.getProperty("matcher.sigma",
+                    Double.toString(matcher.getSigma()))));
+            interval = Integer.parseInt(properties.getProperty("matcher.interval.min", "1000"));
+            distance = Integer.parseInt(properties.getProperty("matcher.distance.min", "0"));
+
+            int matcherThreads =
+                    Integer.parseInt(properties.getProperty("matcher.threads",
+                            Integer.toString(Runtime.getRuntime().availableProcessors())));
+
+            StaticScheduler.reset(matcherThreads, (long) 1E4);
+
             this.input = input;
             this.output = new AdaptiveOutputFormatter(output);
-            this.minInterval =
-                    Integer.parseInt(serverProperties.getProperty("matcher.interval.min", "5000"));
-            this.minDistance =
-                    Integer.parseInt(serverProperties.getProperty("matcher.distance.min", "10"));
 
+            logger.info("matcher.radius.max={}", matcher.getMaxRadius());
+            logger.info("matcher.distance.max={}", matcher.getMaxDistance());
+            logger.info("matcher.lambda={}", matcher.getLambda());
+            logger.info("matcher.sigma={}", matcher.getSigma());
+            logger.info("matcher.threads={}", matcherThreads);
             logger.info("matcher.interval.min={}", getMinInterval());
             logger.info("matcher.distance.min={}", getMinDistance());
         }
@@ -250,7 +294,7 @@ public class Server extends AbstractServer {
                         scheduler.spawn(new Task() {
                             @Override
                             public void run() {
-                                state.set(matcher.mmatch(samples, minDistance, minInterval));
+                                state.set(matcher.mmatch(samples, distance, interval));
                             }
                         });
                         if (!scheduler.sync()) {
@@ -274,11 +318,11 @@ public class Server extends AbstractServer {
         }
 
         public int getMinInterval() {
-            return this.minInterval;
+            return this.interval;
         }
 
         public double getMinDistance() {
-            return this.minDistance;
+            return this.distance;
         }
     }
 }

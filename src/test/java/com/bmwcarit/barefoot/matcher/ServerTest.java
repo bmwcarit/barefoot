@@ -34,9 +34,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
-import com.bmwcarit.barefoot.matcher.Server.GeoJSONOutputFormatter;
-import com.bmwcarit.barefoot.matcher.Server.InputFormatter;
-import com.bmwcarit.barefoot.matcher.Server.OutputFormatter;
+import com.bmwcarit.barefoot.matcher.MatcherServer.GeoJSONOutputFormatter;
+import com.bmwcarit.barefoot.matcher.MatcherServer.InputFormatter;
+import com.bmwcarit.barefoot.matcher.MatcherServer.OutputFormatter;
 
 public class ServerTest {
 
@@ -91,8 +91,8 @@ public class ServerTest {
         client.close();
 
         MatcherKState state =
-                new MatcherKState(new JSONObject(response), new MatcherFactory(
-                        ServerControl.getServer().map));
+                new MatcherKState(new JSONObject(response), new MatcherFactory(ServerControl
+                        .getServer().getMap()));
 
         OutputFormatter output = new GeoJSONOutputFormatter();
         PrintWriter out =

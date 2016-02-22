@@ -58,7 +58,13 @@ public class AbstractServer {
     }
 
     /**
-     * Creates a {@link AbstractServer} object.
+     * Creates a {@link AbstractServer} object. It expects the following properties:
+     * <ul>
+     * <li>server.port (optional, default: 1234)</li>
+     * <li>server.time.request (milliseconds, optional, default: 15000)</li>
+     * <li>server.time.response (milliseconds, optional, default: 60000)</li>
+     * <li>server.connections (optional, default: 20)</li>
+     * </ul>
      *
      * @param serverProperties {@link Properties} object containing all necessary server settings.
      * @param responseFactory {@link ResponseFactory} object that generates a

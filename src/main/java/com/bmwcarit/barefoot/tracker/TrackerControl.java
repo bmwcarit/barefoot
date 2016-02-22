@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, BMW Car IT GmbH
+ * Copyright (C) 2016, BMW Car IT GmbH
  *
  * Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
  *
@@ -11,7 +11,7 @@
  * language governing permissions and limitations under the License.
  */
 
-package com.bmwcarit.barefoot.matcher;
+package com.bmwcarit.barefoot.tracker;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,26 +21,24 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.bmwcarit.barefoot.matcher.MatcherServer.DebugJSONOutputFormatter;
-import com.bmwcarit.barefoot.matcher.MatcherServer.GeoJSONOutputFormatter;
+import com.bmwcarit.barefoot.matcher.MatcherServer;
 import com.bmwcarit.barefoot.matcher.MatcherServer.InputFormatter;
 import com.bmwcarit.barefoot.matcher.MatcherServer.OutputFormatter;
-import com.bmwcarit.barefoot.matcher.MatcherServer.SlimJSONOutputFormatter;
 import com.bmwcarit.barefoot.roadmap.Loader;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
 import com.bmwcarit.barefoot.util.SourceException;
 
 /**
- * Server control of stand-alone offline map matching server ({@link MatcherServer}).
+ * Server control of stand-alone online map matching (tracker) server ({@link TrackerServer}).
  */
-public abstract class ServerControl {
-    private final static Logger logger = LoggerFactory.getLogger(ServerControl.class);
-    private static MatcherServer matcherServer = null;
+public abstract class TrackerControl {
+    private final static Logger logger = LoggerFactory.getLogger(TrackerControl.class);
+    private static TrackerServer trackerServer = null;
     private static Properties databaseProperties = new Properties();
     private static Properties serverProperties = new Properties();
 
     /**
-     * Initializes stand-alone offline map matching server. Server properties file must include
+     * Initializes stand-alone online map matching server. Server properties file must include
      * matcher and server properties, see
      * {@link MatcherServer#MatcherServer(Properties, RoadMap, InputFormatter, OutputFormatter)}.
      * Database properties file must include database connection properties, see
@@ -48,11 +46,8 @@ public abstract class ServerControl {
      *
      * @param pathServerProperties Path to server properties file.
      * @param pathDatabaseProperties Path to database properties file.
-     * @param input {@link InputFormatter} to be used for input formatting.
-     * @param output {@link OutputFormatter} to be used for output formatting.
      */
-    public static void initServer(String pathServerProperties, String pathDatabaseProperties,
-            InputFormatter input, OutputFormatter output) {
+    public static void initServer(String pathServerProperties, String pathDatabaseProperties) {
         logger.info("initialize server");
 
         try {
@@ -88,26 +83,26 @@ public abstract class ServerControl {
             System.exit(1);
         }
 
-        matcherServer = new MatcherServer(serverProperties, map, input, output);
+        trackerServer = new TrackerServer(serverProperties, map);
     }
 
     /**
-     * Gets {@link MatcherServer} object (singleton).
+     * Gets {@link TrackerServer} object (singleton).
      *
-     * @return {@link MatcherServer} object (singleton).
+     * @return {@link TrackerServer} object (singleton).
      */
-    public static MatcherServer getServer() {
-        return matcherServer;
+    public static TrackerServer getServer() {
+        return trackerServer;
     }
 
     /**
      * Starts/runs server.
      */
     public static void runServer() {
-        logger.info("starting server on port {} with map {}", matcherServer.getPortNumber(),
+        logger.info("starting server on port {} with map {}", trackerServer.getPortNumber(),
                 databaseProperties.getProperty("database.name"));
 
-        matcherServer.runServer();
+        trackerServer.runServer();
         logger.info("server stopped");
     }
 
@@ -116,8 +111,8 @@ public abstract class ServerControl {
      */
     public static void stopServer() {
         logger.info("stopping server");
-        if (matcherServer != null) {
-            matcherServer.stopServer();
+        if (trackerServer != null) {
+            trackerServer.stopServer();
         } else {
             logger.error("stopping server failed, not yet started");
         }
@@ -125,30 +120,8 @@ public abstract class ServerControl {
 
     public static void main(String[] args) {
         if (args.length < 2 || args.length > 3) {
-            logger.error("missing arguments\nusage: [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties");
+            logger.error("missing arguments\nusage: /path/to/server/properties /path/to/mapserver/properties");
             System.exit(1);
-        }
-
-        InputFormatter input = new InputFormatter();
-        OutputFormatter output = new OutputFormatter();
-
-        if (args.length > 2) {
-            for (int i = 0; i < args.length - 2; ++i) {
-                switch (args[i]) {
-                    case "--debug":
-                        output = new DebugJSONOutputFormatter();
-                        break;
-                    case "--slimjson":
-                        output = new SlimJSONOutputFormatter();
-                        break;
-                    case "--geojson":
-                        output = new GeoJSONOutputFormatter();
-                        break;
-                    default:
-                        logger.warn("invalid option {} ignored", args[i]);
-                        break;
-                }
-            }
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -158,7 +131,7 @@ public abstract class ServerControl {
             }
         });
 
-        initServer(args[args.length - 2], args[args.length - 1], input, output);
+        initServer(args[args.length - 2], args[args.length - 1]);
         runServer();
     }
 }

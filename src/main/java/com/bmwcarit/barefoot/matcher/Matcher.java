@@ -115,7 +115,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
 
     /**
      * Sets lambda parameter of negative exponential distribution defining transition probabilities
-     * (default is 0.0). Adaptive parameterization is enabled if lambda is set to 0.0.
+     * (default is 0.0). It uses adaptive parameterization, if lambda is set to 0.0.
      *
      * @param lambda Lambda parameter of negative exponential distribution defining transition
      *        probabilities.
