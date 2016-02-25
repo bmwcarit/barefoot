@@ -12,27 +12,20 @@
 
 \begin{document}
 	\tikzstyle{box}=[draw, rectangle, minimum height=1.5cm, minimum width=3.5cm,align=center]
-	\tikzstyle{flow}=[-latex,draw]
 	
-	\begin{tikzpicture}
-		\node[box] (barefoot) at (2,0) {Barefoot \\ (Java source) \\ \footnotesize{(0.0.1)}};
-		
-		\node[box] (esri) at (8,0) {ESRI Geometry API \\ \footnotesize{(1.1)}};
-		\node[box] (jackson) at (14, 0) {Jackson \\ \footnotesize{(1.9.12)}};
-		
-		\node[box] (geolib) at (8,-2) {GeographicLib-Java \\ \footnotesize{(1.43)}};
-		
-		\node[box] (json) at (8,-4) {Java JSON \\ \footnotesize{(20090211)}};
-		
-		\node[box] (jdbc) at (8,-6) {PostgreSQL JDBC \\ \footnotesize{(9.2-1003-jdbc4)}};
-		
-		\node[box] (junit) at (8,-8) {JUnit \\ \footnotesize{(4.11)}};
-		\node[box] (hamcrest) at (14,-8) {Hamcrest \\ \footnotesize{(1.3)}};
-		
-		\node[box] (slf4j) at (8,-10) {SLF4J \\ \footnotesize{(1.7.10)}};
-		
-		\node[box] (logback) at (8,-12) {Logback \\ \footnotesize{(1.0.9)}};
-		\node[box] (logback-core) at (14,-12) {Logback-Core \\ \footnotesize{(1.0.9)}};
+	\begin{tikzpicture}[font=\sffamily]
+		\node[box] (barefoot) at (2,0) {Barefoot lib (Java) \\ \footnotesize{(0.1.0)} \\ \footnotesize{Apache-2.0}};
+		\node[box] (esri) at (8,0) {ESRI Geometry API \\ \footnotesize{(1.1)} \\ \footnotesize{Apache-2.0}};
+		\node[box] (jackson) at (14, 0) {Jackson \\ \footnotesize{(1.9.12)} \\ \footnotesize{MIT License}};
+		\node[box] (geolib) at (8,-2) {GeographicLib-Java \\ \footnotesize{(1.43)} \\ \footnotesize{MIT License}};
+		\node[box] (json) at (8,-4) {Java JSON \\ \footnotesize{(20090211)} \\ \footnotesize{MIT License}};
+		\node[box] (jdbc) at (8,-6) {PostgreSQL JDBC \\ \footnotesize{(9.2-1003-jdbc4)} \\ \footnotesize{BSD 3-Clause}};
+		\node[box] (junit) at (8,-8) {JUnit \\ \footnotesize{(4.11)} \\ \footnotesize{CPL-1.0}};
+		\node[box] (hamcrest) at (14,-8) {Hamcrest \\ \footnotesize{(1.3)} \\ \footnotesize{BSD 3-Clause}};
+		\node[box] (slf4j) at (8,-10) {SLF4J \\ \footnotesize{(1.7.10)} \\ \footnotesize{MIT License}};
+		\node[box] (logback) at (8,-12) {Logback \\ \footnotesize{(1.0.9)} \\ \footnotesize{LGPL-2.1}};
+		\node[box] (logback-core) at (14,-12) {Logback-Core \\ \footnotesize{(1.0.9)} \\ \footnotesize{LGPL-2.1}};
+		\node[box] (jeromq) at (8,-14) {JeroMQ \\ \footnotesize{(0.3.5)} \\ \footnotesize{LGPL-3.0}};
 		
 		\easttowest{barefoot}{esri}{0.5}{{\footnotesize{dynamic}}}
 		\easttowest{esri}{jackson}{0.5}{{\footnotesize{dynamic}}}
@@ -46,5 +39,6 @@
 		\easttowest{barefoot}{logback}{0.5}{{\footnotesize{dynamic}}}
 		\easttowest{logback}{logback-core}{0.5}{{\footnotesize{dynamic}}}
 		\easttoeast{logback}{slf4j}{2.0}{{\footnotesize{dynamic}}}
+		\easttowest{barefoot}{jeromq}{0.5}{{\footnotesize{dynamic}}}
 	\end{tikzpicture}
 \end{document}

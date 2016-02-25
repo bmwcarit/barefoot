@@ -32,19 +32,17 @@ See [here](MANUAL.md).
 
 See [here](http://bmwcarit.github.io/barefoot/doc/index.html).
 
-## Showcases
+## Showcases and Quick Starts
 
-### Map matching
+### Matcher server (Quick Start)
 
-Map matching of a GPS trace (violet markers) in Munich city area shown as geometrical path (orange path).
+Map matching of a GPS trace (violet markers) in Munich city area shown as geometrical path (orange path)
 
 <p align="center">
-<img src="doc-files/com/bmwcarit/barefoot/matcher/matching-satellite.png?raw=true" width="700">
+<img src="doc-files/com/bmwcarit/barefoot/matcher/matching-satellite.png" width="700">
 <br/>
 <a href="https://www.mapbox.com/about/maps/">&#xA9; Mapbox</a> <a href="http://www.openstreetmap.org/">&#xA9; OpenStreetMap</a> <a href="https://www.mapbox.com/map-feedback/"><b>Improve this map</b></a> <a href="https://www.digitalglobe.com/">&#xA9; DigitalGlobe</a> <a href="http://geojson.io">&#xA9; geojson.io</a>
 </p>
-
-#### Map matching server (quick start)
 
 ##### Map server
 
@@ -59,27 +57,27 @@ _Note: The following example uses the setup of the test map server. For further 
 2. Download OSM extract (examples require `oberbayern.osm.pbf`)
 
   ``` bash
-curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf -o barefoot/docker/osm/oberbayern.osm.pbf
+curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf -o barefoot/map/osm/oberbayern.osm.pbf
   ```
 
 3. Build Docker image.
 
   ``` bash
 cd barefoot
-sudo docker build --rm=true -t barefoot ./docker
+sudo docker build --rm=true -t barefoot ./map
   ```
 
 4. Create Docker container.
 
   ``` bash
 sudo docker run -t -i -p 127.0.0.1:5432:5432 --name="barefoot-oberbayern" \
-  -v ${PWD}/bfmap/:/mnt/bfmap -v ${PWD}/docker/osm/:/mnt/osm barefoot
+  -v ${PWD}/map/:/mnt/map barefoot
   ```
 
 5. Import OSM extract (in the container).
   
   ``` bash
-root@acef54deeedb# bash /mnt/osm/import.sh
+root@acef54deeedb# bash /mnt/map/osm/import.sh
   ```
 
   _Note: To detach the interactive shell from a running container without stopping it, use the escape sequence Ctrl-p + Ctrl-q._
@@ -93,20 +91,22 @@ sudo docker ps -a
 
   _Note: The output of the last command should show status 'Up x seconds'._
 
-##### Map matching server
+##### Matcher server
 
 _Note: The following example is a quick start setup. For further details, see the [manual](MANUAL.md#map-matching-server-stand-alone)._
 
-1. Assemble Barefoot JAR package with dependencies. (Includes the executable main class of the server.)
+1. Package Barefoot JAR. (Includes dependencies and executable main class.)
 
   ``` bash
-mvn compile assembly:single
+mvn package
   ```
+
+  _Note: Add `-DskipTests` to skip tests._
 
 2. Start server with standard configuration for map server and map matching, and option for GeoJSON output format.
 
   ``` bash
-java -jar target/barefoot-0.0.2-jar-with-dependencies.jar --geojson config/server.properties config/oberbayern.properties
+java -jar target/barefoot-0.1.0-server-jar-with-dependencies.jar --geojson config/server.properties config/oberbayern.properties
   ```
 
   _Note: Stop server with Ctrl-c._
@@ -114,12 +114,67 @@ java -jar target/barefoot-0.0.2-jar-with-dependencies.jar --geojson config/serve
 3. Test setup with a provided sample data.
 
   ``` bash
-cat src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json | netcat 127.0.0.1 1234
+python util/submit/batch.py --host localhost --port 1234  --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json
 SUCCESS
 ...
   ```
 
   _Note: On success, i.e. result code is SUCCESS, the output can be visualized with [http://geojson.io/](http://geojson.io/) and should show the same path as in the figure above. Otherwise, result code is either TIMEOUT or ERROR._
+
+### Tracker server (Quick Start)
+
+Online (real-time) map matching of a GPS trace in Munich city area with most likely position (blue dot) and alternative possible positions and routes (green dots and paths with transparency according to their probability). Alternative positions and routes disappear with continuously processed updates, which shows the principle of online map matching converging alternatives over time.
+
+<p align="center">
+<img src="doc-files/com/bmwcarit/barefoot/tracker/monitor-1600x1000.gif" width="650">
+</p>
+
+##### Map server
+
+(see above)
+
+##### Tracker server
+
+_Note: The following example is a quick start setup. For further details, see the [manual](MANUAL.md#map-matching-server-stand-alone)._
+
+1. Install prerequisites.
+
+  - ZeroMQ (e.g. with `sudo apt-get install libzmq3`)
+  - NodeJS and NPM (e.g. with `sudo apt-get install node npm`)
+
+2. Package Barefoot JAR. (Includes dependencies and executable main class.)
+
+  ``` bash
+mvn package
+  ```
+
+  _Note: Add `-DskipTests` to skip tests._
+
+3. Start tracker with standard configuration for map server, map matching, and tracking.
+
+  ``` bash
+java -jar target/barefoot-0.1.0-tracker-jar-with-dependencies.jar config/tracker.properties config/oberbayern.properties
+  ```
+
+  _Note: Stop server with Ctrl-c._
+
+4. Install and start monitor (NodeJS server).
+
+  ``` bash
+cd util/monitor
+npm install
+node monitor.js 127.0.0.1 1235
+  ```
+
+5. Test setup with a provided sample data.
+
+  ``` bash
+python util/submit/stream.py --host localhost --port 1234  --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-001.json
+SUCCESS
+...
+  ```
+
+  _Note: On success, i.e. result code is SUCCESS, the tracking is visible in the browser on [http://localhost:3000](http://localhost:3000). Otherwise, result code is either TIMEOUT or ERROR._
 
 #### Map matching API (online and offline)
 
@@ -128,60 +183,7 @@ The Barefoot library provides an easy-to-use HMM map matching API for online and
 - In (near) real-time systems, objects measure their position with some frequency producing a stream of position measurement. Each position measurement of the stream is map matched right away, which is referred to as __online map matching__.
 - In contrast, many applications use batches of position measurements recorded some time in the past. Map matching such a batches is referred to as __offline map matching__.
 
-The following code shows the exemplary usage of Barefoot's HMM map matching API for both, online and offline map matching. For further API details and information on the theory of HMM map matching, see the [manual](MANUAL.md#map-matching-api).
-
-``` java
-import com.bmwcarit.barefoot.matcher.Matcher;
-import com.bmwcarit.barefoot.matcher.MatcherKState;
-import com.bmwcarit.barefoot.matcher.MatcherCandidate;
-import com.bmwcarit.barefoot.matcher.MatcherSample;
-import com.bmwcarit.barefoot.matcher.MatcherTransition;
-import com.bmwcarit.barefoot.road.PostGISReader;
-import com.bmwcarit.barefoot.roadmap.RoadMap;
-import com.bmwcarit.barefoot.roadmap.Road;
-import com.bmwcarit.barefoot.roadmap.RoadPoint;
-import com.bmwcarit.barefoot.roadmap.Route;
-import com.bmwcarit.barefoot.roadmap.TimePriority;
-import com.bmwcarit.barefoot.spatial.Geography;
-import com.bmwcarit.barefoot.topology.Dijkstra;
-
-import com.esri.core.geometry.Point;
-
-// Load and construct road map
-RoadMap map = RoadMap.Load(new PostGISReader(...));
-map.construct();
-
-// Instantiate matcher and state data structure
-Matcher matcher = new Matcher(map, new Dijkstra<Road, RoadPoint>(),
-			new TimePriority(), new Geography());
-MatcherKState state = new MatcherKState();
-
-// Input as sample batch (offline) or sample stream (online)
-List<MatcherSample> samples = new LinkedList<MatcherSample>();
-
-// Iterative map matching of sample batch (offline) or sample stream (online)
-for (MatcherSample sample : samples) {
-	Set<MatcherCandidate> vector = matcher.execute(state.vector(), state.sample(),
-			sample);
-	state.update(vector, sample);
-
-	// Online map matching result
-	MatcherCandidate estimate = state.estimate(); // most likely position estimate
-
-	long id = estimate.point().edge().id(); // road id
-	Point position = estimate.point().geometry(); // position
-	MatcherTransition transition = estimate.transition();
-	if (transition != null) {
-		// first point will have a null transition
-		Route route = transition.route(); // route to position
-	}
-}
-
-// Offline map matching results
-List<MatcherCandidate> sequence = state.sequence(); // most likely sequence of positions
-```
-
-_Note: For scaling and distributing a map matching service, objects' states need to be distributed (e.g. send to other machines in a cloud). This is supported by the provided functions for JSON representation of an object's state. This way object states can be sent to or stored on remote machines and even different systems._
+For further API details and information on the theory of HMM map matching, see the [manual](MANUAL.md#map-matching-api).
 
 ### Spatial search and operations
 
@@ -190,7 +192,7 @@ _Note: For scaling and distributing a map matching service, objects' states need
 A straight line between two points, here Reykjavik (green marker) and Moskva (blue marker), on the earth surface is  a geodesic (orange). The closest point on a geodesic to another point, here Berlin (violet marker), is referred to as the interception point (red marker).
 
 <p align="center">
-<img src="doc-files/com/bmwcarit/barefoot/spatial/intercept-satellite.png?raw=true" width="700">
+<img src="doc-files/com/bmwcarit/barefoot/spatial/intercept-satellite.png" width="700">
 <br/>
 <a href="https://www.mapbox.com/about/maps/">&#xA9; Mapbox</a> <a href="http://www.openstreetmap.org/">&#xA9; OpenStreetMap</a> <a href="https://www.mapbox.com/map-feedback/"><b>Improve this map</b></a> <a href="https://www.digitalglobe.com/">&#xA9; DigitalGlobe</a> <a href="http://geojson.io">&#xA9; geojson.io</a>
 </p>
@@ -225,7 +227,7 @@ Other spatial operations and formats provided with GeographicLib and ESRI Geomet
 Spatial radius search in the road map given a center point (red marker) returns road segments (colored lines) and closest points (colored markers) on the road.
 
 <p align="center">
-<img src="doc-files/com/bmwcarit/barefoot/spatial/radius-satellite.png?raw=true" width="700">
+<img src="doc-files/com/bmwcarit/barefoot/spatial/radius-satellite.png" width="700">
 <br/>
 <a href="https://www.mapbox.com/about/maps/">&#xA9; Mapbox</a> <a href="http://www.openstreetmap.org/">&#xA9; OpenStreetMap</a> <a href="https://www.mapbox.com/map-feedback/"><b>Improve this map</b></a> <a href="https://www.digitalglobe.com/">&#xA9; DigitalGlobe</a> <a href="http://geojson.io">&#xA9; geojson.io</a>
 </p>
@@ -237,7 +239,6 @@ import com.bmwcarit.barefoot.roadmap.RoadMap;
 import com.bmwcarit.barefoot.roadmap.RoadPoint;
 
 import com.esri.core.geometry.GeometryEngine;
-import com.esri.core.geometry.Point;
 
 RoadReader reader = new PostGISReader(...);
 RoadMap map = RoadMap.Load(reader);
@@ -248,8 +249,8 @@ double r = 50; // radius search within 50 meters
 Set<RoadPoint> points = map.spatial().radius(c, r);
 
 for (RoadPoint point : points) {
-	GeometryEngine.geometryToGeoJson(point.geometry());
-	GeometryEngine.geometryToGeoJson(point.edge().geometry());
+	GeometryEngine.geometryToGeoJson(point.geometry()));
+	GeometryEngine.geometryToGeoJson(point.edge().geometry()));
 }
 ```
 
@@ -268,7 +269,7 @@ TBD.
 Spatial cluster analysis of trip start and target points for a New York City taxi driver in January 2013. (The shown example is data of the New York hack license BA96DE419E711691B9445D6A6307C170. For details of the dataset, see below.)
 
 <p align="center">
-<img src="doc-files/com/bmwcarit/barefoot/analysis/dbscan-satellite.png?raw=true" width="700">
+<img src="doc-files/com/bmwcarit/barefoot/analysis/dbscan-satellite.png" width="700">
 <br/>
 <a href="https://www.mapbox.com/about/maps/">&#xA9; Mapbox</a> <a href="http://www.openstreetmap.org/">&#xA9; OpenStreetMap</a> <a href="https://www.mapbox.com/map-feedback/"><b>Improve this map</b></a> <a href="https://www.digitalglobe.com/">&#xA9; DigitalGlobe</a> <a href="http://geojson.io">&#xA9; geojson.io</a>
 </p> 

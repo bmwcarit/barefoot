@@ -7,7 +7,7 @@
 \begin{document}
 	\definecolor{globegreen}{RGB}{61,184,82}
 	\definecolor{whaleblue}{RGB}{37,184,235}
-	
+
 	\begin{tikzpicture}[font=\sffamily]
 		% Globe
 		\node[align=center] at (1.5,6) {Map data \\ \scriptsize{(OpenStreetMap)}};
@@ -18,21 +18,21 @@
 		\draw[thick] ({1.5-sin(45)},{4.5+cos(45)}) to[bend left=30] (1.1,4.7) to[bend left=40] ({1.5-sin(45)},{4.5-cos(45)});
 		\draw[thick] (1.5,3.5) to[bend right=30] (1.7,4.7) to[bend left=45] ({1.5+sin(45)},{4.5+cos(45)});
 		\node[draw,circle,thick,minimum width=2cm] at (1.5,4.5) {};
-		
+
 		\draw[-latex,thick] (1.5,3.4) -- (1.5,3.0); % node[draw,midway,right=0.2cm,align=center,rectangle,rounded corners] {Barefoot map tools \\ \scriptsize(Python)};
-	
+
 		% Docker whale
 		\draw[thick,fill=white!20!whaleblue] (3.25,0.25) to[out=225,in=0] (2.5,0) to (0,0) to[out=270,in=180] (1.3,-1.3) to[out=0,in=235] (3.5,0) to[out=-45,in=225] (4.375,0.125) to[out=135,in=45] (3.575,0.325) to[out=45,in=-45] (3.375,1.125) to[out=225,in=135] (3.25,0.25);
 		\node[draw,circle,thick,fill=white,inner sep=0pt,minimum size=5pt] at (1.4,-0.6) {};
 		\node[draw,circle,fill,inner sep=0pt,minimum size=2pt] at (1.4,-0.6) {};
 		\draw[thick,fill=white!80!whaleblue] (0.35,-0.9) to[bend left=-30] (1.2,-0.8) to[thick,bend left=-30] (1.3,-1.3) to[out=180,in=-45] (0.35,-0.9);	
-		
+
 		% Docker container
 		\draw[thick,rounded corners] (0.1,0.1) rectangle (2.9,2.9);
 		\draw[thick] (1,0.5) to (1,1.5) to[bend left=30] (2.0,1.5) to[bend left=30] (1,1.5);
 		\draw[thick] (2.0,1.5) to (2.0,0.5) to[bend left=30] (1.0,0.5);
 		\node[align=center] at (1.5,2.25) {Barefoot map\\\scriptsize{(PostgreSQL/PostGIS)}};
-		
+
 		% Barefoot libray
 		\draw[thick,rounded corners] (5.1,0.1) rectangle (7.9,2.9);
 		\node[align=center] at (6.5,2.25) {Barefoot library\\ \scriptsize{(JAR)}};
@@ -44,19 +44,19 @@
 		};
 		\draw[-latex,thick] (3.2,1.5) to (4.8,1.5);
 
-		% Online map matching
+		% Stand-alone matcher
 		\draw[thick,rounded corners] (10.1,3.1) rectangle (12.9,5.9);
-		\node[align=center] at (11.5,4.75) {Barefoot \\ map matching \\ server \\ \scriptsize{(stand-alone server)}};
+		\node[align=center] at (11.5,4.6) {Barefoot servers \\ \scriptsize{(stand-alone)} \\ \scriptsize{offline (\textbf{matcher}) and} \\ \scriptsize{online/real-time map} \\ \scriptsize{matching (\textbf{tracker})}};
 		\draw[-latex,thick] (8.2,2) to (9.8,4.5);
-		
+
 		% Online map matching
 		\draw[thick,dashed,rounded corners] (10.1,0.1) rectangle (12.9,2.9);
-		\node[align=center] at (11.5,1.75) {Scalable offline$^1$ \\ map matching \\ \scriptsize{(Spark, Hadoop)}};
+		\node[align=center] at (11.5,1.75) {Scalable offline \\ map matching \\ \scriptsize{(Spark, Hadoop)}};
 		\draw[-latex,thick,dashed] (8.2,1.5) to (9.8,1.5);
-		
+
 		% Scalable offline map matching
 		\draw[thick,dashed,rounded corners] (10.1,-2.9) rectangle (12.9,-0.1);
-		\node[align=center] at (11.5,-1.25) {Scalable online$^2$ \\ map matching \\ \scriptsize{(Storm, Spark} \\ \scriptsize{Streaming)}};
+		\node[align=center] at (11.5,-1.25) {Scalable online \\ map matching \\ \scriptsize{(Storm, Spark} \\ \scriptsize{Streaming)}};
 		\draw[-latex,thick,dashed] (8.2,1) to (9.8,-1.5);
 	\end{tikzpicture}
 \end{document}

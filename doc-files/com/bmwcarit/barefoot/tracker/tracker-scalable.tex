@@ -1,0 +1,54 @@
+\documentclass{standalone}
+\usepackage{enumitem}
+\usepackage{tikz} % Required for drawings
+\usetikzlibrary{shapes}
+\usetikzlibrary{calc}
+
+\begin{document}
+	\definecolor{globegreen}{RGB}{61,184,82}
+	\definecolor{whaleblue}{RGB}{37,184,235}
+	
+	\tikzstyle{node}=[draw,thick,rounded corners,opacity=0.3,inner sep=0pt,minimum width=1cm,minimum height=1cm,text opacity=1]
+	\tikzstyle{kafka}=[node,fill=blue]
+	\tikzstyle{storm}=[node,fill={rgb:red,25;green,51;blue,0}]
+	\tikzstyle{cassandra}=[node,fill=yellow]
+	\tikzstyle{monitor}=[node,fill={rgb:red,0;green,51;blue,102}]
+
+	\begin{tikzpicture}[font=\sffamily]
+		\node at (0,6) {Kafka};
+		
+		\node[kafka] (k1) at (0,1.25) {};
+		\node[kafka] (k2) at (0,2.75) {};
+		\node[kafka] (k3) at (0,4.25) {};
+	
+		\node at (2,6) {Storm};
+		
+		\node[storm] (s1) at (2,0.5) {D};
+		\node[storm] (s2) at (2,2) {C};
+		\node[storm] (s3) at (2,3.5) {B};
+		\node[storm] (s4) at (2,5) {A};
+		
+		\node at (4,6) {Cassandra};
+		
+		\node[cassandra] (c1) at (4,1.25) {};
+		\node[cassandra] (c2) at (4,2.75) {};
+		\node[cassandra] (c3) at (4,4.25) {};
+		
+%		\foreach \s in {1,2,3,4} {
+%			\foreach \ck in {1,2,3} {
+%				\draw[-latex,gray] (k\ck) -- (s\s);
+%				\draw[-latex,gray] (s\s) -- (c\ck);
+%			}
+%		}
+		
+		\draw[-latex,very thick,blue,opacity=0.6] (0.6,2.75) -- (1.4,2.75);
+		
+		\draw[-latex,very thick,red,opacity=0.6] (2.6,3) -- (3.4,3);
+		\draw[latex-,very thick,red,dashed,opacity=0.6] (2.6,2.5) -- (3.4,2.5);
+		
+		\path[-latex,dashed,very thick,blue,opacity=0.6,shorten >=10pt,shorten <=10pt] (s1.center) edge [bend left=12] (s4.center);
+		\path[-latex,dashed,very thick,blue,opacity=0.6,shorten >=10pt,shorten <=10pt] (s4.center) edge [bend left=12] (s1.center);
+		
+		\draw[-,opacity=0] (-4,0) rectangle (9,5);
+	\end{tikzpicture}
+\end{document}

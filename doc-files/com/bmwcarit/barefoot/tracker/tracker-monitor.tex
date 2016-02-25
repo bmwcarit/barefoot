@@ -1,0 +1,46 @@
+\documentclass{standalone}
+\usepackage{enumitem}
+\usepackage{tikz} % Required for drawings
+\usetikzlibrary{shapes}
+\usetikzlibrary{calc}
+
+\begin{document}
+	\definecolor{globegreen}{RGB}{61,184,82}
+	\definecolor{whaleblue}{RGB}{37,184,235}
+
+	\begin{tikzpicture}[font=\sffamily]
+%		\draw[-latex,thick] (-1.8,1.5) to node[above,midway,align=center] {\footnotesize{Position updates} \\ \tiny{(object id, position, time)}} (-0.2,1.5);	
+%		\node at (-1,1.1) {$\vdots$};
+%		\draw[-latex,thick] (-1.8,0.5) to (-0.2,0.5);
+
+		% Barefoot tracker
+		\draw[thick,rounded corners,fill={rgb:red,25;green,51;blue,0},opacity=0.3] (0.1,0.1) rectangle (2.9,2.9);
+		\node[align=center] at (1.5,2.25) {Barefoot tracker\\ \scriptsize{(Java process)}};
+		\node[text width=2.6cm] at (1.65,1.0) {\scriptsize{\begin{itemize}[itemsep=0pt,partopsep=0pt,topsep=0pt,parsep=0pt,partopsep=0pt,listparindent=0pt,itemindent=0pt,leftmargin=0pt,labelsep=2pt]
+			\item{Map matches object position messages in real-time}
+			\item{Maintains states of moving objects}
+		\end{itemize}}
+		};
+
+		\draw[-latex,thick] (3.2,1.5) to node[above,midway] {ZeroMQ} (4.8,1.5);
+
+		% Monitor server
+		\draw[thick,rounded corners,fill={rgb:red,0;green,51;blue,102},opacity=0.3] (5.1,0.1) rectangle (7.9,2.9);
+		\node[align=center] at (6.5,2.25) {Monitor backend\\ \scriptsize{(NodeJS server)}};
+		\node[text width=2.6cm] at (6.65,1.0) {\scriptsize{\begin{itemize}[itemsep=0pt,partopsep=0pt,topsep=0pt,parsep=0pt,partopsep=0pt,listparindent=0pt,itemindent=0pt,leftmargin=0pt,labelsep=2pt]
+			\item{Buffers moving objects' states}
+			\item{Server (Express) for web-based real-time visualization}
+		\end{itemize}}
+		};
+
+		\draw[-latex,thick] (8.2,1.5) to node[above,midway] {Socket.io} (9.8,1.5);
+
+		% Browser
+		\draw[thick,rounded corners,fill={rgb:red,102;green,0;blue,51},opacity=0.3] (10.1,0.1) rectangle (12.9,2.9);
+		\node[align=center] at (11.5,2.25) {Monitor frontend\\ \scriptsize{(JavaScript website)}};
+		\node[text width=2.6cm] at (11.65,1.0) {\scriptsize{\begin{itemize}[itemsep=0pt,partopsep=0pt,topsep=0pt,parsep=0pt,partopsep=0pt,listparindent=0pt,itemindent=0pt,leftmargin=0pt,labelsep=2pt]
+			\item{Shows objects' states on the map (OpenLayers) in real-time with positions and paths}
+		\end{itemize}}
+		};
+	\end{tikzpicture}
+\end{document}

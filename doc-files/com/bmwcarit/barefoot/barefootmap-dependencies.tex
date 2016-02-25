@@ -6,38 +6,34 @@
 \draw[-latex] (#1.east) -| ($ (#1.east) + (#3,0) $) |- node[near end, above]{#4} (#2.west);
 }
 
-\newcommand{\easttoeast}[4]{
-\draw[-latex] (#1.east) -| ($ (#1.east) + (#3,0) $) |- node[near end, above]{#4} (#2.east);
-}
-
 \begin{document}
 	\tikzstyle{box}=[draw, rectangle, minimum height=1.5cm, minimum width=3.5cm,align=center]
-	\tikzstyle{flow}=[-latex,draw]
 	
-	\begin{tikzpicture}
-		\node[box] (maps) at (2,0) {Barefoot maps \\ \footnotesize{(0.0.1)}};
+	\begin{tikzpicture}[font=\sffamily]
+		\node[box] (server) at (2,0) {Map server (container) \\ \footnotesize{(0.1.0)} \\ \footnotesize{Apache-2.0}};
 		
-		\node[box] (docker) at (8,0) {Docker \\ \footnotesize{(1.0.1)}};
-		\node[box] (postgresql) at (8,-2) {PostgreSQL \\ \footnotesize{(9.3)}};
-		\node[box] (postgis) at (8,-4) {PostGIS \\ \footnotesize{(2.1)}};
-		\node[box] (osmosis) at (8,-6) {Osmosis \\ \footnotesize{(0.40.1)}};
-		\node[box] (osm) at (8,-8) {OpenStreetMap \\ \footnotesize{(any dump)}};
-		\node[box] (bfmap) at (8,-10) {'bfmap' tools \\  (Python source)\\ \footnotesize{(0.0.1)}};
-				
-		\node[box] (psycopg) at (14,-4) {Psycopg \\ \footnotesize{(2.4.5)}};
-		\node[box] (gdal) at (14,-6) {GDAL \\ \footnotesize{(1.10)}};
-		\node[box] (numpy) at (14,-8) {NumPy \\ \footnotesize{(1.6.1)}};
-		\node[box] (python) at (14,-10) {Python Standard \\ Libary \\ \footnotesize{(2.7.3)}};
-		
-		\easttowest{maps}{docker}{0.5}{{\footnotesize{usage}}}
-		\easttowest{maps}{postgresql}{0.5}{{\footnotesize{usage}}}
-		\easttowest{maps}{postgis}{0.5}{{\footnotesize{usage}}}
-		\easttowest{maps}{osmosis}{0.5}{{\footnotesize{usage}}}
-		\easttowest{maps}{osm}{0.5}{{\footnotesize{usage}}}
-		\easttowest{maps}{bfmap}{0.5}{{\footnotesize{usage}}}
-		\easttowest{bfmap}{psycopg}{0.5}{{\footnotesize{dynamic}}}
-		\easttowest{bfmap}{gdal}{0.5}{{\footnotesize{dynamic}}}
-		\easttowest{bfmap}{numpy}{0.5}{{\footnotesize{dynamic}}}
-		\easttowest{bfmap}{python}{0.5}{{\footnotesize{dynamic}}}
+		\node[box] (docker) at (8,0) {Docker \\ \footnotesize{(1.6)} \\ \footnotesize{Apache-2.0}};
+		\node[box] (postgresql) at (8,-2) {PostgreSQL \\ \footnotesize{(9.3)} \\ \footnotesize{PostgreSQL License}};
+		\node[box] (postgis) at (8,-4) {PostGIS \\ \footnotesize{(2.1)} \\ \footnotesize{GPL-2.0}};
+		\node[box] (osmosis) at (8,-6) {Osmosis \\ \footnotesize{(0.43.1)} \\ \footnotesize{GPL-3}};
+		\node[box] (osm) at (8,-8) {OpenStreetMap \\ \footnotesize{(any dump)} \\ \footnotesize{MIT License}};
+
+		\easttowest{server}{docker}{0.5}{{\footnotesize{usage}}}
+		\easttowest{server}{postgresql}{0.5}{{\footnotesize{usage}}}
+		\easttowest{server}{postgis}{0.5}{{\footnotesize{usage}}}
+		\easttowest{server}{osmosis}{0.5}{{\footnotesize{usage}}}
+		\easttowest{server}{osm}{0.5}{{\footnotesize{usage}}}
+
+		\node[box] (tools) at (2,-10) {Map tools (Python) \\ \footnotesize{(0.1.0)} \\ \footnotesize{Apache-2.0}};
+		\node[box] (psycopg) at (8,-10) {Psycopg \\ \footnotesize{(2.4.5)} \\ \footnotesize{LGPL-3.0}};
+		\node[box] (gdal) at (8,-12) {GDAL \\ \footnotesize{(1.10)} \\ \footnotesize{MIT License}};
+		\node[box] (numpy) at (8,-14) {NumPy \\ \footnotesize{(1.6.1)} \\ \footnotesize{BSD 3-Clause}};
+		\node[box] (python) at (8,-16) {Python Std. Libary \\ \footnotesize{(2.7.3)} \\ \footnotesize{Python License}};
+
+		\draw[-latex] (server) -- node[right]{\footnotesize{usage}} (tools);
+		\easttowest{tools}{psycopg}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{tools}{gdal}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{tools}{numpy}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{tools}{python}{0.5}{{\footnotesize{dynamic}}}
 	\end{tikzpicture}
 \end{document}

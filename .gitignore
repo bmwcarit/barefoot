@@ -10,6 +10,7 @@ target/
 *.bfmap
 *.pyc
 *.tar.gz
+*.synctex.gz
 *.log
 *.aux
 *~
