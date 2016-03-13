@@ -23,11 +23,11 @@ then
 	mode=$6
 elif [ "$#" -eq "0" ]
 then
-	input=/mnt/osm/oberbayern.osm.pbf
+	input=/mnt/map/osm/oberbayern.osm.pbf
 	database=oberbayern
 	user=osmuser
 	password=pass
-	config=/mnt/bfmap/road-types.json
+	config=/mnt/map/tools/road-types.json
 	mode=slim
 else
 	echo "Error. Say '$0 osm-file database user password bfmap-config slim|normal' or run with defaults '$0'."
@@ -52,20 +52,20 @@ fi
 echo "Done."
 
 echo "Start population of OSM data (osmosis) ..."
-psql -h localhost -d ${database} -U ${user} -f /mnt/osm/pgsnapshot_schema_0.6.sql
-rm -r /mnt/osm/tmp
-mkdir /mnt/osm/tmp
+psql -h localhost -d ${database} -U ${user} -f /mnt/map/osm/pgsnapshot_schema_0.6.sql
+rm -r /mnt/map/osm/tmp
+mkdir /mnt/map/osm/tmp
 if [ -z "$JAVACMD_OPTIONS" ]; then
-    JAVACMD_OPTIONS="-Djava.io.tmpdir=/mnt/osm/tmp"
+    JAVACMD_OPTIONS="-Djava.io.tmpdir=/mnt/map/osm/tmp"
 else
-    JAVACMD_OPTIONS="$JAVACMD_OPTIONS -Djava.io.tmpdir=/mnt/osm/tmp"
+    JAVACMD_OPTIONS="$JAVACMD_OPTIONS -Djava.io.tmpdir=/mnt/map/osm/tmp"
 fi
 export JAVACMD_OPTIONS
 osmosis --read-pbf file=${input} --write-pgsql user="${user}" password="${password}" database="${database}"
 echo "Done."
 
 echo "Start extraction of routing data (bfmap tools) ..."
-cd /mnt/bfmap/
+cd /mnt/map/tools/
 if [ "$mode" = "slim" ]
 then
 	python osm2ways.py --host localhost --port 5432 --database ${database} --table temp_ways --user ${user} --password ${password} --slim

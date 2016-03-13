@@ -13,9 +13,9 @@
 # language governing permissions and limitations under the License.
 #
 
-. /mnt/bfmap/test/test.properties
-export PYTHONPATH=/mnt/bfmap/
-cd /mnt/bfmap/test
+. /mnt/map/tools/test/test.properties
+export PYTHONPATH=/mnt/map/tools/
+cd /mnt/map/tools/test
 
 echo "Create ${database} database ..."
 sudo -u postgres psql -q -c "CREATE DATABASE ${database};"
@@ -25,7 +25,7 @@ sudo -u postgres psql -q -c "CREATE USER ${user} PASSWORD '${password}';"
 sudo -u postgres psql -q -c "GRANT ALL ON DATABASE ${database} TO ${user};"
 
 echo "Run bfmap test ..."
-sudo -u postgres psql -q -d ${database} -f /mnt/bfmap/test/${bfmap_table}
+sudo -u postgres psql -q -d ${database} -f /mnt/map/tools/test/${bfmap_table}
 sudo -u postgres psql -q -d ${database} -c "GRANT ALL ON TABLE temp_ways TO ${user};"
 python -m unittest test_bfmap
 

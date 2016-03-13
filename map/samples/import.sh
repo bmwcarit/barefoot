@@ -21,7 +21,7 @@ then
 	password=$4
 elif [ "$#" -eq "0" ]
 then
-	input=/mnt/samples/x0001-015.sql
+	input=/mnt/map/samples/x0001-015.sql
 	database=samples
 	user=sampleuser
 	password=pass

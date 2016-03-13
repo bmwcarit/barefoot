@@ -128,7 +128,7 @@ class TestBfmap(unittest.TestCase):
 
     def test_ways2bfmap(self):
         properties = dict(line.strip().split('=')
-                          for line in open('/mnt/bfmap/test/test.properties'))
+                          for line in open('/mnt/map/tools/test/test.properties'))
         bfmap.schema("localhost", 5432, properties[
                      "database"], "bfmap_ways", properties["user"], properties["password"], False)
         config = bfmap.config(properties["config"])
