@@ -18,7 +18,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.bmwcarit.barefoot.markov.KState;
+import com.bmwcarit.barefoot.roadmap.Road;
+import com.bmwcarit.barefoot.roadmap.RoadMap;
 import com.esri.core.geometry.GeometryEngine;
+import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.WktExportFlags;
 
 /**
@@ -158,6 +161,103 @@ public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, M
                             .route().geometry(), WktExportFlags.wktExportLineString));
                 }
                 json.put(jsoncandidate);
+            }
+        }
+        return json;
+    }
+
+    private Polyline monitorRoute(MatcherCandidate candidate) {
+        Polyline routes = new Polyline();
+        MatcherCandidate predecessor = candidate;
+        while (predecessor != null) {
+            MatcherTransition transition = predecessor.transition();
+            if (transition != null) {
+                Polyline route = transition.route().geometry();
+                routes.startPath(route.getPoint(0));
+                for (int i = 1; i < route.getPointCount(); ++i) {
+                    routes.lineTo(route.getPoint(i));
+                }
+            }
+            predecessor = predecessor.predecessor();
+        }
+        return routes;
+    }
+
+    public JSONObject toMonitorJSON() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("time", sample().time());
+        json.put("point", GeometryEngine.geometryToWkt(estimate().point().geometry(),
+                WktExportFlags.wktExportPoint));
+        Polyline routes = monitorRoute(estimate());
+        if (routes.getPathCount() > 0) {
+            json.put("route",
+                    GeometryEngine.geometryToWkt(routes, WktExportFlags.wktExportMultiLineString));
+        }
+
+        JSONArray candidates = new JSONArray();
+        for (MatcherCandidate candidate : vector()) {
+            JSONObject jsoncandidate = new JSONObject();
+            jsoncandidate.put("point", GeometryEngine.geometryToWkt(candidate.point().geometry(),
+                    WktExportFlags.wktExportPoint));
+            jsoncandidate.put("prob", Double.isInfinite(candidate.filtprob()) ? "Infinity"
+                    : candidate.filtprob());
+
+            routes = monitorRoute(candidate);
+            if (routes.getPathCount() > 0) {
+                jsoncandidate.put("route", GeometryEngine.geometryToWkt(routes,
+                        WktExportFlags.wktExportMultiLineString));
+            }
+            candidates.put(jsoncandidate);
+        }
+        json.put("candidates", candidates);
+        return json;
+    }
+
+    private static String getOSMRoad(Road road) {
+        return road.base().refid() + ":" + road.source() + ":" + road.target();
+    }
+
+    public JSONObject toOSMJSON(RoadMap map) throws JSONException {
+        JSONObject json = this.toJSON();
+
+        if (json.has("candidates")) {
+            JSONArray candidates = json.getJSONArray("candidates");
+
+            for (int i = 0; i < candidates.length(); ++i) {
+                {
+                    JSONObject point =
+                            candidates.getJSONObject(i).getJSONObject("candidate")
+                                    .getJSONObject("point");
+                    Road road = map.get(point.getLong("road"));
+                    if (road == null) {
+                        throw new JSONException("road not found in map");
+                    }
+                    point.put("road", getOSMRoad(road));
+                }
+                if (candidates.getJSONObject(i).getJSONObject("candidate").has("transition")) {
+                    JSONObject route =
+                            candidates.getJSONObject(i).getJSONObject("candidate")
+                                    .getJSONObject("transition").getJSONObject("route");
+
+                    JSONArray roads = route.getJSONArray("roads");
+                    JSONArray osmroads = new JSONArray();
+                    for (int j = 0; j < roads.length(); ++j) {
+                        Road road = map.get(roads.getLong(j));
+                        osmroads.put(getOSMRoad(road));
+                    }
+                    route.put("roads", osmroads);
+
+                    {
+                        JSONObject source = route.getJSONObject("source");
+                        Road road = map.get(source.getLong("road"));
+                        source.put("road", getOSMRoad(road));
+                    }
+                    {
+                        JSONObject target = route.getJSONObject("target");
+                        Road road = map.get(target.getLong("road"));
+                        target.put("road", getOSMRoad(road));
+                    }
+                }
             }
         }
         return json;

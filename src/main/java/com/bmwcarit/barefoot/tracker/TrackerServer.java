@@ -12,19 +12,10 @@
  */
 package com.bmwcarit.barefoot.tracker;
 
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -35,7 +26,6 @@ import com.bmwcarit.barefoot.matcher.Matcher;
 import com.bmwcarit.barefoot.matcher.MatcherCandidate;
 import com.bmwcarit.barefoot.matcher.MatcherKState;
 import com.bmwcarit.barefoot.matcher.MatcherSample;
-import com.bmwcarit.barefoot.matcher.MatcherTransition;
 import com.bmwcarit.barefoot.roadmap.Road;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
 import com.bmwcarit.barefoot.roadmap.RoadPoint;
@@ -44,14 +34,12 @@ import com.bmwcarit.barefoot.scheduler.StaticScheduler;
 import com.bmwcarit.barefoot.scheduler.StaticScheduler.InlineScheduler;
 import com.bmwcarit.barefoot.scheduler.Task;
 import com.bmwcarit.barefoot.spatial.Geography;
-import com.bmwcarit.barefoot.spatial.SpatialOperator;
 import com.bmwcarit.barefoot.topology.Dijkstra;
+import com.bmwcarit.barefoot.tracker.TemporaryMemory.Factory;
+import com.bmwcarit.barefoot.tracker.TemporaryMemory.Publisher;
+import com.bmwcarit.barefoot.tracker.TemporaryMemory.TemporaryElement;
 import com.bmwcarit.barefoot.util.AbstractServer;
 import com.bmwcarit.barefoot.util.Stopwatch;
-import com.bmwcarit.barefoot.util.Tuple;
-import com.esri.core.geometry.GeometryEngine;
-import com.esri.core.geometry.Polyline;
-import com.esri.core.geometry.WktExportFlags;
 
 /**
  * Tracker server (stand-alone) for Hidden Markov Model online map matching. It is a
@@ -94,10 +82,19 @@ public class TrackerServer extends AbstractServer {
         return this.map;
     }
 
+    /**
+     * Gets {@link Matcher} object of the server.
+     *
+     * @return {@link Matcher} object of the server.
+     */
+    public Matcher getMatcher() {
+        return ((MatcherResponseFactory) getResponseFactory()).matcher;
+    }
+
     private static class MatcherResponseFactory extends ResponseFactory {
         private final Matcher matcher;
-        private final Memory memory;
-        private final Publisher publisher;
+        private final int TTL;
+        private final TemporaryMemory<State> memory;
 
         public MatcherResponseFactory(Properties properties, RoadMap map) {
             matcher =
@@ -112,12 +109,17 @@ public class TrackerServer extends AbstractServer {
                     Double.toString(matcher.getLambda()))));
             matcher.setSigma(Double.parseDouble(properties.getProperty("matcher.sigma",
                     Double.toString(matcher.getSigma()))));
-            publisher =
-                    new Publisher(Integer.parseInt(properties.getProperty("tracker.port", "1235")));
-            memory =
-                    new Memory(Integer.parseInt(properties.getProperty("tracker.state.ttl", "60")),
-                            publisher);
+            TTL = Integer.parseInt(properties.getProperty("tracker.state.ttl", "60"));
+            int port = Integer.parseInt(properties.getProperty("tracker.port", "1235"));
+            memory = new TemporaryMemory<State>(new Factory<State>() {
+                @Override
+                public State newInstance(String id) {
+                    return new State(id);
+                }
+            }, new StatePublisher(port));
 
+            logger.info("tracker.state.ttl={}", TTL);
+            logger.info("tracker.port={}", port);
             int matcherThreads =
                     Integer.parseInt(properties.getProperty("matcher.threads",
                             Integer.toString(Runtime.getRuntime().availableProcessors())));
@@ -129,8 +131,6 @@ public class TrackerServer extends AbstractServer {
             logger.info("matcher.lambda={}", matcher.getLambda());
             logger.info("matcher.sigma={}", matcher.getSigma());
             logger.info("matcher.threads={}", matcherThreads);
-            logger.info("tracker.state.ttl={}", memory.getTTL());
-            logger.info("tracker.port={}", publisher.getPort());
         }
 
         @Override
@@ -146,11 +146,11 @@ public class TrackerServer extends AbstractServer {
                                     && !json.optString("point").isEmpty()) {
 
                                 final MatcherSample sample = new MatcherSample(json);
-                                final Memory.State state = memory.getLocked(sample.id());
+                                final State state = memory.getLocked(sample.id());
 
-                                if (state.sample() != null) {
-                                    if (sample.time() < state.sample().time()) {
-                                        state.updateFailedAndUnlock();
+                                if (state.inner.sample() != null) {
+                                    if (sample.time() < state.inner.sample().time()) {
+                                        state.unlock();
                                         logger.warn("received out of order sample");
                                         return RESULT.ERROR;
                                     }
@@ -164,8 +164,8 @@ public class TrackerServer extends AbstractServer {
                                     public void run() {
                                         Stopwatch sw = new Stopwatch();
                                         sw.start();
-                                        vector.set(matcher.execute(state.vector(), state.sample(),
-                                                sample));
+                                        vector.set(matcher.execute(state.inner.vector(),
+                                                state.inner.sample(), sample));
                                         sw.stop();
                                         logger.info("state update of object {} processed in {} ms",
                                                 sample.id(), sw.ms());
@@ -173,15 +173,27 @@ public class TrackerServer extends AbstractServer {
                                 });
 
                                 if (!scheduler.sync()) {
-                                    state.updateFailedAndUnlock();
+                                    state.unlock();
                                     throw new RuntimeException("matcher execution error");
                                 } else {
-                                    state.updateAndUnlock(vector.get(), sample);
+                                    state.inner.update(vector.get(), sample);
+                                    state.updateAndUnlock(TTL);
                                     return RESULT.SUCCESS;
                                 }
                             } else {
                                 String id = json.getString("id");
                                 logger.info("received state request for object {}", id);
+
+                                State state = memory.getIfExistsLocked(id);
+
+                                if (state != null) {
+                                    response.append(state.inner.toJSON().toString());
+                                    state.unlock();
+                                } else {
+                                    JSONObject empty = new JSONObject();
+                                    empty.put("id", id);
+                                    response.append(empty.toString());
+                                }
 
                                 return RESULT.SUCCESS;
                             }
@@ -203,194 +215,44 @@ public class TrackerServer extends AbstractServer {
         }
     }
 
-    private static class Memory {
-        private final Map<String, State> states = new HashMap<String, State>();
-        private final Queue<Tuple<Long, State>> queue =
-                new PriorityBlockingQueue<Tuple<Long, State>>(1,
-                        new Comparator<Tuple<Long, State>>() {
-                            @Override
-                            public int compare(Tuple<Long, State> left, Tuple<Long, State> right) {
-                                return (int) (left.one() - right.one());
-                            }
-                        });
-        private final int TTL;
-        private final Publisher publisher;
-        private final Thread cleaner;
-        private final SpatialOperator spatial = new Geography();
+    private static class State extends TemporaryElement<State> {
+        final MatcherKState inner = new MatcherKState();
 
-        private class State extends MatcherKState {
-            private final Lock lock = new ReentrantLock();
-            private String id;
-            private long death = 0;
+        public State(String id) {
+            super(id);
+        }
+    };
 
-            public void updateAndUnlock(Set<MatcherCandidate> vector, MatcherSample sample) {
-                super.update(vector, sample);
+    private static class StatePublisher extends Publisher<State> {
+        ZMQ.Context context = null;
+        ZMQ.Socket socket = null;
 
-                if (logger.isTraceEnabled()) {
-                    try {
-                        logger.trace(
-                                "filter: ({}, {}) with prob {} ({} m distance, {} m route) for sample {}",
-                                super.estimate().point().edge().id(),
-                                super.estimate().point().fraction(),
-                                super.estimate().filtprob(),
-                                spatial.distance(sample.point(), super.estimate().point()
-                                        .geometry()), super.estimate().transition() != null ? super
-                                        .estimate().transition().route().length() : 0,
-                                sample.toJSON());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                id = sample.id();
-                death = Math.max(death + 1, Calendar.getInstance().getTimeInMillis() + TTL * 1000);
-                queue.add(new Tuple<Long, State>(death, this));
-                publisher.send(sample.id(), this);
-                lock.unlock();
-            }
-
-            public void updateFailedAndUnlock() {
-                lock.unlock();
-            }
+        public StatePublisher(int port) {
+            context = ZMQ.context(1);
+            socket = context.socket(ZMQ.PUB);
+            socket.bind("tcp://*:" + port);
         }
 
-        public Memory(final int TTL, Publisher publisher) {
-            this.TTL = TTL;
-            this.publisher = publisher;
-
-            cleaner = new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-                    while (true) {
-                        Tuple<Long, State> entry = queue.poll();
-                        if (entry == null) {
-                            try {
-                                Thread.sleep(TTL * 1000 + 1);
-                                continue;
-                            } catch (InterruptedException e) {
-                                //
-                            }
-                        }
-
-                        while (entry.one() > Calendar.getInstance().getTimeInMillis()) {
-                            try {
-                                Thread.sleep(entry.one() - Calendar.getInstance().getTimeInMillis()
-                                        + 1);
-                            } catch (InterruptedException e) {
-                                //
-                            }
-                        }
-
-                        removeIfDead(entry.two());
-                    }
-                }
-            });
-
-            if (TTL > 0) {
-                cleaner.start();
-            }
-        }
-
-        public int getTTL() {
-            return this.TTL;
-        }
-
-        public synchronized State getLocked(String id) {
-            State state = states.get(id);
-            if (state == null) {
-                state = new State();
-                states.put(id, state);
-            }
-            state.lock.lock();
-            return state;
-        }
-
-        private synchronized void removeIfDead(State state) {
-            state.lock.lock();
-            if (state.death <= Calendar.getInstance().getTimeInMillis()) {
-                states.remove(state.id);
-                publisher.delete(state.id, state.death);
-                logger.info("state of object {} expired and deleted", state.id);
-            }
-            state.lock.unlock();
-        }
-    }
-
-    private static class Publisher {
-        ZMQ.Socket publisher = null;
-        private final int port;
-
-        public Publisher(int port) {
-            this.port = port;
-            ZMQ.Context context = ZMQ.context(1);
-            publisher = context.socket(ZMQ.PUB);
-            publisher.bind("tcp://*:" + port);
-        }
-
-        public int getPort() {
-            return this.port;
-        }
-
-        public Polyline getRoute(MatcherCandidate candidate) {
-            Polyline routes = new Polyline();
-            MatcherCandidate predecessor = candidate;
-            while (predecessor != null) {
-                MatcherTransition transition = predecessor.transition();
-                if (transition != null) {
-                    Polyline route = transition.route().geometry();
-                    routes.startPath(route.getPoint(0));
-                    for (int i = 1; i < route.getPointCount(); ++i) {
-                        routes.lineTo(route.getPoint(i));
-                    }
-                }
-                predecessor = predecessor.predecessor();
-            }
-            return routes;
-        }
-
-        public void send(String id, MatcherKState state) {
+        @Override
+        public void publish(String id, State state) {
             try {
-                JSONObject json = new JSONObject();
+                JSONObject json = state.inner.toMonitorJSON();
                 json.put("id", id);
-                json.put("time", state.sample().time());
-                json.put("point", GeometryEngine.geometryToWkt(state.estimate().point().geometry(),
-                        WktExportFlags.wktExportPoint));
-                Polyline routes = getRoute(state.estimate());
-                if (routes.getPathCount() > 0) {
-                    json.put("route", GeometryEngine.geometryToWkt(routes,
-                            WktExportFlags.wktExportMultiLineString));
-                }
-
-                JSONArray candidates = new JSONArray();
-                for (MatcherCandidate candidate : state.vector()) {
-                    JSONObject jsoncandidate = new JSONObject();
-                    jsoncandidate.put("point", GeometryEngine.geometryToWkt(candidate.point()
-                            .geometry(), WktExportFlags.wktExportPoint));
-                    jsoncandidate.put("prob", Double.isInfinite(candidate.filtprob()) ? "Infinity"
-                            : candidate.filtprob());
-
-                    routes = getRoute(candidate);
-                    if (routes.getPathCount() > 0) {
-                        jsoncandidate.put("route", GeometryEngine.geometryToWkt(routes,
-                                WktExportFlags.wktExportMultiLineString));
-                    }
-                    candidates.put(jsoncandidate);
-                }
-                json.put("candidates", candidates);
-                publisher.send(json.toString());
+                socket.send(json.toString());
             } catch (JSONException e) {
                 logger.error("update failed: {}", e.getMessage());
                 e.printStackTrace();
             }
         }
 
+        @Override
         public void delete(String id, long time) {
             try {
                 JSONObject json = new JSONObject();
                 json.put("id", id);
                 json.put("time", time);
-                publisher.send(json.toString());
+                socket.send(json.toString());
+                logger.info("delete object {}", id);
             } catch (JSONException e) {
                 logger.error("delete failed: {}", e.getMessage());
                 e.printStackTrace();

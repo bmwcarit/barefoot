@@ -44,7 +44,7 @@ public class AbstractServer {
     private final int maxResponseTime;
     private final int maxConnectionCount;
 
-    private ResponseFactory responseFactory = null;
+    private final ResponseFactory responseFactory;
 
     private ServerSocket server = null;
     private ExecutorService executor = null;
@@ -334,40 +334,47 @@ public class AbstractServer {
     }
 
     /**
-     * Gets portNumber of the specific server.
+     * Gets portNumber of the server.
      *
-     * @return Port number of the specific server.
+     * @return Port number of the server.
      */
     public int getPortNumber() {
         return this.portNumber;
     }
 
     /**
-     * Gets maximum request time for the specific server.
+     * Gets maximum request time of the server.
      *
-     * @return Maximum request time for the specific server.
+     * @return Maximum request time of the server.
      */
     public double getMaxRequestTime() {
         return this.maxRequestTime;
     }
 
     /**
-     * Gets maximum response time for the specific server.
+     * Gets maximum response time of the server.
      *
-     * @return Maximum response time for the specific server.
+     * @return Maximum response time of the server.
      */
     public double getMaxResponseTime() {
         return this.maxResponseTime;
     }
 
     /**
-     * Gets maximum connection count for the specific server.
+     * Gets maximum connection count of the server.
      *
-     * @return Maximum connection count for the specific server.
+     * @return Maximum connection count of the server.
      */
     public double getMaxConnectionCount() {
         return this.maxConnectionCount;
     }
 
-
+    /**
+     * Gets {@link ResponseFactory} object of the server.
+     *
+     * @return {@link ResponseFactory} object of the server.
+     */
+    public ResponseFactory getResponseFactory() {
+        return this.responseFactory;
+    }
 }

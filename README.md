@@ -160,10 +160,15 @@ java -jar target/barefoot-0.1.0-tracker-jar-with-dependencies.jar config/tracker
 
 4. Install and start monitor (NodeJS server).
 
+  Install it ... (required only once)
   ``` bash
 cd util/monitor
 npm install
-node monitor.js 127.0.0.1 1235
+cd ../..
+  ```
+  ... and start it:
+  ``` bash
+node util/monitor/monitor.js 127.0.0.1 1235
   ```
 
 5. Test setup with a provided sample data.

@@ -25,8 +25,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 
 import org.json.JSONArray;
@@ -40,7 +38,7 @@ import com.bmwcarit.barefoot.matcher.MatcherServer.OutputFormatter;
 
 public class ServerTest {
 
-    private class ServerRunnable implements Runnable {
+    private class Server implements Runnable {
         @Override
         public void run() {
             ServerControl.initServer(ServerTest.class.getResource("server.properties").getPath(),
@@ -49,12 +47,16 @@ public class ServerTest {
             ServerControl.runServer();
         }
 
+        public void start() {
+            (new Thread(this)).start();
+        }
+
         public void stop() {
             ServerControl.stopServer();
         }
     }
 
-    private void sendRequest(InetAddress host, int port, List<MatcherSample> samples)
+    private void sendRequest(InetAddress host, int port, JSONArray samples)
             throws InterruptedException, IOException, JSONException {
         int trials = 120;
         int timeout = 500;
@@ -74,14 +76,9 @@ public class ServerTest {
             }
         }
 
-        JSONArray jsonsamples = new JSONArray();
-        for (MatcherSample sample : samples) {
-            jsonsamples.put(sample.toJSON());
-        }
-
         PrintWriter writer = new PrintWriter(client.getOutputStream());
         BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
-        writer.println(jsonsamples.toString());
+        writer.println(samples.toString());
         writer.flush();
 
         String code = reader.readLine();
@@ -101,31 +98,25 @@ public class ServerTest {
         out.println(output.format(null, state));
         out.close();
 
-        assertEquals(samples.size(), state.sequence().size());
+        assertEquals(samples.length(), state.sequence().size());
     }
 
     @Test
     public void TestServer() throws IOException, JSONException, InterruptedException,
             ParseException {
-        ServerRunnable serverRunnable = new ServerRunnable();
-        Thread serverThread = new Thread(serverRunnable);
+        Server server = new Server();
         InetAddress host = InetAddress.getLocalHost();
         Properties properties = new Properties();
         properties.load(ServerTest.class.getResource("server.properties").openStream());
         int port = Integer.parseInt(properties.getProperty("server.port"));
 
-        serverThread.start();
+        server.start();
         {
-            List<MatcherSample> samples = new LinkedList<MatcherSample>();
             String json =
                     new String(Files.readAllBytes(Paths.get(ServerTest.class.getResource(
                             "x0001-015.json").getPath())), Charset.defaultCharset());
-            JSONArray jsonsamples = new JSONArray(json);
-            for (int i = 0; i < jsonsamples.length(); ++i) {
-                samples.add(new MatcherSample(jsonsamples.getJSONObject(i)));
-            }
-            sendRequest(host, port, samples);
+            sendRequest(host, port, new JSONArray(json));
         }
-        serverRunnable.stop();
+        server.stop();
     }
 }
