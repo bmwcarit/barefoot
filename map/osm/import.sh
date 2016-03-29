@@ -41,8 +41,8 @@ sudo -u postgres psql -d ${database} -c "CREATE EXTENSION postgis;"
 echo "Done."
 
 echo "Start creation of user and initialization of credentials ..."
-sudo -u postgres psql -c "CREATE USER ${user} PASSWORD '${password}';"
-sudo -u postgres psql -c "GRANT ALL ON DATABASE ${database} TO ${user};"
+sudo -u postgres psql -c "CREATE USER \"${user}\" PASSWORD '${password}';"
+sudo -u postgres psql -c "GRANT ALL ON DATABASE \"${database}\" TO \"${user}\";"
 passphrase="localhost:5432:${database}:${user}:${password}"
 if [ ! -e ~/.pgpass ] || [ `less ~/.pgpass | grep -c "$passphrase"` -eq 0 ]
 then
@@ -53,7 +53,7 @@ echo "Done."
 
 echo "Start population of OSM data (osmosis) ..."
 psql -h localhost -d ${database} -U ${user} -f /mnt/map/osm/pgsnapshot_schema_0.6.sql
-rm -r /mnt/map/osm/tmp
+rm -rf /mnt/map/osm/tmp
 mkdir /mnt/map/osm/tmp
 if [ -z "$JAVACMD_OPTIONS" ]; then
     JAVACMD_OPTIONS="-Djava.io.tmpdir=/mnt/map/osm/tmp"

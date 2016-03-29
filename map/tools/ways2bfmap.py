@@ -48,6 +48,8 @@ parser.add_option("--target-password", dest="target_password",
                   help="User password of target database.")
 parser.add_option("--config", dest="config",
                   help="Configuration file for OSM data interpretation. (XML)")
+parser.add_option("--append", action="store_true",
+                  default=False, help="Append data if target table exists.")
 parser.add_option("--printonly", action="store_true",
                   default=False, help="Do not execute commands, but print it.")
 
@@ -82,26 +84,29 @@ print("Configuration imported.")
 
 if not bfmap.exists(options.target_host, options.target_port, options.target_database,
                     options.target_table, options.target_user, target_password):
-    print("Table '%s' does not exist in database '%s'." %
+    print("Table '%s' does not exist in database '%s'." % 
           (options.target_table, options.target_database))
+    bfmap.schema(options.target_host, options.target_port, options.target_database,
+                options.target_table, options.target_user, target_password, options.printonly)
+    print("Table '%s' has been created." % options.target_table)
 else:
-    print("Table '%s' already exists in database '%s'." %
+    print("Table '%s' already exists in database '%s'." % 
           (options.target_table, options.target_database))
-    while True:
-        value = raw_input(
-            "Do you want to remove table '%s' (y/n)? [n]: " % options.target_table).lower()
-        if value == '' or value == 'n':
-            print("Cancelled by user.")
-            exit(0)
-        elif value == 'y':
-            break
-    bfmap.remove(options.target_host, options.target_port, options.target_database,
-                 options.target_table, options.target_user, target_password, options.printonly)
-    print("Table '%s' has been removed." % options.target_table)
-
-bfmap.schema(options.target_host, options.target_port, options.target_database,
-             options.target_table, options.target_user, target_password, options.printonly)
-print("Table '%s' has been created." % options.target_table)
+    if not options.append:
+        while True:
+            value = raw_input(
+                            "Do you want to remove table '%s' (y/n)?: " % options.target_table).lower()
+            if value == 'n':
+                print("Append data to table '%s'." % options.target_table)
+                break
+            elif value == 'y':
+                bfmap.remove(options.target_host, options.target_port, options.target_database,
+                            options.target_table, options.target_user, target_password, options.printonly)
+                print("Table '%s' has been removed." % options.target_table)
+                bfmap.schema(options.target_host, options.target_port, options.target_database,
+                            options.target_table, options.target_user, target_password, options.printonly)
+                print("Table '%s' has been recreated." % options.target_table)
+                break
 
 print("Inserting data ...")
 bfmap.ways2bfmap(options.source_host, options.source_port, options.source_database,
@@ -109,9 +114,4 @@ bfmap.ways2bfmap(options.source_host, options.source_port, options.source_databa
                  options.target_host, options.target_port, options.target_database,
                  options.target_table, options.target_user, target_password, config,
                  options.printonly)
-print("Done.")
-
-print("Setting up spatial index on table '%s' ... " % options.target_table)
-bfmap.index(options.target_host, options.target_port, options.target_database,
-            options.target_table, options.target_user, target_password, options.printonly)
 print("Done.")

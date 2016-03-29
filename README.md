@@ -64,14 +64,13 @@ curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pb
 
   ``` bash
 cd barefoot
-sudo docker build --rm=true -t barefoot ./map
+sudo docker build --rm=true -t barefoot-map ./map
   ```
 
 4. Create Docker container.
 
   ``` bash
-sudo docker run -t -i -p 127.0.0.1:5432:5432 --name="barefoot-oberbayern" \
-  -v ${PWD}/map/:/mnt/map barefoot
+sudo docker run -it -p 5432:5432 --name="barefoot-oberbayern" -v ${PWD}/map/:/mnt/map barefoot-map
   ```
 
 5. Import OSM extract (in the container).
@@ -111,7 +110,7 @@ java -jar target/barefoot-0.1.0-server-jar-with-dependencies.jar --geojson confi
 
   _Note: Stop server with Ctrl-c._
 
-3. Test setup with a provided sample data.
+3. Test setup with provided sample data.
 
   ``` bash
 python util/submit/batch.py --host localhost --port 1234  --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json
@@ -139,8 +138,8 @@ _Note: The following example is a quick start setup. For further details, see th
 
 1. Install prerequisites.
 
-  - ZeroMQ (e.g. with `sudo apt-get install libzmq3`)
-  - NodeJS and NPM (e.g. with `sudo apt-get install node npm`)
+  - ZeroMQ (e.g. with `sudo apt-get install libzmq3-dev`)
+  - NodeJS (e.g. with `sudo apt-get install nodejs`)
 
 2. Package Barefoot JAR. (Includes dependencies and executable main class.)
 
@@ -160,18 +159,16 @@ java -jar target/barefoot-0.1.0-tracker-jar-with-dependencies.jar config/tracker
 
 4. Install and start monitor (NodeJS server).
 
-  Install it ... (required only once)
+  Install (required only once)
   ``` bash
-cd util/monitor
-npm install
-cd ../..
+cd util/monitor && npm install && cd ../..
   ```
-  ... and start it:
+  ... and start:
   ``` bash
 node util/monitor/monitor.js 127.0.0.1 1235
   ```
 
-5. Test setup with a provided sample data.
+5. Test setup with provided sample data.
 
   ``` bash
 python util/submit/stream.py --host localhost --port 1234  --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-001.json

@@ -79,12 +79,12 @@ class TestBfmap(unittest.TestCase):
         row = (2557090, hstore, seq, nodes, counts, geoms)
         config = {"highway": {"trunk": (101, 1.0, 120)}}
 
-        segments = bfmap.segment(config, 0, row)
+        segments = bfmap.segment(config, row)
         self.assertEquals(1, len(segments))
-        self.assertEquals(564143, int(segments[0][3]))
-        self.assertEquals(564144, int(segments[0][4]))
-        self.assertEquals(-1, segments[0][6])
-        self.assertEquals(60, segments[0][7])
+        self.assertEquals(564143, int(segments[0][2]))
+        self.assertEquals(564144, int(segments[0][3]))
+        self.assertEquals(-1, segments[0][5])
+        self.assertEquals(60, segments[0][6])
 
     def test_segment2(self):
         hstore = '"hgv"=>"delivery", "ref"=>"B 2R", "name"=>"Isarring", "lanes"=>"2", "oneway"=>"yes", "highway"=>"trunk", "maxspeed"=>"60", "motorroad"=>"yes"'
@@ -97,7 +97,7 @@ class TestBfmap(unittest.TestCase):
         row = (2557090, hstore, seq, nodes, counts, geoms)
         config = {"highway": {"trunk": (101, 1.0, 120)}}
 
-        segments = bfmap.segment(config, 0, row)
+        segments = bfmap.segment(config, row)
         self.assertEquals(2, len(segments))
 
     def test_maxspeed(self):

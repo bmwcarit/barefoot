@@ -12,7 +12,7 @@ The following approach uses Docker (version 1.6 or higher, see [here](https://do
 1. Build Docker image.
   ``` bash
 cd barefoot
-sudo docker build --rm=true -t barefoot ./docker
+sudo docker build --rm=true -t barefoot-map ./map
   ```
 
 2. Create Docker container.
@@ -20,18 +20,18 @@ sudo docker build --rm=true -t barefoot ./docker
   _Note: Give the container a name by replacing `<container>` respectively._
 
   ``` bash
-sudo docker run -t -i -p 127.0.0.1:5432:5432 --name="<container>" -v ${PWD}/bfmap/:/mnt/bfmap -v ${PWD}/docker/osm/:/mnt/osm barefoot
+sudo docker run -it -p 5432:5432 --name="<container>" -v ${PWD}/map/:/mnt/map barefoot-map
   ```
 
 3. Import OSM extract (in the container).
 
   ``` bash
-root@acef54deeedb# bash /mnt/osm/import.sh <osm> <database> <user> <password> <config> slim|normal
+root@acef54deeedb# bash /mnt/map/osm/import.sh <osm> <database> <user> <password> <config> slim|normal
   ```
 
-  - To import an OpenStreetMap extract `<osm>` put the file in the directory `docker/osm` from outside the container which is then accessible inside the container at `/mnt/osm/`.
+  - To import an OpenStreetMap extract `<osm>` put the file in the directory `map/osm/` from outside the container, which is then accessible inside the container at `/mnt/map/osm/`.
   - The script imports the extract into a database with specified name and credentials, i.e. `<database>`, `<user>`, and `<password>`.
-  - A road type specification `<config>` must be provided as path to a file with the specification in JSON format. An example is included at `bfmap/road-types.json`.
+  - A road type specification `<config>` must be provided as path to a file with the specification in JSON format. An example is included at `map/tools/road-types.json`.
   - Standard import mode `normal` executes a bunch of SQL queries to import OSM data extract of any size, whereas `slim` mode runs the import in a single query which is fast but requires lots of memory. The latter should be used only for small OSM data extracts (extracts of at most the size of e.g. Switzerland).
 
   _Note: To detach the interactive shell from a running container without stopping it, use the escape sequence Ctrl-p + Ctrl-q._
@@ -43,26 +43,26 @@ The test map server setup follows the standard setup but uses a pre-configured i
 1. Download OSM extract (examples require `oberbayern.osm.pbf`)
 
   ``` bash
-curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf -o barefoot/docker/osm/oberbayern.osm.pbf
+curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf -o map/osm/oberbayern.osm.pbf
   ```
 
 2. Build Docker image (if not done yet).
 
   ``` bash
 cd barefoot
-sudo docker build --rm=true -t barefoot ./docker
+sudo docker build --rm=true -t barefoot-map ./map
   ```
 
 3. Create Docker container.
 
   ``` bash
-sudo docker run -t -i -p 127.0.0.1:5432:5432 --name="barefoot-oberbayern" -v ${PWD}/bfmap/:/mnt/bfmap -v ${PWD}/docker/osm/:/mnt/osm barefoot
+sudo docker run -it -p 5432:5432 --name="barefoot-oberbayern" -v ${PWD}/map/:/mnt/map barefoot-map
   ```
 
 4. Import OSM extract (in the container) with default parameters.
 
   ``` bash
-root@acef54deeedb# bash /mnt/osm/import.sh
+root@acef54deeedb# bash /mnt/map/osm/import.sh
   ```
 
 #### Docker commands
@@ -91,7 +91,7 @@ root@acef54deeedb#
   ``` bash
 $ sudo docker ps -a
 CONTAINER ID        IMAGE                     COMMAND                CREATED             STATUS              PORTS                      NAMES
-acef54deeedb        <database>-image:latest   /bin/sh -c 'service    3 minutes ago       Up 2 seconds        127.0.0.1:5432->5432/tcp   <container>
+acef54deeedb        barefoot-map              /bin/sh -c 'service    3 minutes ago       Up 2 seconds        0.0.0.0:5432->5432/tcp     <container>
   ```
 
 #### Test import scripts
@@ -102,19 +102,19 @@ _Note: This is only useful, if you work on the Python import scripts._
 
   ``` bash
 cd barefoot
-sudo docker build --rm=true -t barefoot ./docker
+sudo docker build --rm=true -t barefoot-map ./map
   ```
 
 2. Create test container.
 
   ``` bash
-sudo docker run -t -i -p 127.0.0.1:5432:5432 --name="barefoot-test" -v ${PWD}/bfmap/:/mnt/bfmap -v ${PWD}/docker/osm/:/mnt/osm barefoot
+sudo docker run -it --name="barefoot-test" -v ${PWD}/map/:/mnt/map barefoot-map
   ```
 
 3. Run test script (in the container).
 
   ``` bash
-root@8160f9e2a2c0# bash /mnt/bfmap/test/run.sh
+root@8160f9e2a2c0# bash /mnt/map/tools/test/run.sh
   ```
 
 ### Self-maintained database
@@ -144,8 +144,7 @@ psql -h <host> -p <port> -U <user> -d <database> -c "CREATE EXTENSION hstore;"
   1. Download and set up OSM database schema.
 
     ``` bash
-wget https://trac.openstreetmap.org/export/22680/subversion/applications/utils/osmosis/trunk/package/script/pgsql_simple_schema_0.6.sql
-psql -h <host> -p <port> -U <user> -d <database> -f pgsql_simple_schema_0.6.sql
+psql -h <host> -p <port> -U <user> -d <database> -f /mnt/map/osm/pgsnapshot_schema_0.6.sql
     ```
 
   2.  Import OSM extract with osmosis.
@@ -169,7 +168,7 @@ export JAVACMD_OPTIONS
 bfmap/osm2ways --host <host> --port <port> --database <database> --table <ways-table> --user <user> --slim
   ```
 
-  However, if memory is not sufficiently available, use normal mode. This requires to specify a prefix `<prefix>` for temporary tables. This prevents deleting and overwriting existing tables:
+  However, if memory is not sufficiently available, use normal mode. This requires a prefix `<prefix>` for temporary tables, which prevents collisions with existing tables:
 
   ``` bash
 bfmap/osm2ways --host <host> --port <port> --database <database> --table <ways-table> --user <user> --prefix <prefix>
@@ -198,7 +197,7 @@ bfmap/ways2bfmap --source-host <host> --source-port <port> --source-database <ho
 
   ``` bash
 cd barefoot
-mvn compile assembly:single
+mvn package
   ```
 
 3. Start map matching server.
@@ -206,7 +205,7 @@ mvn compile assembly:single
   A map matching server is a Java process that is accessible via TCP/IP socket and requires configuration for access to the map server and settings of the map matching server.
 
   ``` bash
-java -jar target/barefoot-0.0.2-jar-with-dependencies.jar [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties
+java -jar target/barefoot-0.1.0-jar-with-dependencies.jar [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties
   ```
 
   - Map server properties contains access information to map server.
@@ -219,10 +218,10 @@ java -jar target/barefoot-0.0.2-jar-with-dependencies.jar [--slimjson|--debug|--
 
 ### Usage
 
-A map matching request is sent to the server via TCP/IP connection. For simple testing, `netcat` can be used to send requests. An example request is included at `src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json`. 
+A map matching request is sent to the server via TCP/IP connection. A simple submission script is provided and can be tested with provided sample data: 
 
 ``` bash
-cat src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json | netcat 127.0.0.1 1234
+python util/submit/batch.py --host localhost --port 1234  --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json
 ```
 
 #### Request format (default)
@@ -231,7 +230,7 @@ A map matching request is a text message with a JSON array of JSON objects in th
 
 ``` json
 [
-	{"id":"a1396ab7-7caa-4c31-9f3c-8982055e3de6","time":1410324847000,"point":"POINT (11.564388282625075 48.16350662940509)"},
+	{"id":"x001","time":1410324847000,"point":"POINT (11.564388282625075 48.16350662940509)"},
 	...
 ]
 ```
@@ -292,7 +291,7 @@ _Note: Barefoot library requires Java 7 or higher._
 <dependency>
 		<groupId>de.bmw-carit.barefoot</groupId>
 		<artifactId>barefoot</artifactId>
-		<version>0.0.2</version>
+		<version>0.1.0</version>
 </dependency>
   ```
 
@@ -327,7 +326,7 @@ mvn install -DskipTests
 <dependency>
 		<groupId>com.bmw-carit</groupId>
 		<artifactId>barefoot</artifactId>
-		<version>0.0.2</version>
+		<version>0.1.0</version>
 </dependency>
   ```
 

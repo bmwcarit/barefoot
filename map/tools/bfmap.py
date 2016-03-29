@@ -52,7 +52,7 @@ def ways2bfmap(src_host, src_port, src_database, src_table, src_user, src_passwo
         exit(1)
 
     rowcount = 0
-    gid = 0
+    roadcount = 0
 
     # Process chunks
     while True:
@@ -66,25 +66,25 @@ def ways2bfmap(src_host, src_port, src_database, src_table, src_user, src_passwo
             if len(row[1]) < 1 or len(row[2]) < 2:
                 continue
 
-            segments_ = segment(config, gid, row)
+            segments_ = segment(config, row)
             segments += segments_
-            gid += len(segments_)
+            roadcount += len(segments_)
 
         rowcount += len(rows)
 
         try:
-            query = "INSERT INTO %s VALUES %s;" % (tgt_table, ",".join(
-                """('%s','%s','%s','%s','%s','%s','%s', %s, %s,'%s',
-                ST_GeomFromText('%s',4326))""" % segment for segment
-                in segments))
-            if printonly == False and len(segments) > 0:
+            query = """INSERT INTO %s (osm_id,class_id,source,target,length,reverse,
+                maxspeed_forward,maxspeed_backward,priority,geom) VALUES %s;""" % (
+                tgt_table, ",".join("""('%s','%s','%s','%s','%s','%s', %s, %s,'%s',
+                ST_GeomFromText('%s',4326))""" % segment for segment in segments))
+            if printonly == False:
                 tgt_cur.execute(query)
-            print("%s segments from %s ways inserted." % (gid, rowcount))
+            print("%s segments from %s ways inserted." % (roadcount, rowcount))
         except Exception, e:
             print("Database transaction failed. (%s)" % e.pgerror)
             exit(1)
 
-    print("%s segments from %s ways inserted and finished." % (gid, rowcount))
+    print("%s segments from %s ways inserted and finished." % (roadcount, rowcount))
 
     tgt_con.commit()
     src_cur.close()
@@ -171,8 +171,7 @@ def maxspeed(tags):
 
     return (forward, backward)
 
-
-def segment(config, gid, row):
+def segment(config, row):
     segments = []
 
     if len(row[1]) < 1 or len(row[2]) < 2:
@@ -205,10 +204,8 @@ def segment(config, gid, row):
         line.AddPoint(point.GetX(), point.GetY())
 
         if ((int(way[i][2]) >= 2) or (i == (len(way[:, 0]) - 1))):
-            sid = gid
-            gid += 1
             line.FlattenTo2D()
-            segment = (sid, osm_id, class_id, source, way[i][
+            segment = (osm_id, class_id, source, way[i][
                 1], length, reverse, maxspeed_forward,
                 maxspeed_backward,
                 priority, line.ExportToWkt())
@@ -221,8 +218,8 @@ def segment(config, gid, row):
             line.AddPoint(point.GetX(), point.GetY())
 
     return segments
-# Check if table exists
 
+# Check if table exists
 
 def exists(host, port, database, table, user, password):
     try:
@@ -254,7 +251,6 @@ def exists(host, port, database, table, user, password):
 
 # Clear table data
 
-
 def remove(host, port, database, table, user, password, printonly):
     try:
         dbcon = psycopg2.connect(
@@ -280,43 +276,52 @@ def remove(host, port, database, table, user, password, printonly):
 
 # Create table schema
 
-
 def schema(host, port, database, table, user, password, printonly):
-    try:
-        dbcon = psycopg2.connect(
-            host=host, port=port, database=database, user=user, password=password)
-        cursor = dbcon.cursor()
-    except:
-        print("Connection to database failed.")
-        exit(1)
-
-    try:
-        query = """CREATE TABLE %s(gid bigint NOT NULL,
-				osm_id bigint NOT NULL,
-				class_id integer NOT NULL,
-				source bigint NOT NULL,
-				target bigint NOT NULL,
-				length double precision NOT NULL,
-				reverse double precision NOT NULL,
-				maxspeed_forward integer,
-				maxspeed_backward integer,
-				priority double precision NOT NULL);
-				SELECT AddGeometryColumn('%s','geom',4326,
-				'LINESTRING',2);""" % (table, table)
-        if printonly == True:
-            print(query)
-        else:
-            cursor.execute(query)
-            dbcon.commit()
-    except Exception, e:
-        print("Database transaction failed. (%s)" % e.pgerror)
-        exit(1)
-
-    cursor.close()
-    dbcon.close()
+    while not exists(host, port, database, table, user, password):
+        try:
+            dbcon = psycopg2.connect(
+                host=host, port=port, database=database, user=user, password=password)
+            cursor = dbcon.cursor()
+        except:
+            print("Connection to database failed.")
+            exit(1)
+    
+        try:
+            query = """CREATE TABLE %s(gid bigserial,
+    				osm_id bigint NOT NULL,
+    				class_id integer NOT NULL,
+    				source bigint NOT NULL,
+    				target bigint NOT NULL,
+    				length double precision NOT NULL,
+    				reverse double precision NOT NULL,
+    				maxspeed_forward integer,
+    				maxspeed_backward integer,
+    				priority double precision NOT NULL);
+    				SELECT AddGeometryColumn('%s','geom',4326,
+    				'LINESTRING',2);""" % (table, table)
+            if printonly == True:
+                print(query)
+            else:
+                cursor.execute(query)
+                dbcon.commit()
+        except Exception, e:
+            print("Database transaction failed. (%s)" % e.pgerror)
+            
+        try:
+            query = "CREATE INDEX idx_%s_geom ON %s USING gist(geom);" % (
+                table, table)
+            if printonly == True:
+                print(query)
+            else:
+                cursor.execute(query)
+                dbcon.commit()
+        except Exception, e:
+            print("Database transaction failed. (%s)" % e.pgerror)
+    
+        cursor.close()
+        dbcon.close()
 
 # Setup index on geom
-
 
 def index(host, port, database, table, user, password, printonly):
     try:
@@ -343,17 +348,6 @@ def index(host, port, database, table, user, password, printonly):
     dbcon.close()
 
 # Read config file of road types
-
-
-# def config(file):
-#     xml = et.parse(file).getroot()
-#     config = {}
-#
-#     for entry in xml.find("type").findall("class"):
-#         config[entry.get("name")] = (
-#             entry.get("id"), entry.get("priority"), entry.get("maxspeed"))
-#
-#     return config
 
 def config(file):
     jsonfile = open(file)
