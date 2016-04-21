@@ -326,7 +326,7 @@ _These dependencies are linked only dynamically in the Java source of Barefoot. 
  * Java JSON (see below)
  * Jackson, Apache License 2.0 ([https://github.com/FasterXML/jackson-core](https://github.com/FasterXML/jackson-core))
 * GeographicLib-Java, MIT License ([http://geographiclib.sourceforge.net/](http://geographiclib.sourceforge.net/))
-* Java JSON, MIT License with extra clause "The Software shall be used for Good, not Evil." 
+* Java JSON, MIT License with extra clause "The Software shall be used for Good, not Evil." ([http://www.json.org](http://www.json.org))
 * PostgreSQL JDBC, BSD 3-Clause ([http://jdbc.postgresql.org/about/license.html](http://jdbc.postgresql.org/about/license.html))
 * JUnit, CPL-1.0 ([https://github.com/junit-team/junit](https://github.com/junit-team/junit))
  * Hamcrest, BSD 3-Clause ([https://github.com/hamcrest/JavaHamcrest](https://github.com/hamcrest/JavaHamcrest))
