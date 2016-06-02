@@ -67,13 +67,13 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
     /**
      * Creates a HMM map matching filter for some map, router, cost function, and spatial operator.
      *
-     * @param map {@link RoadMap} object of the map to be matched to.
-     * @param router {@link Router} object to be used for route estimation.
-     * @param cost Cost function to be used for routing.
+     * @param map     {@link RoadMap} object of the map to be matched to.
+     * @param router  {@link Router} object to be used for route estimation.
+     * @param cost    Cost function to be used for routing.
      * @param spatial Spatial operator for spatial calculations.
      */
     public Matcher(RoadMap map, Router<Road, RoadPoint> router, Cost<Road> cost,
-            SpatialOperator spatial) {
+                   SpatialOperator spatial) {
         this.map = map;
         this.router = router;
         this.cost = cost;
@@ -85,7 +85,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
      * probabilities.
      *
      * @return Standard deviation in meters of gaussian distribution that defines emission
-     *         probabilities.
+     * probabilities.
      */
     public double getSigma() {
         return Math.sqrt(this.sig2);
@@ -96,7 +96,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
      * probabilities (default is 5 meters).
      *
      * @param sigma Standard deviation in meters of gaussian distribution for defining emission
-     *        probabilities (default is 5 meters).
+     *              probabilities (default is 5 meters).
      */
     public void setSigma(double sigma) {
         this.sig2 = Math.pow(sigma, 2);
@@ -107,7 +107,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
      * Gets lambda parameter of negative exponential distribution defining transition probabilities.
      *
      * @return Lambda parameter of negative exponential distribution defining transition
-     *         probabilities.
+     * probabilities.
      */
     public double getLambda() {
         return this.lambda;
@@ -118,7 +118,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
      * (default is 0.0). Adaptive parameterization is enabled if lambda is set to 0.0.
      *
      * @param lambda Lambda parameter of negative exponential distribution defining transition
-     *        probabilities.
+     *               probabilities.
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;
@@ -162,7 +162,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
 
     @Override
     protected Set<Tuple<MatcherCandidate, Double>> candidates(Set<MatcherCandidate> predecessors,
-            MatcherSample sample) {
+                                                              MatcherSample sample) {
         if (logger.isTraceEnabled()) {
             logger.trace("finding candidates for sample {} {}", new SimpleDateFormat(
                     "yyyy-MM-dd HH:mm:ssZ").format(sample.time()), GeometryEngine.geometryToWkt(
@@ -172,11 +172,19 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         Set<RoadPoint> points_ = map.spatial().radius(sample.point(), radius);
         Set<RoadPoint> points = new HashSet<RoadPoint>(Minset.minimize(points_));
 
+        /**
+         * KETAN: Create a Map of edge to point, to lookup by edgeid
+         */
         Map<Long, RoadPoint> map = new HashMap<Long, RoadPoint>();
         for (RoadPoint point : points) {
             map.put(point.edge().id(), point);
         }
 
+        /**
+         * KETAN: We discard all the points that are on the same edge but, actually behind the point
+         * in consideration. Given an edge with fraction representing where on the edge is this point
+         * between [0, 1]
+         */
         for (MatcherCandidate predecessor : predecessors) {
             RoadPoint point = map.get(predecessor.point().edge().id());
             if (point != null && point.fraction() < predecessor.point().fraction()) {
@@ -190,6 +198,10 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
 
         logger.debug("{} ({}) candidates", points.size(), points_.size());
 
+        /**
+         * KETAN: Now for remaining points, calculate emission probability using distance between
+         * the sample point (input) and the candidate point
+         */
         for (RoadPoint point : points) {
             double dz = spatial.distance(sample.point(), point.geometry());
             double emission = 1 / sqrt_2pi_sig2 * Math.exp((-1) * dz / (2 * sig2));
@@ -277,8 +289,8 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
                         double transition =
                                 (1 / beta)
                                         * Math.exp((-1.0)
-                                                * Math.max(0, route.cost(new TimePriority()) - base)
-                                                / beta);
+                                        * Math.max(0, route.cost(new TimePriority()) - base)
+                                        / beta);
 
                         map.put(candidate, new Tuple<MatcherTransition, Double>(
                                 new MatcherTransition(route), transition));
@@ -307,13 +319,13 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
      * Matches a full sequence of samples, {@link MatcherSample} objects and returns state
      * representation of the full matching which is a {@link KState} object.
      *
-     * @param samples Sequence of samples, {@link MatcherSample} objects.
+     * @param samples     Sequence of samples, {@link MatcherSample} objects.
      * @param minDistance Minimum distance in meters between subsequent samples as criterion to
-     *        match a sample. (Avoids unnecessary matching where samples are more dense than
-     *        necessary.)
+     *                    match a sample. (Avoids unnecessary matching where samples are more dense than
+     *                    necessary.)
      * @param minInterval Minimum time interval in milliseconds between subsequent samples as
-     *        criterion to match a sample. (Avoids unnecessary matching where samples are more dense
-     *        than necessary.)
+     *                    criterion to match a sample. (Avoids unnecessary matching where samples are more dense
+     *                    than necessary.)
      * @return State representation of the full matching which is a {@link KState} object.
      */
     public MatcherKState mmatch(List<MatcherSample> samples, double minDistance, int minInterval) {
@@ -329,13 +341,40 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         for (MatcherSample sample : samples) {
             if (state.sample() != null
                     && (spatial.distance(sample.point(), state.sample().point()) < Math.max(0,
-                            minDistance) || (sample.time() - state.sample().time()) < Math.max(0,
-                            minInterval))) {
+                    minDistance) || (sample.time() - state.sample().time()) < Math.max(0,
+                    minInterval))) {
                 continue;
             }
             Set<MatcherCandidate> vector = execute(state.vector(), state.sample(), sample);
             state.update(vector, sample);
         }
+
+        return state;
+    }
+
+    /**
+     * Matches a full sequence of samples, {@link MatcherSample} objects and returns state
+     * representation of the full matching which is a {@link KState} object.
+     *
+     * @param sample     Sequence of samples, {@link MatcherSample} objects.
+     * @param minDistance Minimum distance in meters between subsequent samples as criterion to
+     *                    match a sample. (Avoids unnecessary matching where samples are more dense than
+     *                    necessary.)
+     * @param minInterval Minimum time interval in milliseconds between subsequent samples as
+     *                    criterion to match a sample. (Avoids unnecessary matching where samples are more dense
+     *                    than necessary.)
+     * @return State representation of the full matching which is a {@link KState} object.
+     */
+    public MatcherKState mmatch(MatcherSample sample, double minDistance, int minInterval, MatcherKState state) {
+
+        if (state.sample() != null
+                && (spatial.distance(sample.point(), state.sample().point()) < Math.max(0,
+                minDistance) || (sample.time() - state.sample().time()) < Math.max(0,
+                minInterval))) {
+            return state;
+        }
+        Set<MatcherCandidate> vector = execute(state.vector(), state.sample(), sample);
+        state.update(vector, sample);
 
         return state;
     }
