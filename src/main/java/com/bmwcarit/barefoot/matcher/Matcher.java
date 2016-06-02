@@ -172,11 +172,19 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         Set<RoadPoint> points_ = map.spatial().radius(sample.point(), radius);
         Set<RoadPoint> points = new HashSet<RoadPoint>(Minset.minimize(points_));
 
+        /**
+         * KETAN: Create a Map of edge to point, to lookup by edgeid
+         */
         Map<Long, RoadPoint> map = new HashMap<Long, RoadPoint>();
         for (RoadPoint point : points) {
             map.put(point.edge().id(), point);
         }
 
+        /**
+         * KETAN: We discard all the points that are on the same edge but, actually behind the point
+         * in consideration. Given an edge with fraction representing where on the edge is this point
+         * between [0, 1]
+         */
         for (MatcherCandidate predecessor : predecessors) {
             RoadPoint point = map.get(predecessor.point().edge().id());
             if (point != null && point.fraction() < predecessor.point().fraction()) {
@@ -190,6 +198,10 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
 
         logger.debug("{} ({}) candidates", points.size(), points_.size());
 
+        /**
+         * KETAN: Now for remaining points, calculate emission probability using distance between
+         * the sample point (input) and the candidate point
+         */
         for (RoadPoint point : points) {
             double dz = spatial.distance(sample.point(), point.geometry());
             double emission = 1 / sqrt_2pi_sig2 * Math.exp((-1) * dz / (2 * sig2));

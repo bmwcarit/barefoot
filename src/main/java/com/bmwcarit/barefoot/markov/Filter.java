@@ -126,6 +126,9 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
         assert (sample != null);
 
         Set<C> result = new HashSet<C>();
+        /**
+         * KETAN: Returns a set of candidate points, within the radius, and their emission probabilities
+         */
         Set<Tuple<C, Double>> candidates = candidates(predecessors, sample);
         logger.trace("{} state candidates", candidates.size());
 
@@ -137,6 +140,11 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
                 states.add(candidate.one());
             }
 
+            /**
+             * KETAN: If there are predecessors, we can use calculate transition probability using
+             * actual routing distance between the predecessor points and the new candidates.
+             *  - Full cartesian product
+             */
             Map<C, Map<C, Tuple<T, Double>>> transitions =
                     transitions(new Tuple<S, Set<C>>(previous, predecessors), new Tuple<S, Set<C>>(
                             sample, states));
