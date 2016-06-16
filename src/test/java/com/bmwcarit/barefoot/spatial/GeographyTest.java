@@ -1,28 +1,25 @@
 /*
-* Copyright (C) 2015, BMW Car IT GmbH
-* 
-* Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
-*
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-* in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
-* writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-* WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
-* language governing permissions and limitations under the License.
+ * Copyright (C) 2015, BMW Car IT GmbH
+ *
+ * Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
+ * writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
  */
 
 package com.bmwcarit.barefoot.spatial;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import org.junit.Test;
 
-import com.bmwcarit.barefoot.spatial.Geography;
-import com.bmwcarit.barefoot.spatial.SpatialOperator;
 import com.bmwcarit.barefoot.util.Stopwatch;
 import com.bmwcarit.barefoot.util.Triple;
 import com.esri.core.geometry.Geometry.Type;
@@ -106,7 +103,7 @@ public class GeographyTest {
     }
 
     @Test
-    public void testGnomonic() {
+    public void testGnomonic() throws FileNotFoundException {
         Point reyk = new Point(-21.933333, 64.15);
         Point berl = new Point(13.408056, 52.518611);
         Point mosk = new Point(37.616667, 55.75);
@@ -138,7 +135,7 @@ public class GeographyTest {
         assertEquals(p.getY(), res.one().getY(), 10E-2);
 
         if (wktexport) {
-            try {
+            {
                 Polyline line = new Polyline();
                 line.startPath(mosk);
                 for (double _f = 10E-3; _f < 1; _f += 10E-3) {
@@ -148,12 +145,9 @@ public class GeographyTest {
                 PrintWriter writer = new PrintWriter("geog_mosk-reyk.json");
                 writer.write(GeometryEngine.geometryToGeoJson(line));
                 writer.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                fail();
             }
 
-            try {
+            {
                 Polyline line = new Polyline();
                 line.startPath(berl);
                 for (double _f = 10E-3; _f < 1; _f += 10E-3) {
@@ -163,9 +157,6 @@ public class GeographyTest {
                 PrintWriter writer = new PrintWriter("geog_berl-intc.json");
                 writer.write(GeometryEngine.geometryToGeoJson(line));
                 writer.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                fail();
             }
         }
     }

@@ -13,7 +13,6 @@
 package com.bmwcarit.barefoot.tracker;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -73,7 +72,8 @@ public class TrackerServerTest {
                 Thread.sleep(timeout);
 
                 if (trials == 0) {
-                    throw new IOException(e.getMessage());
+                    logger.error(e.getMessage());
+                    throw new IOException();
                 } else {
                     trials -= 1;
                 }
@@ -102,7 +102,8 @@ public class TrackerServerTest {
                 Thread.sleep(timeout);
 
                 if (trials == 0) {
-                    throw new IOException(e.getMessage());
+                    logger.error(e.getMessage());
+                    throw new IOException();
                 } else {
                     trials -= 1;
                 }
@@ -128,44 +129,39 @@ public class TrackerServerTest {
     }
 
     @Test
-    public void testTrackerServer() {
-        try {
-            Server server = new Server();
-            InetAddress host = InetAddress.getLocalHost();
-            Properties properties = new Properties();
-            properties.load(TrackerServerTest.class.getResource("tracker.properties").openStream());
-            int port = Integer.parseInt(properties.getProperty("server.port"));
+    public void testTrackerServer() throws IOException, JSONException, InterruptedException {
+        Server server = new Server();
+        InetAddress host = InetAddress.getLocalHost();
+        Properties properties = new Properties();
+        properties.load(TrackerServerTest.class.getResource("tracker.properties").openStream());
+        int port = Integer.parseInt(properties.getProperty("server.port"));
 
-            server.start();
-            {
-                String json =
-                        new String(Files.readAllBytes(Paths.get(ServerTest.class.getResource(
-                                "x0001-015.json").getPath())), Charset.defaultCharset());
-                List<MatcherSample> samples = new LinkedList<MatcherSample>();
-                JSONArray jsonsamples = new JSONArray(json);
-                for (int i = 0; i < jsonsamples.length(); ++i) {
-                    MatcherSample sample = new MatcherSample(jsonsamples.getJSONObject(i));
-                    samples.add(sample);
-                    sendSample(host, port, sample.toJSON());
-                }
-
-                String id = new MatcherSample(jsonsamples.getJSONObject(0)).id();
-                MatcherKState state = requestState(host, port, id);
-                MatcherKState check = TrackerControl.getServer().getMatcher().mmatch(samples, 0, 0);
-
-                assertEquals(check.sequence().size(), state.sequence().size());
-
-                for (int i = 0; i < state.sequence().size(); i++) {
-                    assertEquals(check.sequence().get(i).point().edge().id(),
-                            state.sequence().get(i).point().edge().id());
-                    assertEquals(check.sequence().get(i).point().fraction(), state.sequence()
-                            .get(i).point().fraction(), 1E-10);
-                }
+        server.start();
+        {
+            String json =
+                    new String(Files.readAllBytes(Paths.get(ServerTest.class.getResource(
+                            "x0001-015.json").getPath())), Charset.defaultCharset());
+            List<MatcherSample> samples = new LinkedList<MatcherSample>();
+            JSONArray jsonsamples = new JSONArray(json);
+            for (int i = 0; i < jsonsamples.length(); ++i) {
+                MatcherSample sample = new MatcherSample(jsonsamples.getJSONObject(i));
+                samples.add(sample);
+                sendSample(host, port, sample.toJSON());
             }
-            server.stop();
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            fail();
+
+            String id = new MatcherSample(jsonsamples.getJSONObject(0)).id();
+            MatcherKState state = requestState(host, port, id);
+            MatcherKState check = TrackerControl.getServer().getMatcher().mmatch(samples, 0, 0);
+
+            assertEquals(check.sequence().size(), state.sequence().size());
+
+            for (int i = 0; i < state.sequence().size(); i++) {
+                assertEquals(check.sequence().get(i).point().edge().id(), state.sequence().get(i)
+                        .point().edge().id());
+                assertEquals(check.sequence().get(i).point().fraction(), state.sequence().get(i)
+                        .point().fraction(), 1E-10);
+            }
         }
+        server.stop();
     }
 }

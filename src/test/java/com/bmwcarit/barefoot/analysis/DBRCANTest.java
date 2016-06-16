@@ -16,9 +16,10 @@ package com.bmwcarit.barefoot.analysis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -596,7 +597,7 @@ public class DBRCANTest {
     }
 
     @Test
-    public void testNYCSample() throws FileNotFoundException {
+    public void testNYCSample() throws NumberFormatException, IOException, ParseException {
         List<Point> points = new LinkedList<Point>();
         Map<Point, List<Long>> times = new HashMap<Point, List<Long>>();
 

@@ -1,20 +1,19 @@
 /*
-* Copyright (C) 2015, BMW Car IT GmbH
-* 
-* Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
-*
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-* in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
-* writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-* WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
-* language governing permissions and limitations under the License.
+ * Copyright (C) 2015, BMW Car IT GmbH
+ *
+ * Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
+ * writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
  */
 
 package com.bmwcarit.barefoot.road;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,11 +24,6 @@ import java.util.Properties;
 import org.json.JSONException;
 import org.junit.Test;
 
-import com.bmwcarit.barefoot.road.BaseRoad;
-import com.bmwcarit.barefoot.road.Configuration;
-import com.bmwcarit.barefoot.road.PostGISReader;
-import com.bmwcarit.barefoot.road.RoadReader;
-import com.bmwcarit.barefoot.util.SourceException;
 import com.bmwcarit.barefoot.util.Tuple;
 import com.esri.core.geometry.Geometry.Type;
 import com.esri.core.geometry.GeometryEngine;
@@ -41,63 +35,49 @@ public class PostGISReaderTest {
 
     private static RoadReader reader = null;
 
-    public static RoadReader Load() {
+    public static RoadReader Load() throws IOException, JSONException {
 
         if (reader != null) {
             return reader;
         }
 
-        try {
-            Properties props = new Properties();
-            props.load(PostGISReaderTest.class.getResourceAsStream("oberbayern.db.properties"));
+        Properties props = new Properties();
+        props.load(PostGISReaderTest.class.getResourceAsStream("oberbayern.db.properties"));
 
-            String host = props.getProperty("host");
-            int port = Integer.parseInt(props.getProperty("port"));
-            String database = props.getProperty("database");
-            String table = props.getProperty("table");
-            String user = props.getProperty("user");
-            String password = props.getProperty("password");
-            String path = props.getProperty("road-types");
+        String host = props.getProperty("host");
+        int port = Integer.parseInt(props.getProperty("port"));
+        String database = props.getProperty("database");
+        String table = props.getProperty("table");
+        String user = props.getProperty("user");
+        String password = props.getProperty("password");
+        String path = props.getProperty("road-types");
 
-            Map<Short, Tuple<Double, Integer>> config = Configuration.read(path);
+        Map<Short, Tuple<Double, Integer>> config = Configuration.read(path);
 
-            reader = new PostGISReader(host, port, database, table, user, password, config);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            fail();
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail();
-        }
+        reader = new PostGISReader(host, port, database, table, user, password, config);
 
         return reader;
     }
 
     @Test
-    public void testPostGISReader() {
+    public void testPostGISReader() throws IOException, JSONException {
         RoadReader reader = Load();
         boolean readone = false;
 
-        try {
-            reader.open();
+        reader.open();
 
-            while ((reader.next()) != null) {
-                readone = true;
-                break; // Read only first line for testing
-            }
-
-            reader.close();
-
-        } catch (SourceException e) {
-            e.printStackTrace();
-            fail();
+        while ((reader.next()) != null) {
+            readone = true;
+            break; // Read only first line for testing
         }
+
+        reader.close();
 
         assertTrue(readone);
     }
 
     @Test
-    public void testPolygon() {
+    public void testPolygon() throws IOException, JSONException {
         Polygon polygon =
                 (Polygon) GeometryEngine
                         .geometryFromWkt(
@@ -106,29 +86,23 @@ public class PostGISReaderTest {
         BaseRoad road = null;
         RoadReader reader = Load();
 
-        try {
-            reader.open(polygon, null);
-            int count = 0;
+        reader.open(polygon, null);
+        int count = 0;
 
-            while ((road = reader.next()) != null) {
-                assertTrue(GeometryEngine.overlaps(polygon, road.geometry(),
-                        SpatialReference.create(4326))
-                        || GeometryEngine.contains(polygon, road.geometry(),
-                                SpatialReference.create(4326)));
-                count += 1;
-            }
-
-            reader.close();
-            assertTrue(count > 0);
-
-        } catch (SourceException e) {
-            e.printStackTrace();
-            fail();
+        while ((road = reader.next()) != null) {
+            assertTrue(GeometryEngine.overlaps(polygon, road.geometry(),
+                    SpatialReference.create(4326))
+                    || GeometryEngine.contains(polygon, road.geometry(),
+                            SpatialReference.create(4326)));
+            count += 1;
         }
+
+        reader.close();
+        assertTrue(count > 0);
     }
 
     @Test
-    public void testExclusion() {
+    public void testExclusion() throws IOException, JSONException {
         Polygon polygon =
                 (Polygon) GeometryEngine
                         .geometryFromWkt(
@@ -138,25 +112,19 @@ public class PostGISReaderTest {
         BaseRoad road = null;
         RoadReader reader = Load();
 
-        try {
-            reader.open(polygon, exclusion);
-            int count = 0;
+        reader.open(polygon, exclusion);
+        int count = 0;
 
-            while ((road = reader.next()) != null) {
-                assertTrue(GeometryEngine.overlaps(polygon, road.geometry(),
-                        SpatialReference.create(4326))
-                        || GeometryEngine.contains(polygon, road.geometry(),
-                                SpatialReference.create(4326)));
-                assertTrue(!exclusion.contains(road.type()));
-                count += 1;
-            }
-
-            reader.close();
-            assertTrue(count > 0);
-
-        } catch (SourceException e) {
-            e.printStackTrace();
-            fail();
+        while ((road = reader.next()) != null) {
+            assertTrue(GeometryEngine.overlaps(polygon, road.geometry(),
+                    SpatialReference.create(4326))
+                    || GeometryEngine.contains(polygon, road.geometry(),
+                            SpatialReference.create(4326)));
+            assertTrue(!exclusion.contains(road.type()));
+            count += 1;
         }
+
+        reader.close();
+        assertTrue(count > 0);
     }
 }
