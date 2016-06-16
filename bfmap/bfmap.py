@@ -77,7 +77,7 @@ def ways2bfmap(src_host, src_port, src_database, src_table, src_user, src_passwo
                 """('%s','%s','%s','%s','%s','%s','%s', %s, %s,'%s',
                 ST_GeomFromText('%s',4326))""" % segment for segment
                 in segments))
-            if printonly == False and len(segments)>0:
+            if printonly == False and len(segments) > 0:
                 tgt_cur.execute(query)
             print("%s segments from %s ways inserted." % (gid, rowcount))
         except Exception, e:
