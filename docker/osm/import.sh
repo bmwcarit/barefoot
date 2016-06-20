@@ -13,7 +13,7 @@
 # language governing permissions and limitations under the License.
 #
 
-if [ "$#" -eq "6" ] && ( [ "$6" = "slim" ] || [ "$6" = "normal" ] )
+if [ "$#" -eq "7" ] && ( [ "$6" = "slim" ] || [ "$6" = "normal" ] )
 then
 	input=$1
 	database=$2
@@ -21,6 +21,7 @@ then
 	password=$4
 	config=$5
 	mode=$6
+	port=$7
 elif [ "$#" -eq "0" ]
 then
 	input=/mnt/osm/oberbayern.osm.pbf
@@ -29,8 +30,9 @@ then
 	password=pass
 	config=/mnt/bfmap/road-types.json
 	mode=slim
+	port=5432
 else
-	echo "Error. Say '$0 osm-file database user password bfmap-config slim|normal' or run with defaults '$0'."
+	echo "Error. Say '$0 osm-file database user password bfmap-config slim|normal port' or run with defaults '$0'."
 	exit
 fi
 
@@ -43,7 +45,7 @@ echo "Done."
 echo "Start creation of user and initialization of credentials ..."
 sudo -u postgres psql -c "CREATE USER ${user} PASSWORD '${password}';"
 sudo -u postgres psql -c "GRANT ALL ON DATABASE ${database} TO ${user};"
-passphrase="localhost:5432:${database}:${user}:${password}"
+passphrase="localhost:${port}:${database}:${user}:${password}"
 if [ ! -e ~/.pgpass ] || [ `less ~/.pgpass | grep -c "$passphrase"` -eq 0 ]
 then
 	echo "$passphrase" >> ~/.pgpass
@@ -52,7 +54,7 @@ fi
 echo "Done."
 
 echo "Start population of OSM data (osmosis) ..."
-psql -h localhost -d ${database} -U ${user} -f /mnt/osm/pgsql_simple_schema_0.6.sql
+psql -h localhost -p ${port} -d ${database} -U ${user} -f /mnt/osm/pgsql_simple_schema_0.6.sql
 rm -r /mnt/osm/tmp
 mkdir /mnt/osm/tmp
 if [ -z "$JAVACMD_OPTIONS" ]; then
@@ -61,17 +63,17 @@ else
     JAVACMD_OPTIONS="$JAVACMD_OPTIONS -Djava.io.tmpdir=/mnt/osm/tmp"
 fi
 export JAVACMD_OPTIONS
-osmosis --read-pbf file=${input} --write-pgsql user="${user}" password="${password}" database="${database}"
+osmosis --read-pbf file=${input} --write-pgsql host=localhost:${port} user="${user}" password="${password}" database="${database}"
 echo "Done."
 
 echo "Start extraction of routing data (bfmap tools) ..."
 cd /mnt/bfmap/
 if [ "$mode" = "slim" ]
 then
-	python osm2ways.py --host localhost --port 5432 --database ${database} --table temp_ways --user ${user} --password ${password} --slim
+	python osm2ways.py --host localhost --port ${port} --database ${database} --table temp_ways --user ${user} --password ${password} --slim
 elif [ "$mode" = "normal" ]
 then
-	python osm2ways.py --host localhost --port 5432 --database ${database} --table temp_ways --user ${user} --password ${password} --prefix _tmp
+	python osm2ways.py --host localhost --port ${port} --database ${database} --table temp_ways --user ${user} --password ${password} --prefix _tmp
 fi
-python ways2bfmap.py --source-host localhost --source-port 5432 --source-database ${database} --source-table temp_ways --source-user ${user} --source-password ${password} --target-host localhost --target-port 5432 --target-database ${database} --target-table bfmap_ways --target-user ${user} --target-password ${password} --config ${config}
+python ways2bfmap.py --source-host localhost --source-port ${port} --source-database ${database} --source-table temp_ways --source-user ${user} --source-password ${password} --target-host localhost --target-port ${port} --target-database ${database} --target-table bfmap_ways --target-user ${user} --target-password ${password} --config ${config}
 echo "Done."
