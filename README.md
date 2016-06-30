@@ -354,9 +354,9 @@ _The following dependencies are not linked in any source but used for setting up
 * PostgreSQL, PostgreSQL License ([http://www.postgresql.org/](http://www.postgresql.org/))
 * PostGIS, GPL-2.0 ([http://postgis.net/](http://postgis.net/))
 * Osmosis, GPL-3 ([https://github.com/openstreetmap/osmosis](https://github.com/openstreetmap/osmosis))<br/>
-  _Note: A single file from Osmosis project, i.e. pgsql_simple_schema_0.6.sql, is included in directory docker/osm but is not compiled in any binary._
+  _Note: A single file from Osmosis project, i.e. pgsnapshot_schema_0.6.sql, is included in directory map/osm but is not compiled in any binary._
 * OpenStreetMap, ODbL ([http://download.geofabrik.de](http://download.geofabrik.de))<br/>
-  _Note: A sample, i.e. oberbayern.osm.pbf, is included in directory docker/osm but is not compiled in any binary._
+  _Note: A sample, i.e. oberbayern.osm.pbf, is required for testing but not included in the source repository._
 
 ##### Barefoot map tools
 

@@ -11,12 +11,12 @@
 	
 	\begin{tikzpicture}[font=\sffamily]
 		\node[box] (server) at (2,0) {Map server (container) \\ \footnotesize{(0.1.0)} \\ \footnotesize{Apache-2.0}};
-		
+
 		\node[box] (docker) at (8,0) {Docker \\ \footnotesize{(1.6)} \\ \footnotesize{Apache-2.0}};
 		\node[box] (postgresql) at (8,-2) {PostgreSQL \\ \footnotesize{(9.3)} \\ \footnotesize{PostgreSQL License}};
 		\node[box] (postgis) at (8,-4) {PostGIS \\ \footnotesize{(2.1)} \\ \footnotesize{GPL-2.0}};
 		\node[box] (osmosis) at (8,-6) {Osmosis \\ \footnotesize{(0.43.1)} \\ \footnotesize{GPL-3}};
-		\node[box] (osm) at (8,-8) {OpenStreetMap \\ \footnotesize{(any dump)} \\ \footnotesize{MIT License}};
+		\node[box] (osm) at (8,-8) {OpenStreetMap \\ \footnotesize{(any dump)} \\ \footnotesize{ODbL}};
 
 		\easttowest{server}{docker}{0.5}{{\footnotesize{usage}}}
 		\easttowest{server}{postgresql}{0.5}{{\footnotesize{usage}}}

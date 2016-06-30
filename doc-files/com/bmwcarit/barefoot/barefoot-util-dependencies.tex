@@ -1,0 +1,52 @@
+\documentclass{standalone}
+\usepackage{tikz} % Required for drawings
+\usetikzlibrary{positioning,calc}
+
+\newcommand{\easttowest}[4]{
+\draw[-latex] (#1.east) -| ($ (#1.east) + (#3,0) $) |- node[near end, above]{#4} (#2.west);
+}
+
+\newcommand{\easttoeast}[4]{
+\draw[-latex] (#1.east) -| ($ (#1.east) + (#3,0) $) |- node[near end, above]{#4} (#2.east);
+}
+
+\begin{document}
+	\tikzstyle{box}=[draw, rectangle, minimum height=1.5cm, minimum width=3.5cm,align=center]
+	
+	\begin{tikzpicture}[font=\sffamily]
+		\node[box] (barefoot-node) at (2,0) {Barefoot monitor \\ (NodeJS) \footnotesize{(0.1.0)} \\ \footnotesize{Apache-2.0}};
+		\node[box] (socket) at (8,0) {Socket.io \\ \footnotesize{(1.4.4)} \\ \footnotesize{MIT License}};
+		\node[box] (socketsub) at (14,0) {sub packages \\ \footnotesize{MIT License}};
+		\node[box] (express) at (8,-2) {Express.js \\ \footnotesize{(4.13.4)} \\ \footnotesize{MIT License}};
+		\node[box] (expresssub) at (14,-2) {sub packages \\ \footnotesize{(MIT License)}};
+		\node[box] (inherits) at (14,-4) {inherits \\ \footnotesize{(2.0.1)} \\ \footnotesize{ISC License}};
+		\node[box] (qs) at (14,-6) {qs \\ \footnotesize{(4.0.0)} \\ \footnotesize{BSD 3-Clause}};
+		\node[box] (zeromq-node) at (8,-8) {ZeroMQ (NodeJS) \\ \footnotesize{(2.14.0)} \\ \footnotesize{MIT License}};
+		\node[box] (zeromq-cxx) at (14,-8) {ZeroMQ (C++) \\ \footnotesize{(2.2.0)} \\ \footnotesize{LGPL-3.0}};
+
+		\easttowest{barefoot-node}{socket}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{socket}{socketsub}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{barefoot-node}{express}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{express}{expresssub}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{express}{inherits}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{express}{qs}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{barefoot-node}{zeromq-node}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{zeromq-node}{zeromq-cxx}{0.5}{{\footnotesize{dynamic}}}
+
+		\node[box] (barefoot-js) at (2,-10) {Barefoot monitor (JS) \\ \footnotesize{(0.1.0)} \\ \footnotesize{Apache-2.0}};
+		\node[box] (openlayers) at (8,-10) {OpenLayers 3 \\ \footnotesize{BSD 2-Clause}};
+		\node[box] (jquery) at (8,-12) {jQuery \\ \footnotesize{MIT License}};
+		\node[box] (socketjs) at (8,-14) {Socket.io.js \\ \footnotesize{MIT License}};
+
+		\easttowest{barefoot-js}{openlayers}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{barefoot-js}{jquery}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{barefoot-js}{socketjs}{0.5}{{\footnotesize{dynamic}}}
+		
+		\node[box] (barefoot-submit) at (2,-16) {Barefoot submit (Python) \\ \footnotesize{(0.1.0)} \\ \footnotesize{Apache-2.0}};
+		\node[box] (python) at (8,-16) {Python Std. Libary \\ \footnotesize{(2.7.3)} \\ \footnotesize{Python License}};
+		\node[box] (requests) at (8,-18) {Requests \\ \footnotesize{(2.6.2)} \\ \footnotesize{Apache-2.0}};
+		
+		\easttowest{barefoot-submit}{python}{0.5}{{\footnotesize{dynamic}}}
+		\easttowest{barefoot-submit}{requests}{0.5}{{\footnotesize{dynamic}}}
+	\end{tikzpicture}
+\end{document}
