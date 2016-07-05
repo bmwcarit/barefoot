@@ -45,7 +45,7 @@ for sample in samples:
     if options.id != None:
         sample["id"] = options.id
     if isinstance(sample['time'], (int, long)):
-        current = time.mktime(datetime.datetime.fromtimestamp(sample['time']).timetuple()) / 1000
+        current = time.mktime(datetime.datetime.fromtimestamp(sample['time'] / 1000).timetuple())
     else:
         current = time.mktime(datetime.datetime.strptime(sample['time'][:-5], "%Y-%m-%d %H:%M:%S").timetuple())
     if options.step == True:

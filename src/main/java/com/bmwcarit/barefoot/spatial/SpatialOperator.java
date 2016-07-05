@@ -67,6 +67,8 @@ public interface SpatialOperator {
      */
     Point interpolate(Point a, Point b, double f);
 
+    double azimuth(Point a, Point b, double f);
+
     /**
      * Gets length of a {@link Polyline} in meters.
      *
@@ -113,6 +115,10 @@ public interface SpatialOperator {
      * @return {@link Point} linearly interpolated from fraction <i>f</i> on a {@link Polyline}.
      */
     Point interpolate(Polyline p, double l, double f);
+
+    double azimuth(Polyline p, double f);
+
+    double azimuth(Polyline p, double l, double f);
 
     /**
      * Gets {@link Envelope2D} that encloses of a circular area defined by a center {@link Point}

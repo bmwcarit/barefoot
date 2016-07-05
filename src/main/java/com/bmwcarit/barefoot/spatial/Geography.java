@@ -53,6 +53,20 @@ public class Geography implements SpatialOperator {
     }
 
     @Override
+    public double azimuth(Point a, Point b, double f) {
+        double azi = 0;
+        if (f < 0 + 1E-10) {
+            azi = Geodesic.WGS84.Inverse(a.getY(), a.getX(), b.getY(), b.getX()).azi1;
+        } else if (f > 1 - 1E-10) {
+            azi = Geodesic.WGS84.Inverse(a.getY(), a.getX(), b.getY(), b.getX()).azi2;
+        } else {
+            Point c = interpolate(a, b, f);
+            azi = Geodesic.WGS84.Inverse(a.getY(), a.getX(), c.getY(), c.getX()).azi2;
+        }
+        return azi < 0 ? azi + 360 : azi;
+    }
+
+    @Override
     public double length(Polyline p) {
         double d = 0;
 
@@ -125,6 +139,42 @@ public class Geography implements SpatialOperator {
         }
 
         return null;
+    }
+
+    @Override
+    public double azimuth(Polyline p, double f) {
+        return azimuth(p, length(p), f);
+    }
+
+    @Override
+    public double azimuth(Polyline p, double l, double f) {
+        assert (f >= 0 && f <= 1);
+
+        Point a = p.getPoint(0);
+        double d = l * f;
+        double s = 0, ds = 0;
+
+        if (f < 0 + 1E-10) {
+            return azimuth(p.getPoint(0), p.getPoint(1), 0);
+        }
+
+        if (f > 1 - 1E-10) {
+            return azimuth(p.getPoint(p.getPointCount() - 2), p.getPoint(p.getPointCount() - 1), f);
+        }
+
+        for (int i = 1; i < p.getPointCount(); ++i) {
+            Point b = p.getPoint(i);
+            ds = distance(a, b);
+
+            if ((s + ds) >= d) {
+                return azimuth(a, b, (d - s) / ds);
+            }
+
+            s = s + ds;
+            a = b;
+        }
+
+        return Double.NaN;
     }
 
     @Override

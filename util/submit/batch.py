@@ -51,9 +51,6 @@ previous = None
 for sample in samples:
     if options.id != None:
         sample["id"] = options.id
-    if isinstance(sample['time'], (int, long)):
-        current = datetime.datetime.fromtimestamp(sample['time']).strftime('%Y-%m-%d %H:%M:%S')
-        sample['time'] = "%s%s" % (current, options.zone)
 
 tmp = "batch-%s" % random.randint(0, sys.maxint)
 file = open(tmp, "w")

@@ -14,9 +14,13 @@
 package com.bmwcarit.barefoot.spatial;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+
+import net.sf.geographiclib.Geodesic;
+import net.sf.geographiclib.GeodesicData;
 
 import org.junit.Test;
 
@@ -27,6 +31,8 @@ import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.WktImportFlags;
+
+;
 
 public class GeographyTest {
 
@@ -215,6 +221,25 @@ public class GeographyTest {
         }
     }
 
+    private static double azimuth(Point a, Point b, boolean left) {
+        GeodesicData geod = Geodesic.WGS84.Inverse(a.getY(), a.getX(), b.getY(), b.getX());
+        double azi = left ? geod.azi1 : geod.azi2;
+        return azi < 0 ? azi + 360 : azi;
+    }
+
+    @Test
+    public void testLineAzimuth() {
+        Point reyk = new Point(-21.933333, 64.15);
+        Point berl = new Point(13.408056, 52.518611);
+        Point mosk = new Point(37.616667, 55.75);
+
+        assertEquals(azimuth(berl, mosk, true), spatial.azimuth(berl, mosk, 0f), 1E-9);
+        assertEquals(azimuth(berl, mosk, false), spatial.azimuth(berl, mosk, 1f), 1E-9);
+        assertEquals(azimuth(berl, reyk, true), spatial.azimuth(berl, reyk, 0f), 1E-9);
+        assertTrue(spatial.azimuth(berl, mosk, 0f) < spatial.azimuth(berl, mosk, 0.5)
+                && spatial.azimuth(berl, mosk, 0.5) < spatial.azimuth(berl, mosk, 1f));
+    }
+
     @Test
     public void testPathInterception1() {
         String point = "POINT(11.410624 48.144161)";
@@ -287,5 +312,30 @@ public class GeographyTest {
             System.out.println("[Geography] path interception " + sw1.us()
                     + " us (gnomonic), path interpolation " + sw2.us() + " us (geodesic)");
         }
+    }
+
+    @Test
+    public void testPathAzimuth() {
+        Point reyk = new Point(-21.933333, 64.15);
+        Point berl = new Point(13.408056, 52.518611);
+        Point mosk = new Point(37.616667, 55.75);
+
+        Polyline p = new Polyline();
+        p.startPath(berl);
+        p.lineTo(mosk);
+        p.lineTo(reyk);
+
+        assertEquals(azimuth(berl, mosk, true), spatial.azimuth(p, 0f), 1E-9);
+        assertEquals(azimuth(mosk, reyk, false), spatial.azimuth(p, 1f), 1E-9);
+        assertEquals(azimuth(berl, mosk, false),
+                spatial.azimuth(p, spatial.distance(berl, mosk) / spatial.length(p)), 1E-9);
+        Point c = spatial.interpolate(berl, mosk, 0.5);
+        assertEquals(azimuth(berl, c, false),
+                spatial.azimuth(p, spatial.distance(berl, c) / spatial.length(p)), 1E-9);
+        Point d = spatial.interpolate(mosk, reyk, 0.5);
+        assertEquals(
+                azimuth(mosk, d, false),
+                spatial.azimuth(p, (spatial.distance(berl, mosk) + spatial.distance(mosk, d))
+                        / spatial.length(p)), 1E-9);
     }
 }

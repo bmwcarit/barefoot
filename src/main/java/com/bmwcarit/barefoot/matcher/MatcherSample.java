@@ -27,8 +27,9 @@ import com.esri.core.geometry.WktImportFlags;
  * e.g. measured with a GPS device.
  */
 public class MatcherSample extends com.bmwcarit.barefoot.markov.Sample {
-    private String id;
-    private Point point;
+    private final String id;
+    private final Point point;
+    private final double azimuth;
 
     /**
      * Creates a {@link MatcherSample} object with measured position and time of measurement.
@@ -37,9 +38,18 @@ public class MatcherSample extends com.bmwcarit.barefoot.markov.Sample {
      * @param point Point of measured position.
      */
     public MatcherSample(long time, Point point) {
-        super(time);
-        this.id = "";
-        this.point = point;
+        this("", time, point);
+    }
+
+    /**
+     * Creates a {@link MatcherSample} object with measured position, time of measurement, and azimuth.
+     *
+     * @param time Time of measurement in milliseconds epoch time.
+     * @param point Point of measured position.
+     * @param azimuth Azimuth of measurement sample.
+     */
+    public MatcherSample(long time, Point point, double azimuth) {
+        this("", time, point, azimuth);
     }
 
     /**
@@ -51,9 +61,23 @@ public class MatcherSample extends com.bmwcarit.barefoot.markov.Sample {
      * @param point Point of measured position.
      */
     public MatcherSample(String id, long time, Point point) {
+        this(id, time, point, Double.NaN);
+    }
+
+    /**
+     * Creates a {@link MatcherSample} object with an identifier, measured position, time of
+     * measurement, and azimuth.
+     *
+     * @param id Identifier of sample.
+     * @param time Time of measurement in milliseconds epoch time.
+     * @param point Point of measured position.
+     * @param azimuth Azimuth of measurement sample.
+     */
+    public MatcherSample(String id, long time, Point point, double azimuth) {
         super(time);
         this.id = id;
         this.point = point;
+        this.azimuth = norm(azimuth);
     }
 
     /**
@@ -70,6 +94,16 @@ public class MatcherSample extends com.bmwcarit.barefoot.markov.Sample {
         point =
                 (Point) GeometryEngine.geometryFromWkt(wkt, WktImportFlags.wktImportDefaults,
                         Type.Point);
+        if (json.has("azimuth")) {
+            azimuth = norm(json.getDouble("azimuth"));
+        } else {
+            azimuth = Double.NaN;
+        }
+    }
+
+    private static double norm(double azimuth) {
+        return azimuth >= 360 ? azimuth - (360 * (int) (azimuth / 360)) : azimuth < 0 ? azimuth
+                - (360 * ((int) (azimuth / 360) - 1)) : azimuth;
     }
 
     /**
@@ -90,11 +124,23 @@ public class MatcherSample extends com.bmwcarit.barefoot.markov.Sample {
         return point;
     }
 
+    /**
+     * Gets (optional) azimuth of measurement sample.
+     *
+     * @return Azimuth of measurement sample, or Double.NaN if not included.
+     */
+    public double azimuth() {
+        return azimuth;
+    }
+
     @Override
     public JSONObject toJSON() throws JSONException {
         JSONObject json = super.toJSON();
         json.put("id", id);
         json.put("point", GeometryEngine.geometryToWkt(point, WktExportFlags.wktExportPoint));
+        if (!Double.isNaN(azimuth)) {
+            json.put("azimuth", azimuth);
+        }
         return json;
     }
 }

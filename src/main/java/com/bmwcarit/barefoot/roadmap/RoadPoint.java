@@ -27,6 +27,7 @@ import com.esri.core.geometry.Point;
 public class RoadPoint extends com.bmwcarit.barefoot.topology.Point<Road> {
     private static final SpatialOperator spatial = new Geography();
     private final Point geometry;
+    private final double azimuth;
 
     /**
      * Creates a {@link RoadPoint}.
@@ -38,6 +39,7 @@ public class RoadPoint extends com.bmwcarit.barefoot.topology.Point<Road> {
     public RoadPoint(Road road, double fraction) {
         super(road, fraction);
         this.geometry = spatial.interpolate(road.geometry(), fraction);
+        this.azimuth = spatial.azimuth(road.geometry(), fraction);
     }
 
     /**
@@ -47,6 +49,10 @@ public class RoadPoint extends com.bmwcarit.barefoot.topology.Point<Road> {
      */
     public Point geometry() {
         return geometry;
+    }
+
+    public double azimuth() {
+        return azimuth;
     }
 
     /**

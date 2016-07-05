@@ -59,7 +59,9 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
     private final SpatialOperator spatial;
 
     private double sig2 = Math.pow(5d, 2);
+    private double sigA = Math.pow(10d, 2);
     private double sqrt_2pi_sig2 = Math.sqrt(2d * Math.PI * sig2);
+    private double sqrt_2pi_sigA = Math.sqrt(2d * Math.PI * sigA);
     private double lambda = 0d;
     private double radius = 200;
     private double distance = 15000;
@@ -193,6 +195,16 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         for (RoadPoint point : points) {
             double dz = spatial.distance(sample.point(), point.geometry());
             double emission = 1 / sqrt_2pi_sig2 * Math.exp((-1) * dz / (2 * sig2));
+            if (!Double.isNaN(sample.azimuth())) {
+                double da =
+                        sample.azimuth() > point.azimuth() ? Math.min(
+                                sample.azimuth() - point.azimuth(),
+                                360 - (sample.azimuth() - point.azimuth())) : Math.min(
+                                point.azimuth() - sample.azimuth(),
+                                360 - (point.azimuth() - sample.azimuth()));
+                emission *= Math.max(1E-2, 1 / sqrt_2pi_sigA * Math.exp((-1) * da / (2 * sigA)));
+            }
+
 
             MatcherCandidate candidate = new MatcherCandidate(point);
             candidates.add(new Tuple<MatcherCandidate, Double>(candidate, emission));
