@@ -273,8 +273,8 @@ public class MatcherServer extends AbstractServer {
             logger.info("matcher.lambda={}", matcher.getLambda());
             logger.info("matcher.sigma={}", matcher.getSigma());
             logger.info("matcher.threads={}", matcherThreads);
-            logger.info("matcher.interval.min={}", getMinInterval());
-            logger.info("matcher.distance.min={}", getMinDistance());
+            logger.info("matcher.interval.min={}", interval);
+            logger.info("matcher.distance.min={}", distance);
         }
 
         @Override
@@ -315,14 +315,6 @@ public class MatcherServer extends AbstractServer {
                     }
                 }
             };
-        }
-
-        public int getMinInterval() {
-            return this.interval;
-        }
-
-        public double getMinDistance() {
-            return this.distance;
         }
     }
 }

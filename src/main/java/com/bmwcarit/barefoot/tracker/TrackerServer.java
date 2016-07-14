@@ -16,7 +16,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +33,7 @@ import com.bmwcarit.barefoot.scheduler.StaticScheduler;
 import com.bmwcarit.barefoot.scheduler.StaticScheduler.InlineScheduler;
 import com.bmwcarit.barefoot.scheduler.Task;
 import com.bmwcarit.barefoot.spatial.Geography;
+import com.bmwcarit.barefoot.spatial.SpatialOperator;
 import com.bmwcarit.barefoot.topology.Dijkstra;
 import com.bmwcarit.barefoot.tracker.TemporaryMemory.Factory;
 import com.bmwcarit.barefoot.tracker.TemporaryMemory.Publisher;
@@ -94,6 +94,9 @@ public class TrackerServer extends AbstractServer {
     private static class MatcherResponseFactory extends ResponseFactory {
         private final Matcher matcher;
         private final int TTL;
+        private final int interval;
+        private final double distance;
+        private final SpatialOperator spatial = new Geography();
         private final TemporaryMemory<State> memory;
 
         public MatcherResponseFactory(Properties properties, RoadMap map) {
@@ -109,6 +112,8 @@ public class TrackerServer extends AbstractServer {
                     Double.toString(matcher.getLambda()))));
             matcher.setSigma(Double.parseDouble(properties.getProperty("matcher.sigma",
                     Double.toString(matcher.getSigma()))));
+            interval = Integer.parseInt(properties.getProperty("matcher.interval.min", "1000"));
+            distance = Integer.parseInt(properties.getProperty("matcher.distance.min", "0"));
             TTL = Integer.parseInt(properties.getProperty("tracker.state.ttl", "60"));
             int port = Integer.parseInt(properties.getProperty("tracker.port", "1235"));
             memory = new TemporaryMemory<State>(new Factory<State>() {
@@ -131,6 +136,8 @@ public class TrackerServer extends AbstractServer {
             logger.info("matcher.lambda={}", matcher.getLambda());
             logger.info("matcher.sigma={}", matcher.getSigma());
             logger.info("matcher.threads={}", matcherThreads);
+            logger.info("matcher.interval.min={}", interval);
+            logger.info("matcher.distance.min={}", distance);
         }
 
         @Override
@@ -153,6 +160,18 @@ public class TrackerServer extends AbstractServer {
                                         state.unlock();
                                         logger.warn("received out of order sample");
                                         return RESULT.ERROR;
+                                    }
+                                    if (spatial.distance(sample.point(), state.inner.sample()
+                                            .point()) < Math.max(0, distance)) {
+                                        state.unlock();
+                                        logger.warn("received sample below distance threshold");
+                                        return RESULT.SUCCESS;
+                                    }
+                                    if ((sample.time() - state.inner.sample().time()) < Math.max(0,
+                                            interval)) {
+                                        state.unlock();
+                                        logger.warn("received sample below interval threshold");
+                                        return RESULT.SUCCESS;
                                     }
                                 }
 
@@ -239,7 +258,7 @@ public class TrackerServer extends AbstractServer {
                 JSONObject json = state.inner.toMonitorJSON();
                 json.put("id", id);
                 socket.send(json.toString());
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 logger.error("update failed: {}", e.getMessage());
                 e.printStackTrace();
             }
@@ -253,7 +272,7 @@ public class TrackerServer extends AbstractServer {
                 json.put("time", time);
                 socket.send(json.toString());
                 logger.info("delete object {}", id);
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 logger.error("delete failed: {}", e.getMessage());
                 e.printStackTrace();
             }
