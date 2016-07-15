@@ -43,6 +43,8 @@ import com.bmwcarit.barefoot.tracker.TemporaryMemory.TemporaryElement;
 import com.bmwcarit.barefoot.util.AbstractServer;
 import com.bmwcarit.barefoot.util.Stopwatch;
 
+;
+
 /**
  * Tracker server (stand-alone) for Hidden Markov Model online map matching. It is a
  * {@link AbstractServer} that performs online map matching; and is configurable with a properties
@@ -50,6 +52,7 @@ import com.bmwcarit.barefoot.util.Stopwatch;
  */
 public class TrackerServer extends AbstractServer {
     private final static Logger logger = LoggerFactory.getLogger(TrackerServer.class);
+    private final static SpatialOperator spatial = new Geography();
     private final RoadMap map;
 
     /**
@@ -98,7 +101,7 @@ public class TrackerServer extends AbstractServer {
         private final int TTL;
         private final int interval;
         private final double distance;
-        private final SpatialOperator spatial = new Geography();
+        private final double sensitive;
         private final TemporaryMemory<State> memory;
 
         public MatcherResponseFactory(Properties properties, RoadMap map) {
@@ -116,6 +119,9 @@ public class TrackerServer extends AbstractServer {
                     Double.toString(matcher.getSigma()))));
             interval = Integer.parseInt(properties.getProperty("matcher.interval.min", "1000"));
             distance = Integer.parseInt(properties.getProperty("matcher.distance.min", "0"));
+            sensitive =
+                    Double.parseDouble(properties.getProperty("tracker.monitor.sensitive",
+                            Double.toString(0d)));
             TTL = Integer.parseInt(properties.getProperty("tracker.state.ttl", "60"));
             int port = Integer.parseInt(properties.getProperty("tracker.port", "1235"));
             memory = new TemporaryMemory<State>(new Factory<State>() {
@@ -127,6 +133,7 @@ public class TrackerServer extends AbstractServer {
 
             logger.info("tracker.state.ttl={}", TTL);
             logger.info("tracker.port={}", port);
+            logger.info("tracker.monitor.sensitive={}", sensitive);
             int matcherThreads =
                     Integer.parseInt(properties.getProperty("matcher.threads",
                             Integer.toString(Runtime.getRuntime().availableProcessors())));
@@ -166,13 +173,13 @@ public class TrackerServer extends AbstractServer {
                                     if (spatial.distance(sample.point(), state.inner.sample()
                                             .point()) < Math.max(0, distance)) {
                                         state.unlock();
-                                        logger.warn("received sample below distance threshold");
+                                        logger.debug("received sample below distance threshold");
                                         return RESULT.SUCCESS;
                                     }
                                     if ((sample.time() - state.inner.sample().time()) < Math.max(0,
                                             interval)) {
                                         state.unlock();
-                                        logger.warn("received sample below interval threshold");
+                                        logger.debug("received sample below interval threshold");
                                         return RESULT.SUCCESS;
                                     }
                                 }
@@ -188,7 +195,7 @@ public class TrackerServer extends AbstractServer {
                                         vector.set(matcher.execute(state.inner.vector(),
                                                 state.inner.sample(), sample));
                                         sw.stop();
-                                        logger.info("state update of object {} processed in {} ms",
+                                        logger.debug("state update of object {} processed in {} ms",
                                                 sample.id(), sw.ms());
                                     }
                                 });
@@ -197,13 +204,27 @@ public class TrackerServer extends AbstractServer {
                                     state.unlock();
                                     throw new RuntimeException("matcher execution error");
                                 } else {
+                                    boolean publish = true;
+                                    MatcherSample previousSample = state.inner.sample();
+                                    MatcherCandidate previousEstimate = state.inner.estimate();
                                     state.inner.update(vector.get(), sample);
-                                    state.updateAndUnlock(TTL);
+
+                                    if (previousSample != null && previousEstimate != null) {
+                                        if (spatial
+                                                .distance(previousSample.point(), sample.point()) < sensitive
+                                                && previousEstimate.point().edge().id() == state.inner
+                                                        .estimate().point().edge().id()) {
+                                            publish = false;
+                                            logger.debug("unpublished update");
+                                        }
+                                    }
+
+                                    state.updateAndUnlock(TTL, publish);
                                     return RESULT.SUCCESS;
                                 }
                             } else {
                                 String id = json.getString("id");
-                                logger.info("received state request for object {}", id);
+                                logger.debug("received state request for object {}", id);
 
                                 State state = memory.getIfExistsLocked(id);
 
@@ -289,7 +310,7 @@ public class TrackerServer extends AbstractServer {
                 json.put("id", id);
                 json.put("time", time);
                 queue.put(json.toString());
-                logger.info("delete object {}", id);
+                logger.debug("delete object {}", id);
             } catch (Exception e) {
                 logger.error("delete failed: {}", e.getMessage());
                 e.printStackTrace();

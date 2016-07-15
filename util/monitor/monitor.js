@@ -12,11 +12,13 @@
  * language governing permissions and limitations under the License.
  */
 
-if (process.argv.length != 4) {
-	console.log("usage: monitor <host> <port>");
+if (process.argv.length != 5 && (process.argv.length != 6 ||
+		(process.argv[5] != 'buffer=true' && process.argv[5] != 'buffer=false'))) {
+	console.log("usage: monitor <port> <tracker-host> <tracker-port> [buffer=<true/false>, default: false]");
 	process.exit(1);
 }
 
+var buffer = process.argv.length < 6 ? false : process.argv[5] == 'buffer=true';
 var objects = [];
 var zmq = require('zmq');
 var subscriber = zmq.socket('sub');
@@ -26,20 +28,25 @@ subscriber.on('message', function(message) {
 	update = JSON.parse(message);
 	id = update['id'];
 	
-	if (id in objects && objects[id]['time'] >= update['time']) {
+	if (buffer && id in objects && objects[id]['time'] >= update['time']) {
 		console.log('warning: out of order update for object ' + id);
 		return;
 	}
-	
+
 	if (!('point' in update)) {
-		console.log('delete object ' + id);
-		delete objects[id];
+		if (buffer) {
+			console.log('delete object ' + id);
+			delete objects[id];
+		}
 	} else if (id in objects) {
-		console.log('update object ' + id);
-		objects[id] = update;
+		if (buffer) {
+			objects[id] = update;
+		}
 	} else {
-		console.log('insert object ' + id);
-		objects[id] = update;
+		if (buffer) {
+			console.log('insert object ' + id);
+			objects[id] = update;
+		}
 	}
 	
 	io.emit('message', update);
@@ -62,10 +69,12 @@ app.get('/messages', function(req, res) {
 });
 
 io.on('connection', function(socket) {
-    console.log('client connected');
-    
-    for (var id in objects) {
-    	socket.emit('message', objects[id]);
+	console.log('client connected');
+
+	if (buffer) {
+		for (var id in objects) {
+			socket.emit('message', objects[id]);
+		}
     }
     
     socket.on('disconnect', function() {
@@ -78,9 +87,14 @@ process.on('SIGINT', function() {
         process.exit();
 });
 
-console.log('connect and listen to tracker ...');
-subscriber.connect('tcp://' + process.argv[2] + ':' + process.argv[3]);
+if (buffer) {
+	console.log('connect and listen to tracker (buffered) ...');
+} else {
+	console.log('connect and listen to tracker (unbuffered) ...');
+}
 
-http.listen(3000, function() {
-    console.log('listening on *:3000');
+subscriber.connect('tcp://' + process.argv[3] + ':' + process.argv[4]);
+
+http.listen(process.argv[2], function() {
+    console.log('listening on *:' + process.argv[2]);
 });

@@ -165,13 +165,13 @@ cd util/monitor && npm install && cd ../..
   ```
   ... and start:
   ``` bash
-node util/monitor/monitor.js 127.0.0.1 1235
+node util/monitor/monitor.js 3000 127.0.0.1 1235
   ```
 
 5. Test setup with provided sample data.
 
   ``` bash
-python util/submit/stream.py --host localhost --port 1234  --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-001.json
+python util/submit/stream.py --host localhost --port 1234 --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-001.json
 SUCCESS
 ...
   ```

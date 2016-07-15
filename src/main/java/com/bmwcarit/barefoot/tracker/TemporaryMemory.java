@@ -61,7 +61,11 @@ public class TemporaryMemory<E extends TemporaryElement<E>> {
 
                 while (entry.one() > Calendar.getInstance().getTimeInMillis()) {
                     try {
-                        Thread.sleep(entry.one() - Calendar.getInstance().getTimeInMillis() + 1);
+                        long timeout = entry.one() - Calendar.getInstance().getTimeInMillis() + 1;
+
+                        if (timeout > 0) {
+                            Thread.sleep(timeout);
+                        }
                     } catch (InterruptedException e) {
                         logger.warn("cleaner thread sleep interrupted");
                     }
@@ -92,12 +96,18 @@ public class TemporaryMemory<E extends TemporaryElement<E>> {
             this.id = id;
         }
 
-        @SuppressWarnings("unchecked")
         public void updateAndUnlock(int ttl) {
+            updateAndUnlock(ttl, true);
+        }
+
+        @SuppressWarnings("unchecked")
+        public void updateAndUnlock(int ttl, boolean publish) {
             death = Math.max(death + 1, Calendar.getInstance().getTimeInMillis() + ttl * 1000);
             logger.debug("element '{}' updated with ttl {} (death in {})", id, ttl, death);
             memory.queue.add(new Tuple<Long, E>(death, (E) this));
-            memory.publisher.publish(id, (E) this);
+            if (publish) {
+                memory.publisher.publish(id, (E) this);
+            }
             lock.unlock();
         }
 
