@@ -202,7 +202,8 @@ public class TrackerServer extends AbstractServer {
 
                                 if (!scheduler.sync()) {
                                     state.unlock();
-                                    throw new RuntimeException("matcher execution error");
+                                    logger.error("matcher execution error");
+                                    return RESULT.ERROR;
                                 } else {
                                     boolean publish = true;
                                     MatcherSample previousSample = state.inner.sample();
