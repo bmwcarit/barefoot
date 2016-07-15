@@ -14,6 +14,8 @@ package com.bmwcarit.barefoot.tracker;
 
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.json.JSONObject;
@@ -242,22 +244,38 @@ public class TrackerServer extends AbstractServer {
         }
     };
 
-    private static class StatePublisher extends Publisher<State> {
-        ZMQ.Context context = null;
-        ZMQ.Socket socket = null;
+    private static class StatePublisher extends Thread implements Publisher<State> {
+        private BlockingQueue<String> queue = new LinkedBlockingDeque<String>();
+        private ZMQ.Context context = null;
+        private ZMQ.Socket socket = null;
 
         public StatePublisher(int port) {
             context = ZMQ.context(1);
             socket = context.socket(ZMQ.PUB);
             socket.bind("tcp://*:" + port);
+            this.setDaemon(true);
+            this.start();
         }
 
         @Override
-        public void publish(String id, State state) {
+        public void run() {
+            while (true) {
+                try {
+                    String message = queue.take();
+                    socket.send(message);
+                } catch (InterruptedException e) {
+                    logger.warn("state publisher interrupted");
+                    return;
+                }
+            }
+        }
+
+        @Override
+        public void publish(String id, TrackerServer.State state) {
             try {
                 JSONObject json = state.inner.toMonitorJSON();
                 json.put("id", id);
-                socket.send(json.toString());
+                queue.put(json.toString());
             } catch (Exception e) {
                 logger.error("update failed: {}", e.getMessage());
                 e.printStackTrace();
@@ -270,7 +288,7 @@ public class TrackerServer extends AbstractServer {
                 JSONObject json = new JSONObject();
                 json.put("id", id);
                 json.put("time", time);
-                socket.send(json.toString());
+                queue.put(json.toString());
                 logger.info("delete object {}", id);
             } catch (Exception e) {
                 logger.error("delete failed: {}", e.getMessage());

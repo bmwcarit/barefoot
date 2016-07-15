@@ -72,7 +72,7 @@ public class TemporaryMemory<E extends TemporaryElement<E>> {
         }
     });
 
-    public static abstract class Publisher<E> {
+    public static interface Publisher<E> {
         public abstract void publish(String id, E element);
 
         public abstract void delete(String id, long time);
