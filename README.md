@@ -16,7 +16,7 @@ The Barefoot (eco-) system consists of a software library and a container-based 
 
 #### Scalable and versatile
 
-Barefoot is desgined for use in parallel and distributed high-throughput systems [5]. For processing large amounts of data batches (offline map matching), it can be easily integrated in Apache Hadoop or Apache Spark (see example below), whereas Apache Storm and Apache Spark Streaming provide a runtime environment for processing massive data streams (online map matching). To support other data analysis functions, Barefoot comes with basic machine learning support, e.g., DBSCAN for spatial cluster analysis [6]. Further machine learning support is planned for future releases.
+Barefoot is designed for use in parallel and distributed high-throughput systems [5]. For processing large amounts of data batches (offline map matching), it can be easily integrated in Apache Hadoop or Apache Spark (see example below), whereas Apache Storm and Apache Spark Streaming provide a runtime environment for processing massive data streams (online map matching). To support other data analysis functions, Barefoot comes with basic machine learning support, e.g., DBSCAN for spatial cluster analysis [6]. Further machine learning support is planned for future releases.
 
 #### Open source and open data
 
@@ -132,12 +132,14 @@ The following code shows the exemplary usage of Barefoot's HMM map matching API 
 
 ``` java
 import com.bmwcarit.barefoot.matcher.Matcher;
-import com.bmwcarit.barefoot.matcher.KState;
+import com.bmwcarit.barefoot.matcher.MatcherKState;
 import com.bmwcarit.barefoot.matcher.MatcherCandidate;
 import com.bmwcarit.barefoot.matcher.MatcherSample;
 import com.bmwcarit.barefoot.matcher.MatcherTransition;
 import com.bmwcarit.barefoot.road.PostGISReader;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
+import com.bmwcarit.barefoot.roadmap.Road;
+import com.bmwcarit.barefoot.roadmap.RoadPoint;
 import com.bmwcarit.barefoot.roadmap.Route;
 import com.bmwcarit.barefoot.roadmap.TimePriority;
 import com.bmwcarit.barefoot.spatial.Geography;
@@ -152,8 +154,7 @@ map.construct();
 // Instantiate matcher and state data structure
 Matcher matcher = new Matcher(map, new Dijkstra<Road, RoadPoint>(),
 			new TimePriority(), new Geography());
-KState<MatcherCandidate, MatcherTransition, MatcherSample> state =
-			new KState<MatcherCandidate, MatcherTransition, MatcherSample>();
+MatcherKState state = new MatcherKState();
 
 // Input as sample batch (offline) or sample stream (online)
 List<MatcherSample> samples = new LinkedList<MatcherSample>();
@@ -169,7 +170,11 @@ for (MatcherSample sample : samples) {
 
 	long id = estimate.point().edge().id(); // road id
 	Point position = estimate.point().geometry(); // position
-	Route route = estimate.transition().route(); // route to position
+	MatcherTransition transition = estimate.transition();
+	if (transition != null) {
+		// first point will have a null transition
+		Route route = transition.route(); // route to position
+	}
 }
 
 // Offline map matching results
@@ -232,6 +237,7 @@ import com.bmwcarit.barefoot.roadmap.RoadMap;
 import com.bmwcarit.barefoot.roadmap.RoadPoint;
 
 import com.esri.core.geometry.GeometryEngine;
+import com.esri.core.geometry.Point;
 
 RoadReader reader = new PostGISReader(...);
 RoadMap map = RoadMap.Load(reader);
@@ -242,8 +248,8 @@ double r = 50; // radius search within 50 meters
 Set<RoadPoint> points = map.spatial().radius(c, r);
 
 for (RoadPoint point : points) {
-	GeometryEngine.geometryToGeoJson(point.geometry()));
-	GeometryEngine.geometryToGeoJson(point.edge().geometry()));
+	GeometryEngine.geometryToGeoJson(point.geometry());
+	GeometryEngine.geometryToGeoJson(point.edge().geometry());
 }
 ```
 

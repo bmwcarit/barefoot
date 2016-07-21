@@ -406,12 +406,14 @@ A simple map matching program shows the use of the map matching API (for details
 
 ``` java
 import com.bmwcarit.barefoot.matcher.Matcher;
-import com.bmwcarit.barefoot.matcher.KState;
+import com.bmwcarit.barefoot.matcher.MatcherKState;
 import com.bmwcarit.barefoot.matcher.MatcherCandidate;
 import com.bmwcarit.barefoot.matcher.MatcherSample;
 import com.bmwcarit.barefoot.matcher.MatcherTransition;
 import com.bmwcarit.barefoot.road.PostGISReader;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
+import com.bmwcarit.barefoot.roadmap.Road;
+import com.bmwcarit.barefoot.roadmap.RoadPoint;
 import com.bmwcarit.barefoot.roadmap.Route;
 import com.bmwcarit.barefoot.roadmap.TimePriority;
 import com.bmwcarit.barefoot.spatial.Geography;
@@ -426,8 +428,7 @@ map.construct();
 // Instantiate matcher and state data structure
 Matcher matcher = new Matcher(map, new Dijkstra<Road, RoadPoint>(),
 			new TimePriority(), new Geography());
-KState<MatcherCandidate, MatcherTransition, MatcherSample> state =
-			new KState<MatcherCandidate, MatcherTransition, MatcherSample>();
+MatcherKState state = new MatcherKState();
 
 // Input as sample batch (offline) or sample stream (online)
 List<MatcherSample> samples = new LinkedList<MatcherSample>();
@@ -443,7 +444,11 @@ for (MatcherSample sample : samples) {
 
 	long id = estimate.point().edge().id(); // road id
 	Point position = estimate.point().geometry(); // position
-	Route route = estimate.transition().route(); // route to position
+	MatcherTransition transition = estimate.transition();
+	if (transition != null) {
+		// first point will have a null transition
+		Route route = transition.route(); // route to position
+	}
 }
 
 // Offline map matching results
