@@ -69,7 +69,7 @@ public class DijkstraBenchmark {
         RoadPoint source = sources.iterator().next();
         RoadPoint target = targets.iterator().next();
 
-        Router<Road, RoadPoint> algo = new Dijkstra<Road, RoadPoint>();
+        Router<Road, RoadPoint> algo = new Dijkstra<>();
 
         Stopwatch sw = new Stopwatch();
         sw.start();
@@ -109,7 +109,7 @@ public class DijkstraBenchmark {
         RoadPoint source = sources.iterator().next();
         RoadPoint target = targets.iterator().next();
 
-        Router<Road, RoadPoint> algo = new Dijkstra<Road, RoadPoint>();
+        Router<Road, RoadPoint> algo = new Dijkstra<>();
 
         Stopwatch sw = new Stopwatch();
         sw.start();
@@ -149,7 +149,7 @@ public class DijkstraBenchmark {
         RoadPoint source = sources.iterator().next();
         RoadPoint target = targets.iterator().next();
 
-        Router<Road, RoadPoint> algo = new Dijkstra<Road, RoadPoint>();
+        Router<Road, RoadPoint> algo = new Dijkstra<>();
 
         Stopwatch sw = new Stopwatch();
         sw.start();
@@ -189,7 +189,7 @@ public class DijkstraBenchmark {
         RoadPoint source = sources.iterator().next();
         RoadPoint target = targets.iterator().next();
 
-        Router<Road, RoadPoint> algo = new Dijkstra<Road, RoadPoint>();
+        Router<Road, RoadPoint> algo = new Dijkstra<>();
 
         Stopwatch sw = new Stopwatch();
         sw.start();
@@ -212,7 +212,7 @@ public class DijkstraBenchmark {
         RoadPoint source = sources.iterator().next();
         RoadPoint target = targets.iterator().next();
 
-        Router<Road, RoadPoint> algo = new Dijkstra<Road, RoadPoint>();
+        Router<Road, RoadPoint> algo = new Dijkstra<>();
 
         Stopwatch sw = new Stopwatch();
         sw.start();
@@ -234,21 +234,21 @@ public class DijkstraBenchmark {
 
         RoadPoint source = sources.iterator().next();
 
-        HashSet<RoadPoint> targets = new HashSet<RoadPoint>();
+        HashSet<RoadPoint> targets = new HashSet<>();
         for (RoadPoint target : _targets) {
             targets.add(target);
         }
 
         Stopwatch sw = new Stopwatch();
         sw.start();
-        Dijkstra<Road, RoadPoint> algo = new Dijkstra<Road, RoadPoint>();
+        Dijkstra<Road, RoadPoint> algo = new Dijkstra<>();
         Map<RoadPoint, List<Road>> routes = algo.route(source, targets, new TimePriority());
         sw.stop();
 
         logger.info("SSMT (fastest, priority): {} ms", sw.ms());
 
         sw.start();
-        Map<RoadPoint, List<Road>> routes2 = new HashMap<RoadPoint, List<Road>>();
+        Map<RoadPoint, List<Road>> routes2 = new HashMap<>();
         for (RoadPoint target : targets) {
             routes2.put(target, algo.route(source, target, new TimePriority()));
         }
@@ -300,21 +300,21 @@ public class DijkstraBenchmark {
 
         RoadPoint source = sources.iterator().next();
 
-        HashSet<RoadPoint> targets = new HashSet<RoadPoint>();
+        HashSet<RoadPoint> targets = new HashSet<>();
         for (RoadPoint target : _targets) {
             targets.add(target);
         }
 
         Stopwatch sw = new Stopwatch();
         sw.start();
-        Dijkstra<Road, RoadPoint> algo = new Dijkstra<Road, RoadPoint>();
+        Dijkstra<Road, RoadPoint> algo = new Dijkstra<>();
         Map<RoadPoint, List<Road>> routes = algo.route(source, targets, new Time());
         sw.stop();
 
         logger.info("SSMT (fastest): {} ms", sw.ms());
 
         sw.start();
-        Map<RoadPoint, List<Road>> routes2 = new HashMap<RoadPoint, List<Road>>();
+        Map<RoadPoint, List<Road>> routes2 = new HashMap<>();
         for (RoadPoint target : targets) {
             routes2.put(target, algo.route(source, target, new Time()));
         }
@@ -360,10 +360,11 @@ public class DijkstraBenchmark {
     public void testSSMTstream() throws JSONException, IOException {
         logger.info("SSMT (fastest, priority) stream test");
 
-        Dijkstra<Road, RoadPoint> algo = new Dijkstra<Road, RoadPoint>();
-        JSONArray jsonsamples =
-                new JSONArray(new String(Files.readAllBytes(Paths.get(MatcherTest.class
-                        .getResource("x0001-015.json").getPath())), Charset.defaultCharset()));
+        Dijkstra<Road, RoadPoint> algo = new Dijkstra<>();
+        JSONArray jsonsamples = new JSONArray(new String(
+                Files.readAllBytes(
+                        Paths.get(MatcherTest.class.getResource("x0001-015.json").getPath())),
+                Charset.defaultCharset()));
 
         assertTrue(jsonsamples.length() > 1);
 
@@ -395,8 +396,8 @@ public class DijkstraBenchmark {
 
             sw.stop();
 
-            logger.info("{} x {} routes with {} ({}) valid ({} ms)", sources.size(),
-                    targets.size(), valids, sources.size() * targets.size(), sw.ms());
+            logger.info("{} x {} routes with {} ({}) valid ({} ms)", sources.size(), targets.size(),
+                    valids, sources.size() * targets.size(), sw.ms());
 
             sample1 = sample2;
         }
@@ -410,19 +411,19 @@ public class DijkstraBenchmark {
         assertTrue(!_sources.isEmpty());
         assertTrue(!_targets.isEmpty());
 
-        HashSet<RoadPoint> sources = new HashSet<RoadPoint>();
+        HashSet<RoadPoint> sources = new HashSet<>();
         for (RoadPoint source : _sources) {
             sources.add(source);
         }
 
-        HashSet<RoadPoint> targets = new HashSet<RoadPoint>();
+        HashSet<RoadPoint> targets = new HashSet<>();
         for (RoadPoint target : _targets) {
             targets.add(target);
         }
 
         Stopwatch sw = new Stopwatch();
         sw.start();
-        Dijkstra<Road, RoadPoint> algo = new Dijkstra<Road, RoadPoint>();
+        Dijkstra<Road, RoadPoint> algo = new Dijkstra<>();
         @SuppressWarnings("unused")
         Map<RoadPoint, Tuple<RoadPoint, List<Road>>> routes =
                 algo.route(sources, targets, new TimePriority());
@@ -432,9 +433,9 @@ public class DijkstraBenchmark {
 
         sw.start();
         Map<RoadPoint, Map<RoadPoint, List<Road>>> routes2 =
-                new HashMap<RoadPoint, Map<RoadPoint, List<Road>>>();
+                new HashMap<>();
         for (RoadPoint source : sources) {
-            Map<RoadPoint, List<Road>> paths = new HashMap<RoadPoint, List<Road>>();
+            Map<RoadPoint, List<Road>> paths = new HashMap<>();
             for (RoadPoint target : targets) {
                 paths.put(target, algo.route(source, target, new TimePriority()));
             }
@@ -453,19 +454,19 @@ public class DijkstraBenchmark {
         assertTrue(!_sources.isEmpty());
         assertTrue(!_targets.isEmpty());
 
-        HashSet<RoadPoint> sources = new HashSet<RoadPoint>();
+        HashSet<RoadPoint> sources = new HashSet<>();
         for (RoadPoint source : _sources) {
             sources.add(source);
         }
 
-        HashSet<RoadPoint> targets = new HashSet<RoadPoint>();
+        HashSet<RoadPoint> targets = new HashSet<>();
         for (RoadPoint target : _targets) {
             targets.add(target);
         }
 
         Stopwatch sw = new Stopwatch();
         sw.start();
-        Dijkstra<Road, RoadPoint> algo = new Dijkstra<Road, RoadPoint>();
+        Dijkstra<Road, RoadPoint> algo = new Dijkstra<>();
         @SuppressWarnings("unused")
         Map<RoadPoint, Tuple<RoadPoint, List<Road>>> routes =
                 algo.route(sources, targets, new Time());
@@ -476,9 +477,9 @@ public class DijkstraBenchmark {
 
         sw.start();
         Map<RoadPoint, Map<RoadPoint, List<Road>>> routes2 =
-                new HashMap<RoadPoint, Map<RoadPoint, List<Road>>>();
+                new HashMap<>();
         for (RoadPoint source : sources) {
-            Map<RoadPoint, List<Road>> paths = new HashMap<RoadPoint, List<Road>>();
+            Map<RoadPoint, List<Road>> paths = new HashMap<>();
             for (RoadPoint target : targets) {
                 paths.put(target, algo.route(source, target, new Time()));
             }

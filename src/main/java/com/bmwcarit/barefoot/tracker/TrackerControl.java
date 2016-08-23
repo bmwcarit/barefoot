@@ -21,9 +21,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.bmwcarit.barefoot.matcher.MatcherServer;
-import com.bmwcarit.barefoot.matcher.MatcherServer.InputFormatter;
-import com.bmwcarit.barefoot.matcher.MatcherServer.OutputFormatter;
 import com.bmwcarit.barefoot.roadmap.Loader;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
 import com.bmwcarit.barefoot.util.SourceException;
@@ -38,11 +35,10 @@ public abstract class TrackerControl {
     private static Properties serverProperties = new Properties();
 
     /**
-     * Initializes stand-alone online map matching server. Server properties file must include
-     * matcher and server properties, see
-     * {@link MatcherServer#MatcherServer(Properties, RoadMap, InputFormatter, OutputFormatter)}.
-     * Database properties file must include database connection properties, see
-     * {@link Loader#load(Properties, boolean)}.
+     * Initializes stand-alone online map matching server (tracker). Server properties file must
+     * include matcher, server, and tracker properties, see
+     * {@link TrackerServer#TrackerServer(Properties, RoadMap)}. Database properties file must
+     * include database connection properties, see {@link Loader#load(Properties, boolean)}.
      *
      * @param pathServerProperties Path to server properties file.
      * @param pathDatabaseProperties Path to database properties file.
@@ -120,7 +116,8 @@ public abstract class TrackerControl {
 
     public static void main(String[] args) {
         if (args.length < 2 || args.length > 3) {
-            logger.error("missing arguments\nusage: /path/to/server/properties /path/to/mapserver/properties");
+            logger.error(
+                    "missing arguments\nusage: /path/to/server/properties /path/to/mapserver/properties");
             System.exit(1);
         }
 

@@ -166,15 +166,15 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
     protected Set<Tuple<MatcherCandidate, Double>> candidates(Set<MatcherCandidate> predecessors,
             MatcherSample sample) {
         if (logger.isTraceEnabled()) {
-            logger.trace("finding candidates for sample {} {}", new SimpleDateFormat(
-                    "yyyy-MM-dd HH:mm:ssZ").format(sample.time()), GeometryEngine.geometryToWkt(
-                    sample.point(), WktExportFlags.wktExportPoint));
+            logger.trace("finding candidates for sample {} {}",
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ").format(sample.time()),
+                    GeometryEngine.geometryToWkt(sample.point(), WktExportFlags.wktExportPoint));
         }
 
         Set<RoadPoint> points_ = map.spatial().radius(sample.point(), radius);
-        Set<RoadPoint> points = new HashSet<RoadPoint>(Minset.minimize(points_));
+        Set<RoadPoint> points = new HashSet<>(Minset.minimize(points_));
 
-        Map<Long, RoadPoint> map = new HashMap<Long, RoadPoint>();
+        Map<Long, RoadPoint> map = new HashMap<>();
         for (RoadPoint point : points) {
             map.put(point.edge().id(), point);
         }
@@ -188,7 +188,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         }
 
         Set<Tuple<MatcherCandidate, Double>> candidates =
-                new HashSet<Tuple<MatcherCandidate, Double>>();
+                new HashSet<>();
 
         logger.debug("{} ({}) candidates", points.size(), points_.size());
 
@@ -196,18 +196,17 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
             double dz = spatial.distance(sample.point(), point.geometry());
             double emission = 1 / sqrt_2pi_sig2 * Math.exp((-1) * dz / (2 * sig2));
             if (!Double.isNaN(sample.azimuth())) {
-                double da =
-                        sample.azimuth() > point.azimuth() ? Math.min(
-                                sample.azimuth() - point.azimuth(),
-                                360 - (sample.azimuth() - point.azimuth())) : Math.min(
-                                point.azimuth() - sample.azimuth(),
+                double da = sample.azimuth() > point.azimuth()
+                        ? Math.min(sample.azimuth() - point.azimuth(),
+                                360 - (sample.azimuth() - point.azimuth()))
+                        : Math.min(point.azimuth() - sample.azimuth(),
                                 360 - (point.azimuth() - sample.azimuth()));
                 emission *= Math.max(1E-2, 1 / sqrt_2pi_sigA * Math.exp((-1) * da / (2 * sigA)));
             }
 
 
             MatcherCandidate candidate = new MatcherCandidate(point);
-            candidates.add(new Tuple<MatcherCandidate, Double>(candidate, emission));
+            candidates.add(new Tuple<>(candidate, emission));
 
             logger.trace("{} {} {}", candidate.id(), dz, emission);
         }
@@ -232,26 +231,25 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
             logger.trace("finding transitions for sample {} {} with {} x {} candidates",
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ").format(candidates.one().time()),
                     GeometryEngine.geometryToWkt(candidates.one().point(),
-                            WktExportFlags.wktExportPoint), predecessors.two().size(), candidates
-                            .two().size());
+                            WktExportFlags.wktExportPoint),
+                    predecessors.two().size(), candidates.two().size());
         }
 
         Stopwatch sw = new Stopwatch();
         sw.start();
 
-        final Set<RoadPoint> targets = new HashSet<RoadPoint>();
+        final Set<RoadPoint> targets = new HashSet<>();
         for (MatcherCandidate candidate : candidates.two()) {
             targets.add(candidate.point());
         }
 
         final AtomicInteger count = new AtomicInteger();
         final Map<MatcherCandidate, Map<MatcherCandidate, Tuple<MatcherTransition, Double>>> transitions =
-                new ConcurrentHashMap<MatcherCandidate, Map<MatcherCandidate, Tuple<MatcherTransition, Double>>>();
+                new ConcurrentHashMap<>();
         final double base =
                 1.0 * spatial.distance(predecessors.one().point(), candidates.one().point()) / 60;
-        final double bound =
-                Math.max(1000d, Math.min(distance, ((candidates.one().time() - predecessors.one()
-                        .time()) / 1000) * 100));
+        final double bound = Math.max(1000d, Math.min(distance,
+                ((candidates.one().time() - predecessors.one().time()) / 1000) * 100));
 
         InlineScheduler scheduler = StaticScheduler.scheduler();
         for (final MatcherCandidate predecessor : predecessors.two()) {
@@ -259,7 +257,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
                 @Override
                 public void run() {
                     Map<MatcherCandidate, Tuple<MatcherTransition, Double>> map =
-                            new HashMap<MatcherCandidate, Tuple<MatcherTransition, Double>>();
+                            new HashMap<>();
                     Stopwatch sw = new Stopwatch();
                     sw.start();
                     Map<RoadPoint, List<Road>> routes =
@@ -282,17 +280,15 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
                         // experimentally choose lambda * Math.exp((-1.0) * lambda * Math.max(0,
                         // route.length() - dt)) to avoid unnecessary routes in case of u-turns.
 
-                        double beta =
-                                lambda == 0 ? (2.0 * Math.max(1d, candidates.one().time()
-                                        - predecessors.one().time()) / 1000) : 1 / lambda;
+                        double beta = lambda == 0
+                                ? (2.0 * Math.max(1d,
+                                        candidates.one().time() - predecessors.one().time()) / 1000)
+                                : 1 / lambda;
 
-                        double transition =
-                                (1 / beta)
-                                        * Math.exp((-1.0)
-                                                * Math.max(0, route.cost(new TimePriority()) - base)
-                                                / beta);
+                        double transition = (1 / beta) * Math.exp(
+                                (-1.0) * Math.max(0, route.cost(new TimePriority()) - base) / beta);
 
-                        map.put(candidate, new Tuple<MatcherTransition, Double>(
+                        map.put(candidate, new Tuple<>(
                                 new MatcherTransition(route), transition));
 
                         logger.trace("{} -> {} {} {} {}", predecessor.id(), candidate.id(), base,
@@ -339,10 +335,9 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         MatcherKState state = new MatcherKState();
 
         for (MatcherSample sample : samples) {
-            if (state.sample() != null
-                    && (spatial.distance(sample.point(), state.sample().point()) < Math.max(0,
-                            minDistance) || (sample.time() - state.sample().time()) < Math.max(0,
-                            minInterval))) {
+            if (state.sample() != null && (spatial.distance(sample.point(),
+                    state.sample().point()) < Math.max(0, minDistance)
+                    || (sample.time() - state.sample().time()) < Math.max(0, minInterval))) {
                 continue;
             }
             Set<MatcherCandidate> vector = execute(state.vector(), state.sample(), sample);

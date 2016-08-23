@@ -141,7 +141,7 @@ public class AbstractServer {
         @Override
         public Tuple<RESULT, String> call() throws IOException {
             RESULT result = response(request, response);
-            return new Tuple<RESULT, String>(result, response.toString());
+            return new Tuple<>(result, response.toString());
         }
     }
 
@@ -163,7 +163,7 @@ public class AbstractServer {
                         new BufferedReader(new InputStreamReader(client.getInputStream()));
                 PrintWriter writer = new PrintWriter(client.getOutputStream());
                 FutureTask<String> requestHandler =
-                        new FutureTask<String>(new RequestHandler(reader));
+                        new FutureTask<>(new RequestHandler(reader));
                 executor.execute(requestHandler);
 
                 String request = null;
@@ -175,31 +175,31 @@ public class AbstractServer {
                 } catch (TimeoutException e) {
                     requestHandler.cancel(true);
 
-                    logger.error("{}:{} request handler timeout", client.getInetAddress()
-                            .getHostAddress(), client.getPort());
+                    logger.error("{}:{} request handler timeout",
+                            client.getInetAddress().getHostAddress(), client.getPort());
 
                     writer.println("TIMEOUT");
                     writer.flush();
 
                     throw new StopException();
                 } catch (InterruptedException | ExecutionException e) {
-                    logger.error("{}:{} request handler exception - {}", client.getInetAddress()
-                            .getHostAddress(), client.getPort(), e.getMessage());
+                    logger.error("{}:{} request handler exception - {}",
+                            client.getInetAddress().getHostAddress(), client.getPort(),
+                            e.getMessage());
 
                     throw new StopException();
                 }
 
                 FutureTask<Tuple<RESULT, String>> responseHandler =
-                        new FutureTask<Tuple<RESULT, String>>(responseFactory.response(request));
+                        new FutureTask<>(responseFactory.response(request));
                 executor.execute(responseHandler);
 
                 try {
                     Tuple<RESULT, String> response =
                             responseHandler.get(maxResponseTime, TimeUnit.MILLISECONDS);
 
-                    logger.trace("{}:{} response code {}",
-                            client.getInetAddress().getHostAddress(), client.getPort(),
-                            response.one());
+                    logger.trace("{}:{} response code {}", client.getInetAddress().getHostAddress(),
+                            client.getPort(), response.one());
 
                     writer.println(response.one());
 
@@ -211,25 +211,26 @@ public class AbstractServer {
                 } catch (TimeoutException e) {
                     responseHandler.cancel(true);
 
-                    logger.error("{}:{} response handler timeout", client.getInetAddress()
-                            .getHostAddress(), client.getPort());
+                    logger.error("{}:{} response handler timeout",
+                            client.getInetAddress().getHostAddress(), client.getPort());
 
                     writer.println("TIMEOUT");
                     writer.flush();
 
                     throw new StopException();
                 } catch (InterruptedException | ExecutionException e) {
-                    logger.error("{}:{} response handler exception - {}", client.getInetAddress()
-                            .getHostAddress(), client.getPort(), e.getMessage());
+                    logger.error("{}:{} response handler exception - {}",
+                            client.getInetAddress().getHostAddress(), client.getPort(),
+                            e.getMessage());
 
                     throw new StopException();
                 }
             } catch (StopException e) {
-                logger.trace("{}:{} client handler stopped execution", client.getInetAddress()
-                        .getHostAddress(), client.getPort());
+                logger.trace("{}:{} client handler stopped execution",
+                        client.getInetAddress().getHostAddress(), client.getPort());
             } catch (Exception e) {
-                logger.error("{}:{} client handler stopped due to unexpected error - {}", client
-                        .getInetAddress().getHostAddress(), client.getPort(), e.getMessage());
+                logger.error("{}:{} client handler stopped due to unexpected error - {}",
+                        client.getInetAddress().getHostAddress(), client.getPort(), e.getMessage());
             } finally {
                 try {
                     if (!client.isClosed()) {
@@ -239,8 +240,9 @@ public class AbstractServer {
                     logger.error("{}:{} connection lost", client.getInetAddress().getHostAddress(),
                             client.getPort());
                 }
-                logger.trace("{}:{} connection closed ({} open)", client.getInetAddress()
-                        .getHostAddress(), client.getPort(), openConnectionCount.decrementAndGet());
+                logger.trace("{}:{} connection closed ({} open)",
+                        client.getInetAddress().getHostAddress(), client.getPort(),
+                        openConnectionCount.decrementAndGet());
             }
         }
     }
@@ -287,8 +289,9 @@ public class AbstractServer {
                 }
                 /**/
                 Socket client = server.accept();
-                logger.trace("{}:{} connection accepted ({} open)", client.getInetAddress()
-                        .getHostAddress(), client.getPort(), openConnectionCount.incrementAndGet());
+                logger.trace("{}:{} connection accepted ({} open)",
+                        client.getInetAddress().getHostAddress(), client.getPort(),
+                        openConnectionCount.incrementAndGet());
                 ClientHandler handler = new ClientHandler(client);
                 handler.setDaemon(true);
                 handler.start();

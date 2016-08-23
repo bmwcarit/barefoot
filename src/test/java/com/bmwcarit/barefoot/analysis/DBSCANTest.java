@@ -41,7 +41,7 @@ public class DBSCANTest {
     public void testRadius() {
         SpatialOperator spatial = new Geography();
 
-        List<Point> points = new LinkedList<Point>();
+        List<Point> points = new LinkedList<>();
         points.add(new Point(11.560385, 48.176874));
         points.add(new Point(11.560551, 48.177206));
         points.add(new Point(11.559370, 48.176901));
@@ -88,7 +88,7 @@ public class DBSCANTest {
 
     @Test
     public void testCluster() {
-        List<Point> points = new LinkedList<Point>();
+        List<Point> points = new LinkedList<>();
         points.add(new Point(11.560385, 48.176874));
         points.add(new Point(11.560551, 48.177206));
         points.add(new Point(11.559370, 48.176901));
@@ -98,11 +98,11 @@ public class DBSCANTest {
 
         {
             Set<List<Point>> results = DBSCAN.cluster(points, 75, 2);
-            Set<List<Point>> clusters = new HashSet<List<Point>>();
-            clusters.add(Arrays.asList(new Point(11.560385, 48.176874), new Point(11.560551,
-                    48.177206)));
-            clusters.add(Arrays.asList(new Point(11.557062, 48.176892), new Point(11.557182,
-                    48.177492)));
+            Set<List<Point>> clusters = new HashSet<>();
+            clusters.add(Arrays.asList(new Point(11.560385, 48.176874),
+                    new Point(11.560551, 48.177206)));
+            clusters.add(Arrays.asList(new Point(11.557062, 48.176892),
+                    new Point(11.557182, 48.177492)));
 
             assertEquals(clusters.size(), results.size());
             for (List<Point> result : results) {
@@ -122,9 +122,9 @@ public class DBSCANTest {
         }
         {
             Set<List<Point>> results = DBSCAN.cluster(points, 50, 2);
-            Set<List<Point>> clusters = new HashSet<List<Point>>();
-            clusters.add(Arrays.asList(new Point(11.560385, 48.176874), new Point(11.560551,
-                    48.177206)));
+            Set<List<Point>> clusters = new HashSet<>();
+            clusters.add(Arrays.asList(new Point(11.560385, 48.176874),
+                    new Point(11.560551, 48.177206)));
 
             assertEquals(clusters.size(), results.size());
             for (List<Point> result : results) {
@@ -144,7 +144,7 @@ public class DBSCANTest {
         }
         {
             Set<List<Point>> results = DBSCAN.cluster(points, 100, 2);
-            Set<List<Point>> clusters = new HashSet<List<Point>>();
+            Set<List<Point>> clusters = new HashSet<>();
             clusters.add(points);
 
             assertEquals(clusters.size(), results.size());
@@ -169,7 +169,7 @@ public class DBSCANTest {
     public void testNYCSample() throws NumberFormatException, ParseException, IOException {
         SpatialOperator spatial = new Geography();
         double radius = 100, density = 10;
-        List<Point> points = new ArrayList<Point>();
+        List<Point> points = new ArrayList<>();
 
         for (Tuple<Point, Long> element : NYCSample.sources()) {
             points.add(element.one());
@@ -181,13 +181,12 @@ public class DBSCANTest {
 
         Set<List<Point>> clusters = DBSCAN.cluster(points, radius, (int) density);
 
-        PrintWriter writer =
-                new PrintWriter(DBSCANTest.class.getResource("").getPath() + "DBSCAN-clusters.json");
+        PrintWriter writer = new PrintWriter(
+                DBSCANTest.class.getResource("").getPath() + "DBSCAN-clusters.json");
         writer.print("{\"type\": \"FeatureCollection\",\"features\": [");
 
-        String[] colors =
-                {"#259f23", "#de9a1d", "#c14f97", "#3731ff", "#0dbdce", "#ace213", "#e30502",
-                        "#9f2363", "#50239f"};
+        String[] colors = {"#259f23", "#de9a1d", "#c14f97", "#3731ff", "#0dbdce", "#ace213",
+                "#e30502", "#9f2363", "#50239f"};
         int i = 0;
         for (List<Point> cluster : clusters) {
             assertTrue(cluster.size() >= density);

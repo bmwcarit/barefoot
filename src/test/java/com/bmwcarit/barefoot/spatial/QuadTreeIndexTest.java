@@ -50,19 +50,25 @@ public class QuadTreeIndexTest {
         String p4 = "11.3427522 48.0832129";
         String p5 = "11.3469701 48.0825356";
 
-        List<Polyline> geometries = new LinkedList<Polyline>();
-        geometries.add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p1 + "," + p2
-                + ")", WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
-        geometries.add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p3 + "," + p1
-                + ")", WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
-        geometries.add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p4 + "," + p1
-                + ")", WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
-        geometries.add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p1 + "," + p5
-                + ")", WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
-        geometries.add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p2 + "," + p4
-                + ")", WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
-        geometries.add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p5 + "," + p3
-                + ")", WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
+        List<Polyline> geometries = new LinkedList<>();
+        geometries
+                .add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p1 + "," + p2 + ")",
+                        WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
+        geometries
+                .add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p3 + "," + p1 + ")",
+                        WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
+        geometries
+                .add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p4 + "," + p1 + ")",
+                        WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
+        geometries
+                .add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p1 + "," + p5 + ")",
+                        WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
+        geometries
+                .add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p2 + "," + p4 + ")",
+                        WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
+        geometries
+                .add((Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p5 + "," + p3 + ")",
+                        WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
 
         return geometries;
     }
@@ -139,7 +145,7 @@ public class QuadTreeIndexTest {
             Point c = new Point(11.343629, 48.083797);
             double r = 50;
 
-            Set<Integer> neighbors = new HashSet<Integer>();
+            Set<Integer> neighbors = new HashSet<>();
             for (int i = 0; i < lines.size(); ++i) {
                 double f = spatial.intercept(lines.get(i), c);
                 Point p = spatial.interpolate(lines.get(i), f);
@@ -162,7 +168,7 @@ public class QuadTreeIndexTest {
             Point c = new Point(11.344827, 48.083752);
             double r = 10;
 
-            Set<Integer> neighbors = new HashSet<Integer>();
+            Set<Integer> neighbors = new HashSet<>();
             for (int i = 0; i < lines.size(); ++i) {
                 double f = spatial.intercept(lines.get(i), c);
                 Point p = spatial.interpolate(lines.get(i), f);
@@ -185,7 +191,7 @@ public class QuadTreeIndexTest {
             Point c = new Point(11.344827, 48.083752);
             double r = 5;
 
-            Set<Integer> neighbors = new HashSet<Integer>();
+            Set<Integer> neighbors = new HashSet<>();
             for (int i = 0; i < lines.size(); ++i) {
                 double f = spatial.intercept(lines.get(i), c);
                 Point p = spatial.interpolate(lines.get(i), f);
@@ -209,8 +215,7 @@ public class QuadTreeIndexTest {
     @Test
     public void testIndexKNearest() {
         final String[] wkts =
-                {
-                        "LINESTRING (11.4235408 48.1010922, 11.4235077 48.101068, 11.4231626 48.1008749)",
+                {"LINESTRING (11.4235408 48.1010922, 11.4235077 48.101068, 11.4231626 48.1008749)",
                         "LINESTRING (11.4209648 48.0995957, 11.420596 48.0993468, 11.4203029 48.0991585)",
                         "LINESTRING (11.4234794 48.102708, 11.423487 48.1026804, 11.4235585 48.1024194, 11.4235555 48.1020172, 11.4235546 48.1018929, 11.4235942 48.1015978, 11.4236333 48.1015246)",
                         "LINESTRING (11.4342071 48.1036417, 11.434099 48.1036362)",
@@ -288,33 +293,35 @@ public class QuadTreeIndexTest {
         final SpatialOperator spatial = new Geography();
 
         {
-            final List<Triple<Integer, Polyline, Double>> lines = new ArrayList<Triple<Integer, Polyline, Double>>();
+            final List<Triple<Integer, Polyline, Double>> lines =
+                    new ArrayList<>();
             final QuadTreeIndex index = new QuadTreeIndex();
             final Point c = new Point(11.429859, 48.105382);
             final int k = 20;
             int i = 0;
             for (String wkt : wkts) {
                 int id = i++;
-                Polyline line =
-                        (Polyline) GeometryEngine.geometryFromWkt(wkt,
-                                WktImportFlags.wktImportDefaults, Geometry.Type.Polyline);
+                Polyline line = (Polyline) GeometryEngine.geometryFromWkt(wkt,
+                        WktImportFlags.wktImportDefaults, Geometry.Type.Polyline);
 
                 double f = spatial.intercept(line, c);
                 Point p = spatial.interpolate(line, f);
                 double d = spatial.distance(c, p);
 
-                lines.add(new Triple<Integer, Polyline, Double>(id, line, d));
+                lines.add(new Triple<>(id, line, d));
                 index.add(id, line);
             }
 
             Collections.sort(lines, new Comparator<Triple<Integer, Polyline, Double>>() {
                 @Override
-                public int compare(Triple<Integer, Polyline, Double> left, Triple<Integer, Polyline, Double> right) {
-                    return left.three() < right.three() ? -1 : left.three() > right.three() ? +1 : 0;
+                public int compare(Triple<Integer, Polyline, Double> left,
+                        Triple<Integer, Polyline, Double> right) {
+                    return left.three() < right.three() ? -1
+                            : left.three() > right.three() ? +1 : 0;
                 }
             });
 
-            Set<Integer> neighbors = new HashSet<Integer>();
+            Set<Integer> neighbors = new HashSet<>();
 
             for (int j = 0; j < k; ++j) {
                 Tuple<Integer, Polyline> e = lines.get(j);
@@ -330,33 +337,35 @@ public class QuadTreeIndexTest {
             }
         }
         {
-            final List<Triple<Integer, Polyline, Double>> lines = new ArrayList<Triple<Integer, Polyline, Double>>();
+            final List<Triple<Integer, Polyline, Double>> lines =
+                    new ArrayList<>();
             final QuadTreeIndex index = new QuadTreeIndex();
             final Point c = new Point(11.429859, 48.105382);
             final int k = 3;
             int i = 0;
             for (String wkt : wkts) {
                 int id = i++;
-                Polyline line =
-                        (Polyline) GeometryEngine.geometryFromWkt(wkt,
-                                WktImportFlags.wktImportDefaults, Geometry.Type.Polyline);
+                Polyline line = (Polyline) GeometryEngine.geometryFromWkt(wkt,
+                        WktImportFlags.wktImportDefaults, Geometry.Type.Polyline);
 
                 double f = spatial.intercept(line, c);
                 Point p = spatial.interpolate(line, f);
                 double d = spatial.distance(c, p);
 
-                lines.add(new Triple<Integer, Polyline, Double>(id, line, d));
+                lines.add(new Triple<>(id, line, d));
                 index.add(id, line);
             }
 
             Collections.sort(lines, new Comparator<Triple<Integer, Polyline, Double>>() {
                 @Override
-                public int compare(Triple<Integer, Polyline, Double> left, Triple<Integer, Polyline, Double> right) {
-                    return left.three() < right.three() ? -1 : left.three() > right.three() ? +1 : 0;
+                public int compare(Triple<Integer, Polyline, Double> left,
+                        Triple<Integer, Polyline, Double> right) {
+                    return left.three() < right.three() ? -1
+                            : left.three() > right.three() ? +1 : 0;
                 }
             });
 
-            Set<Integer> neighbors = new HashSet<Integer>();
+            Set<Integer> neighbors = new HashSet<>();
 
             for (int j = 0; j < k; ++j) {
                 Triple<Integer, Polyline, Double> e = lines.get(j);
@@ -372,33 +381,35 @@ public class QuadTreeIndexTest {
             }
         }
         {
-            final List<Triple<Integer, Polyline, Double>> lines = new ArrayList<Triple<Integer, Polyline, Double>>();
+            final List<Triple<Integer, Polyline, Double>> lines =
+                    new ArrayList<>();
             final QuadTreeIndex index = new QuadTreeIndex();
             final Point c = new Point(11.42096, 48.10318);
             final int k = 10;
             int i = 0;
             for (String wkt : wkts) {
                 int id = i++;
-                Polyline line =
-                        (Polyline) GeometryEngine.geometryFromWkt(wkt,
-                                WktImportFlags.wktImportDefaults, Geometry.Type.Polyline);
+                Polyline line = (Polyline) GeometryEngine.geometryFromWkt(wkt,
+                        WktImportFlags.wktImportDefaults, Geometry.Type.Polyline);
 
                 double f = spatial.intercept(line, c);
                 Point p = spatial.interpolate(line, f);
                 double d = spatial.distance(c, p);
 
-                lines.add(new Triple<Integer, Polyline, Double>(id, line, d));
+                lines.add(new Triple<>(id, line, d));
                 index.add(id, line);
             }
 
             Collections.sort(lines, new Comparator<Triple<Integer, Polyline, Double>>() {
                 @Override
-                public int compare(Triple<Integer, Polyline, Double> left, Triple<Integer, Polyline, Double> right) {
-                    return left.three() < right.three() ? -1 : left.three() > right.three() ? +1 : 0;
+                public int compare(Triple<Integer, Polyline, Double> left,
+                        Triple<Integer, Polyline, Double> right) {
+                    return left.three() < right.three() ? -1
+                            : left.three() > right.three() ? +1 : 0;
                 }
             });
 
-            Set<Integer> neighbors = new HashSet<Integer>();
+            Set<Integer> neighbors = new HashSet<>();
 
             for (int j = 0; j < k; ++j) {
                 Tuple<Integer, Polyline> e = lines.get(j);

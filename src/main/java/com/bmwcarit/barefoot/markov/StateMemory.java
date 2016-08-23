@@ -30,7 +30,7 @@ import org.json.JSONObject;
  * @param <S> Sample inherits from {@link Sample}.
  */
 public class StateMemory<C extends StateCandidate<C, T, S>, T extends StateTransition, S extends Sample> {
-    private Set<C> candidates = new HashSet<C>();
+    private Set<C> candidates = new HashSet<>();
     private S sample = null;
 
     /**
@@ -70,10 +70,10 @@ public class StateMemory<C extends StateCandidate<C, T, S>, T extends StateTrans
     }
 
     /**
-     * Gets the size of the state, i.e. the number of state candidates organized in the data
+     * Gets the size of the state, which is the number of state candidates organized in the data
      * structure.
      *
-     * @return Size of the state, i.e. number of state candidates.
+     * @return Size of the state, which is the number of state candidates.
      */
     public int size() {
         return candidates.size();
@@ -104,8 +104,8 @@ public class StateMemory<C extends StateCandidate<C, T, S>, T extends StateTrans
     }
 
     /**
-     * Updates the state with a state vector which is a set of {@link StateCandidate} objects with its
-     * respective measurement, i.e. a {@link Sample} object.
+     * Updates the state with a state vector which is a set of {@link StateCandidate} objects with
+     * its respective measurement, which is a {@link Sample} object.
      *
      * @param vector State vector for update of the state.
      * @param sample Sample measurement of the state vector.
@@ -136,7 +136,7 @@ public class StateMemory<C extends StateCandidate<C, T, S>, T extends StateTrans
      * Gets a state estimate which is the most likely state candidate of the last update, with
      * respect to state candidate's filter probability (see {@link StateCandidate#filtprob()}).
      *
-     * @return State estimate, i.e. most likely state candidate.
+     * @return State estimate, which is most likely state candidate.
      */
     public C estimate() {
         if (candidates.isEmpty()) {

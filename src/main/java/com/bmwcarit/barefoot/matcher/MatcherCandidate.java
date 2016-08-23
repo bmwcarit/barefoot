@@ -23,7 +23,8 @@ import com.bmwcarit.barefoot.roadmap.RoadPoint;
 /**
  * Matching candidate for Hidden Markov Model (HMM) map matching representing a position on the map.
  */
-public class MatcherCandidate extends StateCandidate<MatcherCandidate, MatcherTransition, MatcherSample> {
+public class MatcherCandidate
+        extends StateCandidate<MatcherCandidate, MatcherTransition, MatcherSample> {
     private final RoadPoint point;
 
     /**

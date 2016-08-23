@@ -36,7 +36,7 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
     private final static Logger logger = LoggerFactory.getLogger(Filter.class);
 
     /**
-     * Gets state vector, i.e. a set of {@link StateCandidate} objects and with its emission
+     * Gets state vector, which is a set of {@link StateCandidate} objects and with its emission
      * probability.
      *
      * @param predecessors Predecessor state candidate <i>s<sub>t-1</sub></i>.
@@ -46,8 +46,8 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
     protected abstract Set<Tuple<C, Double>> candidates(Set<C> predecessors, S sample);
 
     /**
-     * Gets transition and its transition probability for a pair of {@link StateCandidate}s, i.e. a
-     * candidate <i>s<sub>t</sub></i> and its predecessor <i>s<sub>t</sub></i>
+     * Gets transition and its transition probability for a pair of {@link StateCandidate}s, which
+     * is a candidate <i>s<sub>t</sub></i> and its predecessor <i>s<sub>t</sub></i>
      *
      * @param predecessor Tuple of predecessor state candidate <i>s<sub>t-1</sub></i> and its
      *        respective measurement sample.
@@ -81,16 +81,14 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
         S sample = candidates.one();
         S previous = predecessors.one();
 
-        Map<C, Map<C, Tuple<T, Double>>> map = new HashMap<C, Map<C, Tuple<T, Double>>>();
+        Map<C, Map<C, Tuple<T, Double>>> map = new HashMap<>();
 
         for (C predecessor : predecessors.two()) {
             map.put(predecessor, new HashMap<C, Tuple<T, Double>>());
 
             for (C candidate : candidates.two()) {
-                map.get(predecessor).put(
-                        candidate,
-                        transition(new Tuple<S, C>(previous, predecessor), new Tuple<S, C>(sample,
-                                candidate)));
+                map.get(predecessor).put(candidate, transition(new Tuple<>(previous, predecessor),
+                        new Tuple<>(sample, candidate)));
             }
         }
 
@@ -99,13 +97,13 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
 
     /**
      * Executes Hidden Markov Model (HMM) filter iteration that determines for a given measurement
-     * sample <i>z<sub>t</sub></i>, i.e. a {@link Sample} object, and of a predecessor state vector
-     * <i>S<sub>t-1</sub></i>, i.e. a set of {@link StateCandidate} objects, a state vector
-     * <i>S<sub>t</sub></i> with filter and sequence probabilities set.
+     * sample <i>z<sub>t</sub></i>, which is a {@link Sample} object, and of a predecessor state
+     * vector <i>S<sub>t-1</sub></i>, which is a set of {@link StateCandidate} objects, a state
+     * vector <i>S<sub>t</sub></i> with filter and sequence probabilities set.
      * <p>
      * <b>Note:</b> The set of state candidates <i>S<sub>t-1</sub></i> is allowed to be empty. This
-     * is either the initial case or an HMM break occured, i.e. no state candidates representing the
-     * measurement sample could be found.
+     * is either the initial case or an HMM break occured, which is no state candidates representing
+     * the measurement sample could be found.
      *
      * @param predecessors State vector <i>S<sub>t-1</sub></i>, which may be empty.
      * @param sample Measurement sample <i>z<sub>t</sub></i>.
@@ -125,21 +123,20 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
         assert (predecessors != null);
         assert (sample != null);
 
-        Set<C> result = new HashSet<C>();
+        Set<C> result = new HashSet<>();
         Set<Tuple<C, Double>> candidates = candidates(predecessors, sample);
         logger.trace("{} state candidates", candidates.size());
 
         double normsum = 0;
 
         if (!predecessors.isEmpty()) {
-            Set<C> states = new HashSet<C>();
+            Set<C> states = new HashSet<>();
             for (Tuple<C, Double> candidate : candidates) {
                 states.add(candidate.one());
             }
 
             Map<C, Map<C, Tuple<T, Double>>> transitions =
-                    transitions(new Tuple<S, Set<C>>(previous, predecessors), new Tuple<S, Set<C>>(
-                            sample, states));
+                    transitions(new Tuple<>(previous, predecessors), new Tuple<>(sample, states));
 
             for (Tuple<C, Double> candidate : candidates) {
                 C candidate_ = candidate.one();
@@ -147,8 +144,8 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
 
                 if (logger.isTraceEnabled()) {
                     try {
-                        logger.trace("state candidate {} ({}) {}", candidate_.id(),
-                                candidate.two(), candidate_.toJSON().toString());
+                        logger.trace("state candidate {} ({}) {}", candidate_.id(), candidate.two(),
+                                candidate_.toJSON().toString());
                     } catch (JSONException e) {
                         logger.trace("state candidate (not JSON parsable candidate: {})",
                                 e.getMessage());
@@ -162,12 +159,11 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
                         continue;
                     }
 
-                    candidate_.filtprob(candidate_.filtprob()
-                            + (transition.two() * predecessor.filtprob()));
+                    candidate_.filtprob(
+                            candidate_.filtprob() + (transition.two() * predecessor.filtprob()));
 
-                    double seqprob =
-                            predecessor.seqprob() + Math.log10(transition.two())
-                                    + Math.log10(candidate.two());
+                    double seqprob = predecessor.seqprob() + Math.log10(transition.two())
+                            + Math.log10(candidate.two());
 
                     if (logger.isTraceEnabled()) {
                         try {
@@ -189,9 +185,8 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
                 }
 
                 if (candidate_.predecessor() != null) {
-                    logger.trace("state candidate {} -> {} ({}, {})",
-                            candidate_.predecessor().id(), candidate_.id(), candidate_.filtprob(),
-                            candidate_.seqprob());
+                    logger.trace("state candidate {} -> {} ({}, {})", candidate_.predecessor().id(),
+                            candidate_.id(), candidate_.filtprob(), candidate_.seqprob());
                 } else {
                     logger.trace("state candidate - -> {} ({}, {})", candidate_.id(),
                             candidate_.filtprob(), candidate_.seqprob());
@@ -226,8 +221,8 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
 
                 if (logger.isTraceEnabled()) {
                     try {
-                        logger.trace("state candidate {} ({}) {}", candidate_.id(),
-                                candidate.two(), candidate_.toJSON().toString());
+                        logger.trace("state candidate {} ({}) {}", candidate_.id(), candidate.two(),
+                                candidate_.toJSON().toString());
                     } catch (JSONException e) {
                         logger.trace("state candidate (not JSON parsable candidate: {})",
                                 e.getMessage());

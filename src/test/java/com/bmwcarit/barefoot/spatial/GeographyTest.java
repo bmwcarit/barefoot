@@ -19,9 +19,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
-import net.sf.geographiclib.Geodesic;
-import net.sf.geographiclib.GeodesicData;
-
 import org.junit.Test;
 
 import com.bmwcarit.barefoot.util.Stopwatch;
@@ -31,6 +28,9 @@ import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.WktImportFlags;
+
+import net.sf.geographiclib.Geodesic;
+import net.sf.geographiclib.GeodesicData;
 
 ;
 
@@ -49,7 +49,7 @@ public class GeographyTest {
         int iter = 1000;
 
         Triple<Point, Double, Double> res =
-                new Triple<Point, Double, Double>(a, spatial.distance(a, c), 0d);
+                new Triple<>(a, spatial.distance(a, c), 0d);
 
         for (int f = 1; f <= iter; ++f) {
 
@@ -86,8 +86,8 @@ public class GeographyTest {
         sw2.stop();
 
         if (benchmark) {
-            System.out.println("[Geography] distance " + sw1.us() + " us (GeoLib) " + sw2.us()
-                    + " us (ESRI)");
+            System.out.println(
+                    "[Geography] distance " + sw1.us() + " us (GeoLib) " + sw2.us() + " us (ESRI)");
         }
 
         assertEquals(dist_geog, dist_esri, 10E-6);
@@ -101,8 +101,8 @@ public class GeographyTest {
         sw2.stop();
 
         if (benchmark) {
-            System.out.println("[Geography] distance " + sw1.us() + " us (GeoLib) " + sw2.us()
-                    + " us (ESRI)");
+            System.out.println(
+                    "[Geography] distance " + sw1.us() + " us (GeoLib) " + sw2.us() + " us (ESRI)");
         }
 
         assertEquals(dist_geog, dist_esri, 10E-6);
@@ -132,8 +132,8 @@ public class GeographyTest {
         sw1.stop();
 
         if (benchmark) {
-            System.out.println("[Geography] interception & interpolation " + sw1.us()
-                    + " us (iterative)");
+            System.out.println(
+                    "[Geography] interception & interpolation " + sw1.us() + " us (iterative)");
         }
 
         assertEquals(f, res.three(), 0.1);
@@ -169,10 +169,9 @@ public class GeographyTest {
 
     @Test
     public void testLineInterception() {
-        Polyline ab =
-                (Polyline) GeometryEngine.geometryFromWkt(
-                        "LINESTRING(11.4047661 48.1403687,11.4053519 48.141055)",
-                        WktImportFlags.wktImportDefaults, Type.Polyline);
+        Polyline ab = (Polyline) GeometryEngine.geometryFromWkt(
+                "LINESTRING(11.4047661 48.1403687,11.4053519 48.141055)",
+                WktImportFlags.wktImportDefaults, Type.Polyline);
         Point a = ab.getPoint(0), b = ab.getPoint(1);
 
         String points[] = new String[] {"POINT(11.406501117689324 48.14051652560591)", // East
@@ -186,9 +185,8 @@ public class GeographyTest {
         };
 
         for (int i = 0; i < points.length; ++i) {
-            Point c =
-                    (Point) GeometryEngine.geometryFromWkt(points[i],
-                            WktImportFlags.wktImportDefaults, Type.Point);
+            Point c = (Point) GeometryEngine.geometryFromWkt(points[i],
+                    WktImportFlags.wktImportDefaults, Type.Point);
 
             sw1.start();
             double f = spatial.intercept(a, b, c);
@@ -246,12 +244,10 @@ public class GeographyTest {
         String line =
                 "LINESTRING(11.4047013 48.1402147,11.4047038 48.1402718,11.4047661 48.1403687,11.4053519 48.141055,11.4054617 48.1411901,11.4062664 48.1421968,11.4064586 48.1424479,11.4066449 48.1427372,11.4067254 48.1429028,11.4067864 48.1430673,11.4068647 48.1433303,11.4069456 48.1436822,11.4070524 48.1440368,11.4071569 48.1443314,11.4072635 48.1445915,11.4073887 48.1448641,11.4075228 48.1450729,11.407806 48.1454843,11.4080135 48.1458112,11.4083012 48.1463167,11.4086211 48.1469061,11.4087461 48.1471386,11.4088719 48.1474078,11.4089422 48.1476014,11.409028 48.1478353,11.409096 48.1480701,11.4091568 48.1483459,11.4094282 48.1498536)";
 
-        Point c =
-                (Point) GeometryEngine.geometryFromWkt(point, WktImportFlags.wktImportDefaults,
-                        Type.Point);
-        Polyline ab =
-                (Polyline) GeometryEngine.geometryFromWkt(line, WktImportFlags.wktImportDefaults,
-                        Type.Polyline);
+        Point c = (Point) GeometryEngine.geometryFromWkt(point, WktImportFlags.wktImportDefaults,
+                Type.Point);
+        Polyline ab = (Polyline) GeometryEngine.geometryFromWkt(line,
+                WktImportFlags.wktImportDefaults, Type.Polyline);
 
         sw1.start();
         double f = spatial.intercept(ab, c);
@@ -283,12 +279,10 @@ public class GeographyTest {
         String line =
                 "LINESTRING(11.5852021 48.1761996, 11.585284 48.175924, 11.5852937 48.1758945)";
 
-        Point c =
-                (Point) GeometryEngine.geometryFromWkt(point, WktImportFlags.wktImportDefaults,
-                        Type.Point);
-        Polyline ab =
-                (Polyline) GeometryEngine.geometryFromWkt(line, WktImportFlags.wktImportDefaults,
-                        Type.Polyline);
+        Point c = (Point) GeometryEngine.geometryFromWkt(point, WktImportFlags.wktImportDefaults,
+                Type.Point);
+        Polyline ab = (Polyline) GeometryEngine.geometryFromWkt(line,
+                WktImportFlags.wktImportDefaults, Type.Polyline);
 
         sw1.start();
         double f = spatial.intercept(ab, c);
@@ -333,9 +327,8 @@ public class GeographyTest {
         assertEquals(azimuth(berl, c, false),
                 spatial.azimuth(p, spatial.distance(berl, c) / spatial.length(p)), 1E-9);
         Point d = spatial.interpolate(mosk, reyk, 0.5);
-        assertEquals(
-                azimuth(mosk, d, false),
-                spatial.azimuth(p, (spatial.distance(berl, mosk) + spatial.distance(mosk, d))
-                        / spatial.length(p)), 1E-9);
+        assertEquals(azimuth(mosk, d, false), spatial.azimuth(p,
+                (spatial.distance(berl, mosk) + spatial.distance(mosk, d)) / spatial.length(p)),
+                1E-9);
     }
 }

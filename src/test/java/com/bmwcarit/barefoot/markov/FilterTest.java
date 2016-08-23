@@ -112,7 +112,7 @@ public class FilterTest {
         }
 
         public Tuple<Double, Double> predecessor(int predecessor) {
-            return new Tuple<Double, Double>(matrix[predecessor + 1][0],
+            return new Tuple<>(matrix[predecessor + 1][0],
                     Math.log10(matrix[predecessor + 1][1]));
         }
 
@@ -139,10 +139,10 @@ public class FilterTest {
         @Override
         protected Set<Tuple<MockElement, Double>> candidates(Set<MockElement> predecessors,
                 Sample sample) {
-            Set<Tuple<MockElement, Double>> candidates = new HashSet<Tuple<MockElement, Double>>();
+            Set<Tuple<MockElement, Double>> candidates = new HashSet<>();
             for (int c = 0; c < states.numCandidates(); ++c) {
-                candidates.add(new Tuple<MockElement, Double>(new MockElement(c), states
-                        .emission(c)));
+                candidates.add(
+                        new Tuple<>(new MockElement(c), states.emission(c)));
             }
             return candidates;
         }
@@ -151,12 +151,12 @@ public class FilterTest {
         @Override
         protected Tuple<StateTransition, Double> transition(Tuple<Sample, MockElement> predecessor,
                 Tuple<Sample, MockElement> candidate) {
-            return new Tuple<StateTransition, Double>(new StateTransition(), states.transition(
-                    predecessor.two().numid(), candidate.two().numid()));
+            return new Tuple<>(new StateTransition(),
+                    states.transition(predecessor.two().numid(), candidate.two().numid()));
         }
 
         public Set<MockElement> execute() {
-            Set<MockElement> predecessors = new HashSet<MockElement>();
+            Set<MockElement> predecessors = new HashSet<>();
             for (int p = 0; p < states.numPredecessors(); ++p) {
                 Tuple<Double, Double> pred = states.predecessor(p);
                 predecessors.add(new MockElement(p, pred.one(), pred.two()));
@@ -189,9 +189,8 @@ public class FilterTest {
 
     @Test
     public void FilterTestSubsequent() {
-        MockStates states =
-                new MockStates(new double[][] { {0, 0, 0.6, 1.0, 0.4}, {0.2, 0.3, 0.01, 0.02, 0.3},
-                        {0.3, 0.4, 0.2, 0.05, 0.02}});
+        MockStates states = new MockStates(new double[][] {{0, 0, 0.6, 1.0, 0.4},
+                {0.2, 0.3, 0.01, 0.02, 0.3}, {0.3, 0.4, 0.2, 0.05, 0.02}});
         MockFilter filter = new MockFilter(states);
 
         Set<MockElement> result = filter.execute();
@@ -213,9 +212,8 @@ public class FilterTest {
 
     @Test
     public void FilterTestBreakTransition() {
-        MockStates states =
-                new MockStates(new double[][] { {0, 0, 0.6, 1.0, 0.4}, {0.2, 0.3, 0, 0, 0},
-                        {0.3, 0.4, 0, 0, 0}});
+        MockStates states = new MockStates(
+                new double[][] {{0, 0, 0.6, 1.0, 0.4}, {0.2, 0.3, 0, 0, 0}, {0.3, 0.4, 0, 0, 0}});
         MockFilter filter = new MockFilter(states);
 
         Set<MockElement> result = filter.execute();
@@ -237,7 +235,7 @@ public class FilterTest {
 
     @Test
     public void FilterTestBreakCandidates() {
-        MockStates states = new MockStates(new double[][] { {0, 0}, {0.2, 0.3}, {0.3, 0.4}});
+        MockStates states = new MockStates(new double[][] {{0, 0}, {0.2, 0.3}, {0.3, 0.4}});
         MockFilter filter = new MockFilter(states);
 
         Set<MockElement> result = filter.execute();

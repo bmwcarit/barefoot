@@ -29,8 +29,8 @@ public class NYCSample {
     private static List<Tuple<Point, Long>> targets = null;
 
     public static void load() throws NumberFormatException, IOException, ParseException {
-        sources = new LinkedList<Tuple<Point, Long>>();
-        targets = new LinkedList<Tuple<Point, Long>>();
+        sources = new LinkedList<>();
+        targets = new LinkedList<>();
         String file =
                 NYCSample.class.getResource("xba96de419e711691b9445d6a6307c170.csv").getFile();
         BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -41,23 +41,25 @@ public class NYCSample {
             String[] str = line.split(",");
             point = new Point(Double.parseDouble(str[10]), Double.parseDouble(str[11]));
             time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str[5]).getTime();
-            sources.add(new Tuple<Point, Long>(point, time / 1000));
+            sources.add(new Tuple<>(point, time / 1000));
 
             point = new Point(Double.parseDouble(str[12]), Double.parseDouble(str[13]));
             time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str[6]).getTime();
-            targets.add(new Tuple<Point, Long>(point, time / 1000));
+            targets.add(new Tuple<>(point, time / 1000));
         }
         reader.close();
     }
 
-    public static List<Tuple<Point, Long>> sources() throws NumberFormatException, IOException, ParseException {
+    public static List<Tuple<Point, Long>> sources()
+            throws NumberFormatException, IOException, ParseException {
         if (sources == null) {
             load();
         }
         return sources;
     }
 
-    public static List<Tuple<Point, Long>> targets() throws NumberFormatException, IOException, ParseException {
+    public static List<Tuple<Point, Long>> targets()
+            throws NumberFormatException, IOException, ParseException {
         if (targets == null) {
             load();
         }

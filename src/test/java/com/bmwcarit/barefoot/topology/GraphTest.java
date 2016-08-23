@@ -1,14 +1,14 @@
 /*
-* Copyright (C) 2015, BMW Car IT GmbH
-* 
-* Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
-*
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-* in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
-* writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-* WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
-* language governing permissions and limitations under the License.
+ * Copyright (C) 2015, BMW Car IT GmbH
+ *
+ * Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
+ * writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
  */
 
 package com.bmwcarit.barefoot.topology;
@@ -26,15 +26,12 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.bmwcarit.barefoot.topology.Edge;
-import com.bmwcarit.barefoot.topology.Graph;
-
 public class GraphTest {
 
     @Test
     public void testConstruction() {
         {
-            Graph<Edge> graph = new Graph<Edge>();
+            Graph<Edge> graph = new Graph<>();
             graph.add(new Edge(0, 0, 0));
             graph.construct();
 
@@ -43,7 +40,7 @@ public class GraphTest {
             assertEquals(edge.id(), edge.neighbor().id());
         }
         {
-            Graph<Edge> graph = new Graph<Edge>();
+            Graph<Edge> graph = new Graph<>();
 
             graph.add(new Edge(0, 0, 1));
             graph.add(new Edge(1, 1, 0));
@@ -56,13 +53,13 @@ public class GraphTest {
 
             graph.construct();
 
-            Map<Long, Set<Long>> sources = new HashMap<Long, Set<Long>>();
+            Map<Long, Set<Long>> sources = new HashMap<>();
 
-            sources.put(0L, new HashSet<Long>(Arrays.asList(0L, 7L, 8L)));
-            sources.put(1L, new HashSet<Long>(Arrays.asList(1L, 2L)));
-            sources.put(2L, new HashSet<Long>(Arrays.asList(3L)));
-            sources.put(3L, new HashSet<Long>(Arrays.asList(4L)));
-            sources.put(4L, new HashSet<Long>(Arrays.asList(6L)));
+            sources.put(0L, new HashSet<>(Arrays.asList(0L, 7L, 8L)));
+            sources.put(1L, new HashSet<>(Arrays.asList(1L, 2L)));
+            sources.put(2L, new HashSet<>(Arrays.asList(3L)));
+            sources.put(3L, new HashSet<>(Arrays.asList(4L)));
+            sources.put(4L, new HashSet<>(Arrays.asList(6L)));
             sources.put(5L, new HashSet<Long>());
 
             Iterator<Edge> edges = graph.edges();
@@ -84,7 +81,7 @@ public class GraphTest {
 
     @Test
     public void testComponents() {
-        Graph<Edge> graph = new Graph<Edge>();
+        Graph<Edge> graph = new Graph<>();
 
         // Component with dead-end edge.
         graph.add(new Edge(0, 0, 1));
@@ -120,13 +117,13 @@ public class GraphTest {
 
         graph.construct();
 
-        Set<Set<Long>> sets = new HashSet<Set<Long>>();
+        Set<Set<Long>> sets = new HashSet<>();
 
-        sets.add(new HashSet<Long>(Arrays.asList(0L, 1L, 2L, 3L, 4L, 6L, 7L, 8L)));
-        sets.add(new HashSet<Long>(Arrays.asList(9L, 10L, 11L, 12L)));
-        sets.add(new HashSet<Long>(Arrays.asList(13L)));
-        sets.add(new HashSet<Long>(Arrays.asList(14L, 15L, 16L)));
-        sets.add(new HashSet<Long>(Arrays.asList(17L, 18L, 19L, 20L, 21L, 22L, 23L)));
+        sets.add(new HashSet<>(Arrays.asList(0L, 1L, 2L, 3L, 4L, 6L, 7L, 8L)));
+        sets.add(new HashSet<>(Arrays.asList(9L, 10L, 11L, 12L)));
+        sets.add(new HashSet<>(Arrays.asList(13L)));
+        sets.add(new HashSet<>(Arrays.asList(14L, 15L, 16L)));
+        sets.add(new HashSet<>(Arrays.asList(17L, 18L, 19L, 20L, 21L, 22L, 23L)));
 
         Set<Set<Edge>> components = graph.components();
 

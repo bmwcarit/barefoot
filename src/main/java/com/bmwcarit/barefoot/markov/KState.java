@@ -49,8 +49,8 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
     public KState() {
         this.k = -1;
         this.t = -1;
-        this.sequence = new LinkedList<Tuple<Set<C>, S>>();
-        this.counters = new HashMap<C, Integer>();
+        this.sequence = new LinkedList<>();
+        this.counters = new HashMap<>();
     }
 
     /**
@@ -63,10 +63,10 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
     public KState(JSONObject json, Factory<C, T, S> factory) throws JSONException {
         this.k = json.getInt("k");
         this.t = json.getLong("t");
-        this.sequence = new LinkedList<Tuple<Set<C>, S>>();
-        this.counters = new HashMap<C, Integer>();
+        this.sequence = new LinkedList<>();
+        this.counters = new HashMap<>();
 
-        Map<String, C> candidates = new HashMap<String, C>();
+        Map<String, C> candidates = new HashMap<>();
         JSONArray jsoncandidates = json.getJSONArray("candidates");
         for (int i = 0; i < jsoncandidates.length(); ++i) {
             JSONObject jsoncandidate = jsoncandidates.getJSONObject(i);
@@ -80,7 +80,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
         JSONArray jsonsequence = json.getJSONArray("sequence");
         for (int i = 0; i < jsonsequence.length(); ++i) {
             JSONObject jsonseqelement = jsonsequence.getJSONObject(i);
-            Set<C> vector = new HashSet<C>();
+            Set<C> vector = new HashSet<>();
             JSONArray jsonvector = jsonseqelement.getJSONArray("vector");
             for (int j = 0; j < jsonvector.length(); ++j) {
                 JSONObject jsonelement = jsonvector.getJSONObject(j);
@@ -101,7 +101,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
 
             S sample = factory.sample(jsonseqelement.getJSONObject("sample"));
 
-            sequence.add(new Tuple<Set<C>, S>(vector, sample));
+            sequence.add(new Tuple<>(vector, sample));
         }
 
         Collections.sort(sequence, new Comparator<Tuple<Set<C>, S>>() {
@@ -128,8 +128,8 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
     public KState(int k, long t) {
         this.k = k;
         this.t = t;
-        this.sequence = new LinkedList<Tuple<Set<C>, S>>();
-        this.counters = new HashMap<C, Integer>();
+        this.sequence = new LinkedList<>();
+        this.counters = new HashMap<>();
     }
 
     @Override
@@ -166,7 +166,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
      * @return List with the sequence of measurements.
      */
     public List<S> samples() {
-        LinkedList<S> samples = new LinkedList<S>();
+        LinkedList<S> samples = new LinkedList<>();
         for (Tuple<Set<C>, S> element : sequence) {
             samples.add(element.two());
         }
@@ -195,7 +195,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
         }
 
         if (!sequence.isEmpty()) {
-            Set<C> deletes = new HashSet<C>();
+            Set<C> deletes = new HashSet<>();
             C estimate = null;
 
             for (C candidate : sequence.peekLast().one()) {
@@ -216,7 +216,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
             }
         }
 
-        sequence.add(new Tuple<Set<C>, S>(vector, sample));
+        sequence.add(new Tuple<>(vector, sample));
 
         while ((t > 0 && sample.time() - sequence.peekFirst().two().time() > t)
                 || (k >= 0 && sequence.size() > k + 1)) {
@@ -250,7 +250,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
     @Override
     public Set<C> vector() {
         if (sequence.isEmpty()) {
-            return new HashSet<C>();
+            return new HashSet<>();
         } else {
             return sequence.peekLast().one();
         }
@@ -290,7 +290,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
             }
         }
 
-        LinkedList<C> ksequence = new LinkedList<C>();
+        LinkedList<C> ksequence = new LinkedList<>();
 
         for (int i = sequence.size() - 1; i >= 0; --i) {
             if (kestimate != null) {
@@ -315,8 +315,8 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
             for (C candidate : element.one()) {
                 JSONObject jsoncandidate = new JSONObject();
                 jsoncandidate.put("candid", candidate.id());
-                jsoncandidate.put("predid", candidate.predecessor() == null ? "" : candidate
-                        .predecessor().id());
+                jsoncandidate.put("predid",
+                        candidate.predecessor() == null ? "" : candidate.predecessor().id());
                 jsonvector.put(jsoncandidate);
             }
             jsonseqelement.put("vector", jsonvector);

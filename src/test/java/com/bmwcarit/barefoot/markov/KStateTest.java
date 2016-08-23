@@ -1,14 +1,14 @@
 /*
-* Copyright (C) 2015, BMW Car IT GmbH
-* 
-* Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
-*
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-* in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
-* writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-* WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
-* language governing permissions and limitations under the License.
+ * Copyright (C) 2015, BMW Car IT GmbH
+ *
+ * Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
+ * writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
  */
 
 package com.bmwcarit.barefoot.markov;
@@ -26,12 +26,6 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
-
-import com.bmwcarit.barefoot.markov.Factory;
-import com.bmwcarit.barefoot.markov.KState;
-import com.bmwcarit.barefoot.markov.Sample;
-import com.bmwcarit.barefoot.markov.StateCandidate;
-import com.bmwcarit.barefoot.markov.StateTransition;
 
 public class KStateTest {
 
@@ -73,16 +67,16 @@ public class KStateTest {
 
     @Test
     public void TestKStateUnbound() {
-        Map<Integer, MockElem> elements = new HashMap<Integer, MockElem>();
+        Map<Integer, MockElem> elements = new HashMap<>();
         elements.put(0, new MockElem(0, Math.log10(0.3), 0.3, null));
         elements.put(1, new MockElem(1, Math.log10(0.2), 0.2, null));
         elements.put(2, new MockElem(2, Math.log10(0.5), 0.5, null));
 
-        KState<MockElem, StateTransition, Sample> state = new KState<MockElem, StateTransition, Sample>();
+        KState<MockElem, StateTransition, Sample> state =
+                new KState<>();
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(0), elements.get(1),
-                            elements.get(2)));
+            Set<MockElem> vector = new HashSet<>(
+                    Arrays.asList(elements.get(0), elements.get(1), elements.get(2)));
 
             state.update(vector, new Sample(0));
 
@@ -96,16 +90,15 @@ public class KStateTest {
         elements.put(6, new MockElem(6, Math.log10(0.1), 0.1, elements.get(2)));
 
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(3), elements.get(4),
-                            elements.get(5), elements.get(6)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(3),
+                    elements.get(4), elements.get(5), elements.get(6)));
 
             state.update(vector, new Sample(1));
 
             assertEquals(6, state.size());
             assertEquals(5, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(2, 5));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(2, 5));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
@@ -117,16 +110,15 @@ public class KStateTest {
         elements.put(10, new MockElem(10, Math.log10(0.1), 0.1, elements.get(6)));
 
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(7), elements.get(8),
-                            elements.get(9), elements.get(10)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(7),
+                    elements.get(8), elements.get(9), elements.get(10)));
 
             state.update(vector, new Sample(2));
 
             assertEquals(7, state.size());
             assertEquals(9, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(2, 6, 9));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(2, 6, 9));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
@@ -138,29 +130,28 @@ public class KStateTest {
         elements.put(14, new MockElem(14, Math.log10(0.1), 0.1, null));
 
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(11), elements.get(12),
-                            elements.get(13), elements.get(14)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(11),
+                    elements.get(12), elements.get(13), elements.get(14)));
 
             state.update(vector, new Sample(3));
 
             assertEquals(7, state.size());
             assertEquals(13, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(2, 6, 9, 13));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(2, 6, 9, 13));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
         }
         {
-            Set<MockElem> vector = new HashSet<MockElem>();
+            Set<MockElem> vector = new HashSet<>();
 
             state.update(vector, new Sample(4));
 
             assertEquals(7, state.size());
             assertEquals(13, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(2, 6, 9, 13));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(2, 6, 9, 13));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
@@ -169,17 +160,16 @@ public class KStateTest {
 
     @Test
     public void TestKState() {
-        Map<Integer, MockElem> elements = new HashMap<Integer, MockElem>();
+        Map<Integer, MockElem> elements = new HashMap<>();
         elements.put(0, new MockElem(0, Math.log10(0.3), 0.3, null));
         elements.put(1, new MockElem(1, Math.log10(0.2), 0.2, null));
         elements.put(2, new MockElem(2, Math.log10(0.5), 0.5, null));
 
         KState<MockElem, StateTransition, Sample> state =
-                new KState<MockElem, StateTransition, Sample>(1, -1);
+                new KState<>(1, -1);
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(0), elements.get(1),
-                            elements.get(2)));
+            Set<MockElem> vector = new HashSet<>(
+                    Arrays.asList(elements.get(0), elements.get(1), elements.get(2)));
 
             state.update(vector, new Sample(0));
 
@@ -193,16 +183,15 @@ public class KStateTest {
         elements.put(6, new MockElem(6, Math.log10(0.1), 0.1, elements.get(2)));
 
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(3), elements.get(4),
-                            elements.get(5), elements.get(6)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(3),
+                    elements.get(4), elements.get(5), elements.get(6)));
 
             state.update(vector, new Sample(1));
 
             assertEquals(6, state.size());
             assertEquals(5, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(2, 5));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(2, 5));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
@@ -214,16 +203,15 @@ public class KStateTest {
         elements.put(10, new MockElem(10, Math.log10(0.1), 0.1, elements.get(6)));
 
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(7), elements.get(8),
-                            elements.get(9), elements.get(10)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(7),
+                    elements.get(8), elements.get(9), elements.get(10)));
 
             state.update(vector, new Sample(2));
 
             assertEquals(6, state.size());
             assertEquals(9, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(6, 9));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(6, 9));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
@@ -235,29 +223,28 @@ public class KStateTest {
         elements.put(14, new MockElem(14, Math.log10(0.1), 0.1, null));
 
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(11), elements.get(12),
-                            elements.get(13), elements.get(14)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(11),
+                    elements.get(12), elements.get(13), elements.get(14)));
 
             state.update(vector, new Sample(3));
 
             assertEquals(5, state.size());
             assertEquals(13, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(9, 13));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(9, 13));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
         }
         {
-            Set<MockElem> vector = new HashSet<MockElem>();
+            Set<MockElem> vector = new HashSet<>();
 
             state.update(vector, new Sample(4));
 
             assertEquals(5, state.size());
             assertEquals(13, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(9, 13));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(9, 13));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
@@ -266,17 +253,16 @@ public class KStateTest {
 
     @Test
     public void TestTState() {
-        Map<Integer, MockElem> elements = new HashMap<Integer, MockElem>();
+        Map<Integer, MockElem> elements = new HashMap<>();
         elements.put(0, new MockElem(0, Math.log10(0.3), 0.3, null));
         elements.put(1, new MockElem(1, Math.log10(0.2), 0.2, null));
         elements.put(2, new MockElem(2, Math.log10(0.5), 0.5, null));
 
         KState<MockElem, StateTransition, Sample> state =
-                new KState<MockElem, StateTransition, Sample>(-1, 1);
+                new KState<>(-1, 1);
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(0), elements.get(1),
-                            elements.get(2)));
+            Set<MockElem> vector = new HashSet<>(
+                    Arrays.asList(elements.get(0), elements.get(1), elements.get(2)));
 
             state.update(vector, new Sample(0));
 
@@ -290,16 +276,15 @@ public class KStateTest {
         elements.put(6, new MockElem(6, Math.log10(0.1), 0.1, elements.get(2)));
 
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(3), elements.get(4),
-                            elements.get(5), elements.get(6)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(3),
+                    elements.get(4), elements.get(5), elements.get(6)));
 
             state.update(vector, new Sample(1));
 
             assertEquals(6, state.size());
             assertEquals(5, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(2, 5));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(2, 5));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
@@ -311,16 +296,15 @@ public class KStateTest {
         elements.put(10, new MockElem(10, Math.log10(0.1), 0.1, elements.get(6)));
 
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(7), elements.get(8),
-                            elements.get(9), elements.get(10)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(7),
+                    elements.get(8), elements.get(9), elements.get(10)));
 
             state.update(vector, new Sample(2));
 
             assertEquals(6, state.size());
             assertEquals(9, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(6, 9));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(6, 9));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
@@ -332,29 +316,28 @@ public class KStateTest {
         elements.put(14, new MockElem(14, Math.log10(0.1), 0.1, null));
 
         {
-            Set<MockElem> vector =
-                    new HashSet<MockElem>(Arrays.asList(elements.get(11), elements.get(12),
-                            elements.get(13), elements.get(14)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(11),
+                    elements.get(12), elements.get(13), elements.get(14)));
 
             state.update(vector, new Sample(3));
 
             assertEquals(5, state.size());
             assertEquals(13, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(9, 13));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(9, 13));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
         }
         {
-            Set<MockElem> vector = new HashSet<MockElem>();
+            Set<MockElem> vector = new HashSet<>();
 
             state.update(vector, new Sample(4));
 
             assertEquals(5, state.size());
             assertEquals(13, state.estimate().numid());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(9, 13));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(9, 13));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(sequence.get(i).longValue(), state.sequence().get(i).numid());
             }
@@ -363,14 +346,14 @@ public class KStateTest {
 
     @Test
     public void TestKStateJSON() throws JSONException {
-        Map<Integer, MockElem> elements = new HashMap<Integer, MockElem>();
+        Map<Integer, MockElem> elements = new HashMap<>();
 
         KState<MockElem, StateTransition, Sample> state =
-                new KState<MockElem, StateTransition, Sample>(1, -1);
+                new KState<>(1, -1);
 
         {
             JSONObject json = state.toJSON();
-            state = new KState<MockElem, StateTransition, Sample>(json, new MockFactory());
+            state = new KState<>(json, new MockFactory());
         }
 
         elements.put(0, new MockElem(0, Math.log10(0.3), 0.3, null));
@@ -378,12 +361,13 @@ public class KStateTest {
         elements.put(2, new MockElem(2, Math.log10(0.5), 0.5, null));
 
         state.update(
-                new HashSet<MockElem>(Arrays.asList(elements.get(0), elements.get(1),
-                        elements.get(2))), new Sample(0));
+                new HashSet<>(
+                        Arrays.asList(elements.get(0), elements.get(1), elements.get(2))),
+                new Sample(0));
 
         {
             JSONObject json = state.toJSON();
-            state = new KState<MockElem, StateTransition, Sample>(json, new MockFactory());
+            state = new KState<>(json, new MockFactory());
 
             elements.clear();
 
@@ -397,13 +381,13 @@ public class KStateTest {
         elements.put(5, new MockElem(5, Math.log10(0.4), 0.4, elements.get(2)));
         elements.put(6, new MockElem(6, Math.log10(0.1), 0.1, elements.get(2)));
 
-        state.update(
-                new HashSet<MockElem>(Arrays.asList(elements.get(3), elements.get(4),
-                        elements.get(5), elements.get(6))), new Sample(1));
+        state.update(new HashSet<>(
+                Arrays.asList(elements.get(3), elements.get(4), elements.get(5), elements.get(6))),
+                new Sample(1));
 
         {
             JSONObject json = state.toJSON();
-            state = new KState<MockElem, StateTransition, Sample>(json, new MockFactory());
+            state = new KState<>(json, new MockFactory());
 
             elements.clear();
 
@@ -417,13 +401,13 @@ public class KStateTest {
         elements.put(9, new MockElem(9, Math.log10(0.4), 0.4, elements.get(6)));
         elements.put(10, new MockElem(10, Math.log10(0.1), 0.1, elements.get(6)));
 
-        state.update(
-                new HashSet<MockElem>(Arrays.asList(elements.get(7), elements.get(8),
-                        elements.get(9), elements.get(10))), new Sample(2));
+        state.update(new HashSet<>(
+                Arrays.asList(elements.get(7), elements.get(8), elements.get(9), elements.get(10))),
+                new Sample(2));
 
         {
             JSONObject json = state.toJSON();
-            state = new KState<MockElem, StateTransition, Sample>(json, new MockFactory());
+            state = new KState<>(json, new MockFactory());
 
             elements.clear();
 
@@ -437,16 +421,15 @@ public class KStateTest {
         elements.put(13, new MockElem(13, Math.log10(0.4), 0.4, null));
         elements.put(14, new MockElem(14, Math.log10(0.1), 0.1, null));
 
-        state.update(
-                new HashSet<MockElem>(Arrays.asList(elements.get(11), elements.get(12),
-                        elements.get(13), elements.get(14))), new Sample(3));
+        state.update(new HashSet<>(Arrays.asList(elements.get(11), elements.get(12),
+                elements.get(13), elements.get(14))), new Sample(3));
 
         state.update(new HashSet<MockElem>(), new Sample(4));
 
         {
             JSONObject json = state.toJSON();
             KState<MockElem, StateTransition, Sample> state2 =
-                    new KState<MockElem, StateTransition, Sample>(json, new MockFactory());
+                    new KState<>(json, new MockFactory());
 
             assertEquals(state.size(), state2.size());
             assertEquals(5, state2.size());
@@ -455,7 +438,7 @@ public class KStateTest {
             assertEquals(state.sequence().size(), state2.sequence().size());
             assertEquals(2, state2.sequence().size());
 
-            List<Integer> sequence = new LinkedList<Integer>(Arrays.asList(9, 13));
+            List<Integer> sequence = new LinkedList<>(Arrays.asList(9, 13));
             for (int i = 0; i < state.sequence().size() - 1; ++i) {
                 assertEquals(state.sequence().get(i).numid(), state2.sequence().get(i).numid());
                 assertEquals(sequence.get(i).longValue(), state2.sequence().get(i).numid());

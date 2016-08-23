@@ -78,11 +78,9 @@ public class PostGISReaderTest {
 
     @Test
     public void testPolygon() throws IOException, JSONException {
-        Polygon polygon =
-                (Polygon) GeometryEngine
-                        .geometryFromWkt(
-                                "POLYGON ((11.40848 47.93157, 11.45109 47.93157,11.45109 47.89296,11.40848 47.89296,11.40848 47.93157))",
-                                WktImportFlags.wktImportDefaults, Type.Polygon);
+        Polygon polygon = (Polygon) GeometryEngine.geometryFromWkt(
+                "POLYGON ((11.40848 47.93157, 11.45109 47.93157,11.45109 47.89296,11.40848 47.89296,11.40848 47.93157))",
+                WktImportFlags.wktImportDefaults, Type.Polygon);
         BaseRoad road = null;
         RoadReader reader = Load();
 
@@ -90,10 +88,10 @@ public class PostGISReaderTest {
         int count = 0;
 
         while ((road = reader.next()) != null) {
-            assertTrue(GeometryEngine.overlaps(polygon, road.geometry(),
-                    SpatialReference.create(4326))
-                    || GeometryEngine.contains(polygon, road.geometry(),
-                            SpatialReference.create(4326)));
+            assertTrue(
+                    GeometryEngine.overlaps(polygon, road.geometry(), SpatialReference.create(4326))
+                            || GeometryEngine.contains(polygon, road.geometry(),
+                                    SpatialReference.create(4326)));
             count += 1;
         }
 
@@ -103,12 +101,10 @@ public class PostGISReaderTest {
 
     @Test
     public void testExclusion() throws IOException, JSONException {
-        Polygon polygon =
-                (Polygon) GeometryEngine
-                        .geometryFromWkt(
-                                "POLYGON ((11.40848 47.93157, 11.45109 47.93157,11.45109 47.89296,11.40848 47.89296,11.40848 47.93157))",
-                                WktImportFlags.wktImportDefaults, Type.Polygon);
-        HashSet<Short> exclusion = new HashSet<Short>(Arrays.asList((short) 117));
+        Polygon polygon = (Polygon) GeometryEngine.geometryFromWkt(
+                "POLYGON ((11.40848 47.93157, 11.45109 47.93157,11.45109 47.89296,11.40848 47.89296,11.40848 47.93157))",
+                WktImportFlags.wktImportDefaults, Type.Polygon);
+        HashSet<Short> exclusion = new HashSet<>(Arrays.asList((short) 117));
         BaseRoad road = null;
         RoadReader reader = Load();
 
@@ -116,10 +112,10 @@ public class PostGISReaderTest {
         int count = 0;
 
         while ((road = reader.next()) != null) {
-            assertTrue(GeometryEngine.overlaps(polygon, road.geometry(),
-                    SpatialReference.create(4326))
-                    || GeometryEngine.contains(polygon, road.geometry(),
-                            SpatialReference.create(4326)));
+            assertTrue(
+                    GeometryEngine.overlaps(polygon, road.geometry(), SpatialReference.create(4326))
+                            || GeometryEngine.contains(polygon, road.geometry(),
+                                    SpatialReference.create(4326)));
             assertTrue(!exclusion.contains(road.type()));
             count += 1;
         }

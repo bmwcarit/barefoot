@@ -105,26 +105,24 @@ public class TrackerServer extends AbstractServer {
         private final TemporaryMemory<State> memory;
 
         public MatcherResponseFactory(Properties properties, RoadMap map) {
-            matcher =
-                    new Matcher(map, new Dijkstra<Road, RoadPoint>(), new TimePriority(),
-                            new Geography());
+            matcher = new Matcher(map, new Dijkstra<Road, RoadPoint>(), new TimePriority(),
+                    new Geography());
 
             matcher.setMaxRadius(Double.parseDouble(properties.getProperty("matcher.radius.max",
                     Double.toString(matcher.getMaxRadius()))));
-            matcher.setMaxDistance(Double.parseDouble(properties.getProperty(
-                    "matcher.distance.max", Double.toString(matcher.getMaxDistance()))));
+            matcher.setMaxDistance(Double.parseDouble(properties.getProperty("matcher.distance.max",
+                    Double.toString(matcher.getMaxDistance()))));
             matcher.setLambda(Double.parseDouble(properties.getProperty("matcher.lambda",
                     Double.toString(matcher.getLambda()))));
-            matcher.setSigma(Double.parseDouble(properties.getProperty("matcher.sigma",
-                    Double.toString(matcher.getSigma()))));
+            matcher.setSigma(Double.parseDouble(
+                    properties.getProperty("matcher.sigma", Double.toString(matcher.getSigma()))));
             interval = Integer.parseInt(properties.getProperty("matcher.interval.min", "1000"));
             distance = Integer.parseInt(properties.getProperty("matcher.distance.min", "0"));
-            sensitive =
-                    Double.parseDouble(properties.getProperty("tracker.monitor.sensitive",
-                            Double.toString(0d)));
+            sensitive = Double.parseDouble(
+                    properties.getProperty("tracker.monitor.sensitive", Double.toString(0d)));
             TTL = Integer.parseInt(properties.getProperty("tracker.state.ttl", "60"));
             int port = Integer.parseInt(properties.getProperty("tracker.port", "1235"));
-            memory = new TemporaryMemory<State>(new Factory<State>() {
+            memory = new TemporaryMemory<>(new Factory<State>() {
                 @Override
                 public State newInstance(String id) {
                     return new State(id);
@@ -134,9 +132,8 @@ public class TrackerServer extends AbstractServer {
             logger.info("tracker.state.ttl={}", TTL);
             logger.info("tracker.port={}", port);
             logger.info("tracker.monitor.sensitive={}", sensitive);
-            int matcherThreads =
-                    Integer.parseInt(properties.getProperty("matcher.threads",
-                            Integer.toString(Runtime.getRuntime().availableProcessors())));
+            int matcherThreads = Integer.parseInt(properties.getProperty("matcher.threads",
+                    Integer.toString(Runtime.getRuntime().availableProcessors())));
 
             StaticScheduler.reset(matcherThreads, (long) 1E4);
 
@@ -170,8 +167,8 @@ public class TrackerServer extends AbstractServer {
                                         logger.warn("received out of order sample");
                                         return RESULT.ERROR;
                                     }
-                                    if (spatial.distance(sample.point(), state.inner.sample()
-                                            .point()) < Math.max(0, distance)) {
+                                    if (spatial.distance(sample.point(),
+                                            state.inner.sample().point()) < Math.max(0, distance)) {
                                         state.unlock();
                                         logger.debug("received sample below distance threshold");
                                         return RESULT.SUCCESS;
@@ -185,7 +182,7 @@ public class TrackerServer extends AbstractServer {
                                 }
 
                                 final AtomicReference<Set<MatcherCandidate>> vector =
-                                        new AtomicReference<Set<MatcherCandidate>>();
+                                        new AtomicReference<>();
                                 InlineScheduler scheduler = StaticScheduler.scheduler();
                                 scheduler.spawn(new Task() {
                                     @Override
@@ -211,10 +208,11 @@ public class TrackerServer extends AbstractServer {
                                     state.inner.update(vector.get(), sample);
 
                                     if (previousSample != null && previousEstimate != null) {
-                                        if (spatial
-                                                .distance(previousSample.point(), sample.point()) < sensitive
-                                                && previousEstimate.point().edge().id() == state.inner
-                                                        .estimate().point().edge().id()) {
+                                        if (spatial.distance(previousSample.point(),
+                                                sample.point()) < sensitive
+                                                && previousEstimate.point().edge()
+                                                        .id() == state.inner.estimate().point()
+                                                                .edge().id()) {
                                             publish = false;
                                             logger.debug("unpublished update");
                                         }
@@ -245,8 +243,8 @@ public class TrackerServer extends AbstractServer {
 
                             return RESULT.SUCCESS;
                         } else {
-                            throw new RuntimeException("JSON request faulty or incomplete: "
-                                    + request);
+                            throw new RuntimeException(
+                                    "JSON request faulty or incomplete: " + request);
                         }
                     } catch (Exception e) {
                         logger.error("{}", e.getMessage());
@@ -267,7 +265,7 @@ public class TrackerServer extends AbstractServer {
     };
 
     private static class StatePublisher extends Thread implements Publisher<State> {
-        private BlockingQueue<String> queue = new LinkedBlockingDeque<String>();
+        private BlockingQueue<String> queue = new LinkedBlockingDeque<>();
         private ZMQ.Context context = null;
         private ZMQ.Socket socket = null;
 

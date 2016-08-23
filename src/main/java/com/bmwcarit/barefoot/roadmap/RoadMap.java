@@ -49,7 +49,7 @@ public class RoadMap extends Graph<Road> implements Serializable {
     private transient Index index = null;
 
     static Collection<Road> split(BaseRoad base) {
-        ArrayList<Road> roads = new ArrayList<Road>();
+        ArrayList<Road> roads = new ArrayList<>();
 
         roads.add(new Road(base, Heading.forward));
 
@@ -79,7 +79,7 @@ public class RoadMap extends Graph<Road> implements Serializable {
         }
 
         private Set<RoadPoint> split(Set<Tuple<Integer, Double>> points) {
-            Set<RoadPoint> neighbors = new HashSet<RoadPoint>();
+            Set<RoadPoint> neighbors = new HashSet<>();
 
             /*
              * This uses the road
@@ -88,8 +88,8 @@ public class RoadMap extends Graph<Road> implements Serializable {
                 neighbors.add(new RoadPoint(edges.get((long) point.one() * 2), point.two()));
 
                 if (edges.containsKey((long) point.one() * 2 + 1)) {
-                    neighbors.add(new RoadPoint(edges.get((long) point.one() * 2 + 1), 1.0 - point
-                            .two()));
+                    neighbors.add(new RoadPoint(edges.get((long) point.one() * 2 + 1),
+                            1.0 - point.two()));
                 }
             }
 
@@ -267,14 +267,12 @@ public class RoadMap extends Graph<Road> implements Serializable {
                     }
 
                     road = _road.base();
-                } while (road == null
-                        || exclusions != null
-                        && exclusions.contains(road.type())
+                } while (road == null || exclusions != null && exclusions.contains(road.type())
                         || polygon != null
-                        && !GeometryEngine.contains(polygon, road.geometry(),
-                                SpatialReference.create(4326))
-                        && !GeometryEngine.overlaps(polygon, road.geometry(),
-                                SpatialReference.create(4326)));
+                                && !GeometryEngine.contains(polygon, road.geometry(),
+                                        SpatialReference.create(4326))
+                                && !GeometryEngine.overlaps(polygon, road.geometry(),
+                                        SpatialReference.create(4326)));
                 return road;
             }
         };

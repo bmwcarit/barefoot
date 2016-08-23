@@ -40,8 +40,8 @@ public class Configuration {
      * @throws JSONException thrown on JSON extraction or parsing error.
      * @throws IOException thrown on file reading error.
      */
-    public static Map<Short, Tuple<Double, Integer>> read(String path) throws JSONException,
-            IOException {
+    public static Map<Short, Tuple<Double, Integer>> read(String path)
+            throws JSONException, IOException {
         BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream(path)));
 
         String line = null, json = new String();
@@ -63,7 +63,7 @@ public class Configuration {
     public static Map<Short, Tuple<Double, Integer>> read(JSONObject jsonconfig)
             throws JSONException {
 
-        Map<Short, Tuple<Double, Integer>> config = new HashMap<Short, Tuple<Double, Integer>>();
+        Map<Short, Tuple<Double, Integer>> config = new HashMap<>();
 
         JSONArray jsontags = jsonconfig.getJSONArray("tags");
         for (int i = 0; i < jsontags.length(); ++i) {
@@ -71,10 +71,8 @@ public class Configuration {
             JSONArray jsonvalues = jsontag.getJSONArray("values");
             for (int j = 0; j < jsonvalues.length(); ++j) {
                 JSONObject jsonvalue = jsonvalues.getJSONObject(j);
-                config.put(
-                        (short) jsonvalue.getInt("id"),
-                        new Tuple<Double, Integer>(jsonvalue.getDouble("priority"), jsonvalue
-                                .getInt("maxspeed")));
+                config.put((short) jsonvalue.getInt("id"), new Tuple<>(
+                        jsonvalue.getDouble("priority"), jsonvalue.getInt("maxspeed")));
             }
         }
 

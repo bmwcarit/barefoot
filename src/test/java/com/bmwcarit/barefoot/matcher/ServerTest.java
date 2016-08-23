@@ -87,14 +87,12 @@ public class ServerTest {
         String response = reader.readLine();
         client.close();
 
-        MatcherKState state =
-                new MatcherKState(new JSONObject(response), new MatcherFactory(ServerControl
-                        .getServer().getMap()));
+        MatcherKState state = new MatcherKState(new JSONObject(response),
+                new MatcherFactory(ServerControl.getServer().getMap()));
 
         OutputFormatter output = new GeoJSONOutputFormatter();
-        PrintWriter out =
-                new PrintWriter(ServerTest.class.getResource("").getPath()
-                        + "ServerTest-matching.json");
+        PrintWriter out = new PrintWriter(
+                ServerTest.class.getResource("").getPath() + "ServerTest-matching.json");
         out.println(output.format(null, state));
         out.close();
 
@@ -102,8 +100,8 @@ public class ServerTest {
     }
 
     @Test
-    public void TestServer() throws IOException, JSONException, InterruptedException,
-            ParseException {
+    public void TestServer()
+            throws IOException, JSONException, InterruptedException, ParseException {
         Server server = new Server();
         InetAddress host = InetAddress.getLocalHost();
         Properties properties = new Properties();
@@ -112,9 +110,10 @@ public class ServerTest {
 
         server.start();
         {
-            String json =
-                    new String(Files.readAllBytes(Paths.get(ServerTest.class.getResource(
-                            "x0001-015.json").getPath())), Charset.defaultCharset());
+            String json = new String(
+                    Files.readAllBytes(
+                            Paths.get(ServerTest.class.getResource("x0001-015.json").getPath())),
+                    Charset.defaultCharset());
             sendRequest(host, port, new JSONArray(json));
         }
         server.stop();

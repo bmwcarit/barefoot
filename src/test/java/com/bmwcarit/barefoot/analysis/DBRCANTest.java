@@ -272,7 +272,7 @@ public class DBRCANTest {
             List<Double> list = Arrays.asList(0.5);
             ISearchIndex<Double> index = new DBRCAN.SearchIndex(1.0, list);
 
-            List<Double> interval = new LinkedList<Double>();
+            List<Double> interval = new LinkedList<>();
             List<Double> result = index.radius(0.2, 0.2);
             assertEquals(result.size(), interval.size());
         }
@@ -325,7 +325,7 @@ public class DBRCANTest {
                 }
             }
             {
-                List<Double> interval = new LinkedList<Double>();
+                List<Double> interval = new LinkedList<>();
                 List<Double> result = index.radius(0.2, 0.049);
                 assertEquals(result.size(), interval.size());
             }
@@ -335,7 +335,7 @@ public class DBRCANTest {
             ISearchIndex<Double> index = new DBRCAN.SearchIndex(0.6, list);
 
             {
-                List<Double> interval = new LinkedList<Double>();
+                List<Double> interval = new LinkedList<>();
                 List<Double> result = index.radius(0.58, 0.05);
                 assertEquals(result.size(), interval.size());
             }
@@ -349,7 +349,7 @@ public class DBRCANTest {
                     Arrays.asList(-0.95, -0.3, -0.1, 0.0, 0.25, 0.5, 0.75, 1.2, 1.45, 1.5);
             {
                 Set<List<Double>> results = DBRCAN.cluster(list, 0.6, 0.075, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(Arrays.asList(-0.95, -0.3, 0.25, 1.45, 1.5));
                 clusters.add(Arrays.asList(0.0, 1.2));
                 clusters.add(Arrays.asList(-0.1, 0.5));
@@ -372,7 +372,7 @@ public class DBRCANTest {
             }
             {
                 Set<List<Double>> results = DBRCAN.cluster(list, 0.6, 0.1, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(Arrays.asList(-0.95, -0.3, 0.25, 0.75, 1.45, 1.5));
                 clusters.add(Arrays.asList(-0.1, 0.0, 0.5, 1.2));
 
@@ -394,12 +394,11 @@ public class DBRCANTest {
             }
         }
         {
-            List<Double> list =
-                    Arrays.asList(-1.9, -1.7, 0.7, 0.9, 1.0, 1.1, 1.2, 3.1, 3.15, 3.2, 5.4, 5.5,
-                            5.8);
+            List<Double> list = Arrays.asList(-1.9, -1.7, 0.7, 0.9, 1.0, 1.1, 1.2, 3.1, 3.15, 3.2,
+                    5.4, 5.5, 5.8);
             {
                 Set<List<Double>> results = DBRCAN.cluster(list, 2.4, 0.1, 4);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(list);
 
                 assertEquals(clusters.size(), results.size());
@@ -505,11 +504,11 @@ public class DBRCANTest {
     @Test
     public void testFunction() {
         {
-            List<Double> list = new LinkedList<Double>();
+            List<Double> list = new LinkedList<>();
 
             List<Tuple<Double, Integer>> result = DBRCAN.function(list, 2.4, 0.1, 0.0);
-            List<Tuple<Double, Integer>> function = new LinkedList<Tuple<Double, Integer>>();
-            function.add(new Tuple<Double, Integer>(0.0, 0));
+            List<Tuple<Double, Integer>> function = new LinkedList<>();
+            function.add(new Tuple<>(0.0, 0));
 
             assertEquals(result.size(), function.size());
 
@@ -523,14 +522,14 @@ public class DBRCANTest {
                     Arrays.asList(-1.9, -1.75, -1.7, 0.7, 0.9, 2.8, 3.1, 3.15, 3.2, 5.4, 5.5, 5.8);
 
             List<Tuple<Double, Integer>> result = DBRCAN.function(list, 2.4, 0.1, 0.0);
-            List<Tuple<Double, Integer>> function = new LinkedList<Tuple<Double, Integer>>();
-            function.add(new Tuple<Double, Integer>(0.0, 0));
-            function.add(new Tuple<Double, Integer>(0.4, 2));
-            function.add(new Tuple<Double, Integer>(0.5, 4));
-            function.add(new Tuple<Double, Integer>(0.6, 8));
-            function.add(new Tuple<Double, Integer>(0.8, 4));
-            function.add(new Tuple<Double, Integer>(0.9, 2));
-            function.add(new Tuple<Double, Integer>(1.0, 0));
+            List<Tuple<Double, Integer>> function = new LinkedList<>();
+            function.add(new Tuple<>(0.0, 0));
+            function.add(new Tuple<>(0.4, 2));
+            function.add(new Tuple<>(0.5, 4));
+            function.add(new Tuple<>(0.6, 8));
+            function.add(new Tuple<>(0.8, 4));
+            function.add(new Tuple<>(0.9, 2));
+            function.add(new Tuple<>(1.0, 0));
 
             assertEquals(result.size(), function.size());
 
@@ -540,25 +539,25 @@ public class DBRCANTest {
             }
         }
         {
-            List<Double> list =
-                    Arrays.asList(-1.9, -1.7, -1.4, -1.25, -1.2, 0.05, 0.7, 0.75, 0.9, 1.2, 1.3,
-                            1.7, 2.0, 2.3, 2.35, 2.8, 3.1, 3.15, 3.2, 3.5, 3.55, 3.6, 5.4, 5.5, 6.0);
+            List<Double> list = Arrays.asList(-1.9, -1.7, -1.4, -1.25, -1.2, 0.05, 0.7, 0.75, 0.9,
+                    1.2, 1.3, 1.7, 2.0, 2.3, 2.35, 2.8, 3.1, 3.15, 3.2, 3.5, 3.55, 3.6, 5.4, 5.5,
+                    6.0);
 
             List<Tuple<Double, Integer>> result = DBRCAN.function(list, 2.4, 0.1, 0.0);
-            List<Tuple<Double, Integer>> function = new LinkedList<Tuple<Double, Integer>>();
-            function.add(new Tuple<Double, Integer>(0.0, 2));
-            function.add(new Tuple<Double, Integer>(0.05, 0));
-            function.add(new Tuple<Double, Integer>(0.4, 2));
-            function.add(new Tuple<Double, Integer>(0.5, 4));
-            function.add(new Tuple<Double, Integer>(0.6, 8));
-            function.add(new Tuple<Double, Integer>(0.9, 2));
-            function.add(new Tuple<Double, Integer>(1.0, 8));
-            function.add(new Tuple<Double, Integer>(1.3, 0));
-            function.add(new Tuple<Double, Integer>(1.7, 1));
-            function.add(new Tuple<Double, Integer>(1.7, 0));
-            function.add(new Tuple<Double, Integer>(2.0, 1));
-            function.add(new Tuple<Double, Integer>(2.0, 0));
-            function.add(new Tuple<Double, Integer>(2.3, 2));
+            List<Tuple<Double, Integer>> function = new LinkedList<>();
+            function.add(new Tuple<>(0.0, 2));
+            function.add(new Tuple<>(0.05, 0));
+            function.add(new Tuple<>(0.4, 2));
+            function.add(new Tuple<>(0.5, 4));
+            function.add(new Tuple<>(0.6, 8));
+            function.add(new Tuple<>(0.9, 2));
+            function.add(new Tuple<>(1.0, 8));
+            function.add(new Tuple<>(1.3, 0));
+            function.add(new Tuple<>(1.7, 1));
+            function.add(new Tuple<>(1.7, 0));
+            function.add(new Tuple<>(2.0, 1));
+            function.add(new Tuple<>(2.0, 0));
+            function.add(new Tuple<>(2.3, 2));
 
             assertEquals(result.size(), function.size());
 
@@ -568,24 +567,24 @@ public class DBRCANTest {
             }
         }
         {
-            List<Double> list =
-                    Arrays.asList(-1.9, -1.7, -1.4, -1.25, -1.2, 0.05, 0.7, 0.75, 0.9, 1.2, 1.3,
-                            1.7, 2.0, 2.3, 2.35, 2.8, 3.1, 3.15, 3.2, 3.5, 3.55, 3.6, 5.4, 5.5, 6.0);
+            List<Double> list = Arrays.asList(-1.9, -1.7, -1.4, -1.25, -1.2, 0.05, 0.7, 0.75, 0.9,
+                    1.2, 1.3, 1.7, 2.0, 2.3, 2.35, 2.8, 3.1, 3.15, 3.2, 3.5, 3.55, 3.6, 5.4, 5.5,
+                    6.0);
 
             List<Tuple<Double, Integer>> result = DBRCAN.function(list, 2.4, 0.1, 0.05);
-            List<Tuple<Double, Integer>> function = new LinkedList<Tuple<Double, Integer>>();
-            function.add(new Tuple<Double, Integer>(0.0, 2));
-            function.add(new Tuple<Double, Integer>(0.1, 0));
-            function.add(new Tuple<Double, Integer>(0.35, 2));
-            function.add(new Tuple<Double, Integer>(0.45, 4));
-            function.add(new Tuple<Double, Integer>(0.55, 8));
-            function.add(new Tuple<Double, Integer>(0.95, 8));
-            function.add(new Tuple<Double, Integer>(1.35, 0));
-            function.add(new Tuple<Double, Integer>(1.65, 1));
-            function.add(new Tuple<Double, Integer>(1.75, 0));
-            function.add(new Tuple<Double, Integer>(1.95, 1));
-            function.add(new Tuple<Double, Integer>(2.05, 0));
-            function.add(new Tuple<Double, Integer>(2.25, 2));
+            List<Tuple<Double, Integer>> function = new LinkedList<>();
+            function.add(new Tuple<>(0.0, 2));
+            function.add(new Tuple<>(0.1, 0));
+            function.add(new Tuple<>(0.35, 2));
+            function.add(new Tuple<>(0.45, 4));
+            function.add(new Tuple<>(0.55, 8));
+            function.add(new Tuple<>(0.95, 8));
+            function.add(new Tuple<>(1.35, 0));
+            function.add(new Tuple<>(1.65, 1));
+            function.add(new Tuple<>(1.75, 0));
+            function.add(new Tuple<>(1.95, 1));
+            function.add(new Tuple<>(2.05, 0));
+            function.add(new Tuple<>(2.25, 2));
 
             assertEquals(result.size(), function.size());
 
@@ -598,15 +597,15 @@ public class DBRCANTest {
 
     @Test
     public void testNYCSample() throws NumberFormatException, IOException, ParseException {
-        List<Point> points = new LinkedList<Point>();
-        Map<Point, List<Long>> times = new HashMap<Point, List<Long>>();
+        List<Point> points = new LinkedList<>();
+        Map<Point, List<Long>> times = new HashMap<>();
 
         for (Tuple<Point, Long> source : NYCSample.sources()) {
             points.add(source.one());
             if (times.containsKey(source.one())) {
                 times.get(source.one()).add(source.two());
             } else {
-                times.put(source.one(), new LinkedList<Long>(Arrays.asList(source.two())));
+                times.put(source.one(), new LinkedList<>(Arrays.asList(source.two())));
             }
         }
 
@@ -615,7 +614,7 @@ public class DBRCANTest {
             if (times.containsKey(target.one())) {
                 times.get(target.one()).add(target.two());
             } else {
-                times.put(target.one(), new LinkedList<Long>(Arrays.asList(target.two())));
+                times.put(target.one(), new LinkedList<>(Arrays.asList(target.two())));
             }
         }
 
@@ -623,7 +622,7 @@ public class DBRCANTest {
 
         int clusterId = 0;
         for (List<Point> cluster : clusters) {
-            List<Double> timestamps = new LinkedList<Double>();
+            List<Double> timestamps = new LinkedList<>();
 
             for (Point point : cluster) {
                 if (points.contains(point)) {
@@ -637,8 +636,8 @@ public class DBRCANTest {
                     DBRCAN.function(timestamps, 24 * 60 * 60, 30 * 60, 0);
 
             DateFormat formatter = new SimpleDateFormat("HH:mm:ss");
-            PrintWriter writer =
-                    new PrintWriter(DBSCANTest.class.getResource("").getPath() + clusterId + ".dat");
+            PrintWriter writer = new PrintWriter(
+                    DBSCANTest.class.getResource("").getPath() + clusterId + ".dat");
             Integer density = null;
             for (Tuple<Double, Integer> element : function) {
                 if (density != null) {
@@ -649,7 +648,8 @@ public class DBRCANTest {
                         + formatter.format(new Date((long) (double) element.one() * 1000)));
                 density = element.two();
             }
-            writer.println((24 * 60 * 60) + " " + density + " " + formatter.format(24 * 60 * 60 * 1000));
+            writer.println(
+                    (24 * 60 * 60) + " " + density + " " + formatter.format(24 * 60 * 60 * 1000));
             writer.close();
 
             clusterId += 1;

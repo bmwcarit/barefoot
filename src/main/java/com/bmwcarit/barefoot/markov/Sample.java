@@ -46,9 +46,8 @@ public class Sample {
             String string = json.optString("time", "");
             if (!string.isEmpty()) {
                 try {
-                    time =
-                            new SimpleDateFormat("yyyy-MM-dd HH:mm:ssX").parse(
-                                    json.getString("time")).getTime();
+                    time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssX")
+                            .parse(json.getString("time")).getTime();
                 } catch (ParseException e) {
                     throw new JSONException(e);
                 }

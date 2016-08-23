@@ -56,7 +56,8 @@ public class Dijkstra<E extends AbstractEdge<E>, P extends Point<E>> implements 
     }
 
     @Override
-    public Map<P, List<E>> route(P source, Set<P> targets, Cost<E> cost, Cost<E> bound, Double max) {
+    public Map<P, List<E>> route(P source, Set<P> targets, Cost<E> cost, Cost<E> bound,
+            Double max) {
         return ssmt(source, targets, cost, bound, max);
     }
 
@@ -72,21 +73,22 @@ public class Dijkstra<E extends AbstractEdge<E>, P extends Point<E>> implements 
     }
 
     private List<E> ssst(P source, P target, Cost<E> cost, Cost<E> bound, Double max) {
-        return ssmt(source, new HashSet<P>(Arrays.asList(target)), cost, bound, max).get(target);
+        return ssmt(source, new HashSet<>(Arrays.asList(target)), cost, bound, max).get(target);
     }
 
-    private Map<P, List<E>> ssmt(P source, Set<P> targets, Cost<E> cost, Cost<E> bound, Double max) {
+    private Map<P, List<E>> ssmt(P source, Set<P> targets, Cost<E> cost, Cost<E> bound,
+            Double max) {
         Map<P, Tuple<P, List<E>>> map =
-                msmt(new HashSet<P>(Arrays.asList(source)), targets, cost, bound, max);
-        Map<P, List<E>> result = new HashMap<P, List<E>>();
+                msmt(new HashSet<>(Arrays.asList(source)), targets, cost, bound, max);
+        Map<P, List<E>> result = new HashMap<>();
         for (Entry<P, Tuple<P, List<E>>> entry : map.entrySet()) {
             result.put(entry.getKey(), entry.getValue() == null ? null : entry.getValue().two());
         }
         return result;
     }
 
-    private Map<P, Tuple<P, List<E>>> msmt(final Set<P> sources, final Set<P> targets,
-            Cost<E> cost, Cost<E> bound, Double max) {
+    private Map<P, Tuple<P, List<E>>> msmt(final Set<P> sources, final Set<P> targets, Cost<E> cost,
+            Cost<E> bound, Double max) {
 
         /*
          * Route mark representation.
@@ -115,13 +117,13 @@ public class Dijkstra<E extends AbstractEdge<E>, P extends Point<E>> implements 
         /*
          * Initialize map of edges to target points.
          */
-        Map<E, Set<P>> targetEdges = new HashMap<E, Set<P>>();
+        Map<E, Set<P>> targetEdges = new HashMap<>();
         for (P target : targets) {
-            logger.trace("initialize target {} with edge {} and fraction {}", target, target.edge()
-                    .id(), target.fraction());
+            logger.trace("initialize target {} with edge {} and fraction {}", target,
+                    target.edge().id(), target.fraction());
 
             if (!targetEdges.containsKey(target)) {
-                targetEdges.put(target.edge(), new HashSet<P>(Arrays.asList(target)));
+                targetEdges.put(target.edge(), new HashSet<>(Arrays.asList(target)));
             } else {
                 targetEdges.get(target.edge()).add(target);
             }
@@ -130,11 +132,11 @@ public class Dijkstra<E extends AbstractEdge<E>, P extends Point<E>> implements 
         /*
          * Setup data structures
          */
-        PriorityQueue<Mark> priorities = new PriorityQueue<Mark>();
-        Map<E, Mark> entries = new HashMap<E, Mark>();
-        Map<P, Mark> finishs = new HashMap<P, Mark>();
-        Map<Mark, P> reaches = new HashMap<Mark, P>();
-        Map<Mark, P> starts = new HashMap<Mark, P>();
+        PriorityQueue<Mark> priorities = new PriorityQueue<>();
+        Map<E, Mark> entries = new HashMap<>();
+        Map<P, Mark> finishs = new HashMap<>();
+        Map<Mark, P> reaches = new HashMap<>();
+        Map<Mark, P> starts = new HashMap<>();
 
         /*
          * Initialize map of edges with start points
@@ -153,9 +155,8 @@ public class Dijkstra<E extends AbstractEdge<E>, P extends Point<E>> implements 
                         continue;
                     }
                     double reachcost = startcost - cost.cost(source.edge(), 1 - target.fraction());
-                    double reachbound =
-                            bound != null ? startcost
-                                    - bound.cost(source.edge(), 1 - target.fraction()) : 0.0;
+                    double reachbound = bound != null
+                            ? startcost - bound.cost(source.edge(), 1 - target.fraction()) : 0.0;
 
                     logger.trace("reached target {} with start edge {} from {} to {} with {} cost",
                             target, source.edge().id(), source.fraction(), target.fraction(),
@@ -242,9 +243,8 @@ public class Dijkstra<E extends AbstractEdge<E>, P extends Point<E>> implements 
                 if (targetEdges.containsKey(successor)) { // reach target edge
                     for (P target : targetEdges.get(successor)) {
                         double reachcost = succcost - cost.cost(successor, 1 - target.fraction());
-                        double reachbound =
-                                bound != null ? succbound
-                                        - bound.cost(successor, 1 - target.fraction()) : 0.0;
+                        double reachbound = bound != null
+                                ? succbound - bound.cost(successor, 1 - target.fraction()) : 0.0;
 
                         logger.trace(
                                 "reached target {} with successor edge {} and fraction {} with {} cost",
@@ -266,13 +266,13 @@ public class Dijkstra<E extends AbstractEdge<E>, P extends Point<E>> implements 
             }
         }
 
-        Map<P, Tuple<P, List<E>>> paths = new HashMap<P, Tuple<P, List<E>>>();
+        Map<P, Tuple<P, List<E>>> paths = new HashMap<>();
 
         for (P target : targets) {
             if (!finishs.containsKey(target)) {
                 paths.put(target, null);
             } else {
-                LinkedList<E> path = new LinkedList<E>();
+                LinkedList<E> path = new LinkedList<>();
                 Mark iterator = finishs.get(target);
                 Mark start = null;
                 while (iterator != null) {

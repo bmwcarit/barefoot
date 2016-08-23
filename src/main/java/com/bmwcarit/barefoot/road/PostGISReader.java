@@ -100,10 +100,9 @@ public class PostGISReader extends PostgresSource implements RoadReader {
 
                     logger.trace("query polygon contains/overlaps {}", wkt);
 
-                    where +=
-                            " (ST_Contains(ST_GeomFromText('" + wkt
-                                    + "', 4326),geom) OR ST_Overlaps(ST_GeomFromText('" + wkt
-                                    + "', 4326),geom))";
+                    where += " (ST_Contains(ST_GeomFromText('" + wkt
+                            + "', 4326),geom) OR ST_Overlaps(ST_GeomFromText('" + wkt
+                            + "', 4326),geom))";
                 }
 
                 if (polygon != null && exclusions != null) {
@@ -122,10 +121,9 @@ public class PostGISReader extends PostgresSource implements RoadReader {
                 }
             }
 
-            String query =
-                    "SELECT gid,osm_id,class_id,source,target,"
-                            + "length,reverse,maxspeed_forward,maxspeed_backward,"
-                            + "priority, ST_AsBinary(geom) as geom FROM " + table + where + ";";
+            String query = "SELECT gid,osm_id,class_id,source,target,"
+                    + "length,reverse,maxspeed_forward,maxspeed_backward,"
+                    + "priority, ST_AsBinary(geom) as geom FROM " + table + where + ";";
 
             logger.info("execute query");
             logger.trace("query string: {}", query);
@@ -152,24 +150,20 @@ public class PostGISReader extends PostgresSource implements RoadReader {
                 // double length = Double.parseDouble(result_set.getString(6)) *
                 // 1000;
                 double reverse = Double.parseDouble(result_set.getString(7)) * 1000;
-                int maxspeedForward =
-                        result_set.getObject(8) == null ? config.get(classId).two() : Integer
-                                .parseInt(result_set.getString(8));
-                int maxspeedBackward =
-                        result_set.getObject(9) == null ? config.get(classId).two() : Integer
-                                .parseInt(result_set.getString(9));
+                int maxspeedForward = result_set.getObject(8) == null ? config.get(classId).two()
+                        : Integer.parseInt(result_set.getString(8));
+                int maxspeedBackward = result_set.getObject(9) == null ? config.get(classId).two()
+                        : Integer.parseInt(result_set.getString(9));
                 float priority = (float) config.get(classId).one().doubleValue();
                 // float priority = Float.parseFloat(result_set.getString(10));
                 byte[] wkb = result_set.getBytes(11);
-                Polyline geometry =
-                        (Polyline) OperatorImportFromWkb.local().execute(
-                                WkbImportFlags.wkbImportDefaults, Type.Polyline,
-                                ByteBuffer.wrap(wkb), null);
+                Polyline geometry = (Polyline) OperatorImportFromWkb.local().execute(
+                        WkbImportFlags.wkbImportDefaults, Type.Polyline, ByteBuffer.wrap(wkb),
+                        null);
                 float length = (float) spatial.length(geometry);
 
-                road =
-                        new BaseRoad(gid, source, target, osmId, reverse >= 0 ? false : true,
-                                classId, priority, maxspeedForward, maxspeedBackward, length, wkb);
+                road = new BaseRoad(gid, source, target, osmId, reverse >= 0 ? false : true,
+                        classId, priority, maxspeedForward, maxspeedBackward, length, wkb);
             } while (exclusions != null && exclusions.contains(road.type()));
 
             return road;

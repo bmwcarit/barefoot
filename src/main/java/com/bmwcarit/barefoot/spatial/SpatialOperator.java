@@ -67,6 +67,17 @@ public interface SpatialOperator {
      */
     Point interpolate(Point a, Point b, double f);
 
+    /**
+     * Gets azimuth of a point on straight line defined by {@link Point}s <i>a</i> and <i>b</i>by
+     * fraction <i>f</i>. The point is defined as the linearly interpolated fraction <i>f</i> in the
+     * interval <i>[0,1]</i> of the line from <i>a</i> to <i>b</i>.
+     *
+     * @param a Start point of straight line <i>a</i> to <i>b</i>.
+     * @param b End point of straight line from <i>a</i> to <i>b</i>.
+     * @param f Fraction <i>f</i>, in the interval <i>[0,1]</i>, that defines the point on the line
+     *        <i>a</i> to <i>b</i>.
+     * @return Azimuth in degrees from north (clockwise).
+     */
     double azimuth(Point a, Point b, double f);
 
     /**
@@ -116,8 +127,30 @@ public interface SpatialOperator {
      */
     Point interpolate(Polyline p, double l, double f);
 
+    /**
+     * Gets azimuth of a {@link Polyline} at some point defined by fraction <i>f</i>, in the
+     * interval <i>[0,1]</i>. This is an extension of
+     * {@link SpatialOperator#azimuth(Point, Point, double)}.
+     *
+     * @param p {@link Polyline}.
+     * @param f Fraction <i>f</i>, in the interval <i>[0,1]</i>, that defines the point on the
+     *        {@link Polyline}.
+     * @return Azimuth in degrees from north (clockwise).
+     */
     double azimuth(Polyline p, double f);
 
+    /**
+     * Gets azimuth of a {@link Polyline} at some point defined by fraction <i>f</i>, in the
+     * interval <i>[0,1]</i>. This is an extension of
+     * {@link SpatialOperator#azimuth(Polyline, double)} and takes the length of the
+     * {@link Polyline} as parameter reduce computational effort.
+     *
+     * @param p {@link Polyline}.
+     * @param l Length of the {@link Polyline} in meters.
+     * @param f Fraction <i>f</i>, in the interval <i>[0,1]</i>, that defines the point on the
+     *        {@link Polyline}.
+     * @return Azimuth in degrees from north (clockwise).
+     */
     double azimuth(Polyline p, double l, double f);
 
     /**

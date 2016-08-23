@@ -51,16 +51,17 @@ public class MinsetTest {
                 }
             };
 
-            private Set<Entry> entries = new HashSet<Entry>(Arrays.asList(new Entry(0L, 0L, 2L,
-                    true, "LINESTRING(0 0, 1 1)"), new Entry(1L, 1L, 2L, true,
-                    "LINESTRING(0 2, 1 1)"), new Entry(2L, 2L, 3L, true, "LINESTRING(1 1, 2 1)"),
-                    new Entry(3L, 3L, 4L, true, "LINESTRING(2 1, 3 2)"), new Entry(4L, 3L, 5L,
-                            true, "LINESTRING(2 1, 3 1)"), new Entry(5L, 3L, 6L, true,
-                            "LINESTRING(2 1, 3 0)")));
+            private Set<Entry> entries =
+                    new HashSet<>(Arrays.asList(new Entry(0L, 0L, 2L, true, "LINESTRING(0 0, 1 1)"),
+                            new Entry(1L, 1L, 2L, true, "LINESTRING(0 2, 1 1)"),
+                            new Entry(2L, 2L, 3L, true, "LINESTRING(1 1, 2 1)"),
+                            new Entry(3L, 3L, 4L, true, "LINESTRING(2 1, 3 2)"),
+                            new Entry(4L, 3L, 5L, true, "LINESTRING(2 1, 3 1)"),
+                            new Entry(5L, 3L, 6L, true, "LINESTRING(2 1, 3 0)")));
 
             private Iterator<BaseRoad> iterator = null;
 
-            private ArrayList<BaseRoad> roads = new ArrayList<BaseRoad>();
+            private ArrayList<BaseRoad> roads = new ArrayList<>();
 
             @Override
             public boolean isOpen() {
@@ -71,11 +72,10 @@ public class MinsetTest {
             public void open() throws SourceException {
                 if (roads.isEmpty()) {
                     for (Entry entry : entries) {
-                        Polyline geometry =
-                                (Polyline) GeometryEngine.geometryFromWkt(entry.five(),
-                                        WktImportFlags.wktImportDefaults, Type.Polyline);
-                        roads.add(new BaseRoad(entry.one(), entry.two(), entry.three(),
-                                entry.one(), entry.four(), (short) 0, 0f, 0f, 0f, 0f, geometry));
+                        Polyline geometry = (Polyline) GeometryEngine.geometryFromWkt(entry.five(),
+                                WktImportFlags.wktImportDefaults, Type.Polyline);
+                        roads.add(new BaseRoad(entry.one(), entry.two(), entry.three(), entry.one(),
+                                entry.four(), (short) 0, 0f, 0f, 0f, 0f, geometry));
                     }
                 }
 
@@ -101,7 +101,7 @@ public class MinsetTest {
         map.construct();
 
         {
-            Set<RoadPoint> candidates = new HashSet<RoadPoint>();
+            Set<RoadPoint> candidates = new HashSet<>();
             candidates.add(new RoadPoint(map.get(0), 1));
             candidates.add(new RoadPoint(map.get(2), 1));
             candidates.add(new RoadPoint(map.get(4), 0.5));
@@ -115,7 +115,7 @@ public class MinsetTest {
             assertEquals(4, minset.iterator().next().edge().id());
         }
         {
-            Set<RoadPoint> candidates = new HashSet<RoadPoint>();
+            Set<RoadPoint> candidates = new HashSet<>();
             candidates.add(new RoadPoint(map.get(0), 1));
             candidates.add(new RoadPoint(map.get(2), 1));
             candidates.add(new RoadPoint(map.get(4), 1));
@@ -124,8 +124,8 @@ public class MinsetTest {
 
             Set<RoadPoint> minset = Minset.minimize(candidates);
 
-            HashSet<Long> refset = new HashSet<Long>(Arrays.asList(4L, 8L, 10L));
-            HashSet<Long> set = new HashSet<Long>();
+            HashSet<Long> refset = new HashSet<>(Arrays.asList(4L, 8L, 10L));
+            HashSet<Long> set = new HashSet<>();
             for (RoadPoint element : minset) {
                 assertTrue(refset.contains(element.edge().id()));
                 set.add(element.edge().id());
@@ -134,7 +134,7 @@ public class MinsetTest {
             assertTrue(set.containsAll(refset));
         }
         {
-            Set<RoadPoint> candidates = new HashSet<RoadPoint>();
+            Set<RoadPoint> candidates = new HashSet<>();
             candidates.add(new RoadPoint(map.get(4), 1));
             candidates.add(new RoadPoint(map.get(6), 0.0));
             candidates.add(new RoadPoint(map.get(8), 0.5));
@@ -142,8 +142,8 @@ public class MinsetTest {
 
             Set<RoadPoint> minset = Minset.minimize(candidates);
 
-            HashSet<Long> refset = new HashSet<Long>(Arrays.asList(4L, 8L, 10L));
-            HashSet<Long> set = new HashSet<Long>();
+            HashSet<Long> refset = new HashSet<>(Arrays.asList(4L, 8L, 10L));
+            HashSet<Long> set = new HashSet<>();
             for (RoadPoint element : minset) {
                 assertTrue(refset.contains(element.edge().id()));
                 set.add(element.edge().id());
@@ -152,7 +152,7 @@ public class MinsetTest {
             assertTrue(set.containsAll(refset));
         }
         {
-            Set<RoadPoint> candidates = new HashSet<RoadPoint>();
+            Set<RoadPoint> candidates = new HashSet<>();
             candidates.add(new RoadPoint(map.get(0), 1));
             candidates.add(new RoadPoint(map.get(2), 1));
             candidates.add(new RoadPoint(map.get(4), 1));
@@ -162,8 +162,8 @@ public class MinsetTest {
 
             Set<RoadPoint> minset = Minset.minimize(candidates);
 
-            HashSet<Long> refset = new HashSet<Long>(Arrays.asList(6L, 8L, 10L));
-            HashSet<Long> set = new HashSet<Long>();
+            HashSet<Long> refset = new HashSet<>(Arrays.asList(6L, 8L, 10L));
+            HashSet<Long> set = new HashSet<>();
             for (RoadPoint element : minset) {
                 assertTrue(refset.contains(element.edge().id()));
                 set.add(element.edge().id());
@@ -185,17 +185,17 @@ public class MinsetTest {
                 }
             };
 
-            private Set<Entry> entries = new HashSet<Entry>(Arrays.asList(new Entry(0L, 0L, 1L,
-                    false, "LINESTRING(11.000 48.000, 11.010 48.000)"), new Entry(1L, 1L, 2L,
-                    false, "LINESTRING(11.010 48.000, 11.020 48.000)"), new Entry(2L, 2L, 3L,
-                    false, "LINESTRING(11.020 48.000, 11.030 48.000)"), new Entry(3L, 1L, 4L, true,
-                    "LINESTRING(11.010 48.000, 11.011 47.999)"), new Entry(4L, 4L, 5L, true,
-                    "LINESTRING(11.011 47.999, 11.021 47.999)"), new Entry(5L, 5L, 6L, true,
-                    "LINESTRING(11.021 47.999, 11.021 48.010)")));
+            private Set<Entry> entries = new HashSet<>(Arrays.asList(
+                    new Entry(0L, 0L, 1L, false, "LINESTRING(11.000 48.000, 11.010 48.000)"),
+                    new Entry(1L, 1L, 2L, false, "LINESTRING(11.010 48.000, 11.020 48.000)"),
+                    new Entry(2L, 2L, 3L, false, "LINESTRING(11.020 48.000, 11.030 48.000)"),
+                    new Entry(3L, 1L, 4L, true, "LINESTRING(11.010 48.000, 11.011 47.999)"),
+                    new Entry(4L, 4L, 5L, true, "LINESTRING(11.011 47.999, 11.021 47.999)"),
+                    new Entry(5L, 5L, 6L, true, "LINESTRING(11.021 47.999, 11.021 48.010)")));
 
             private Iterator<BaseRoad> iterator = null;
 
-            private ArrayList<BaseRoad> roads = new ArrayList<BaseRoad>();
+            private ArrayList<BaseRoad> roads = new ArrayList<>();
 
             @Override
             public boolean isOpen() {
@@ -206,11 +206,10 @@ public class MinsetTest {
             public void open() throws SourceException {
                 if (roads.isEmpty()) {
                     for (Entry entry : entries) {
-                        Polyline geometry =
-                                (Polyline) GeometryEngine.geometryFromWkt(entry.five(),
-                                        WktImportFlags.wktImportDefaults, Type.Polyline);
-                        roads.add(new BaseRoad(entry.one(), entry.two(), entry.three(),
-                                entry.one(), entry.four(), (short) 0, 1.0f, 100.0f, 100.0f,
+                        Polyline geometry = (Polyline) GeometryEngine.geometryFromWkt(entry.five(),
+                                WktImportFlags.wktImportDefaults, Type.Polyline);
+                        roads.add(new BaseRoad(entry.one(), entry.two(), entry.three(), entry.one(),
+                                entry.four(), (short) 0, 1.0f, 100.0f, 100.0f,
                                 (float) spatial.length(geometry), geometry));
                     }
                 }
@@ -237,7 +236,7 @@ public class MinsetTest {
         map.construct();
 
         {
-            Set<RoadPoint> candidates = new HashSet<RoadPoint>();
+            Set<RoadPoint> candidates = new HashSet<>();
             candidates.add(new RoadPoint(map.get(0), 1));
             candidates.add(new RoadPoint(map.get(1), 0));
             candidates.add(new RoadPoint(map.get(2), 0));
@@ -247,8 +246,8 @@ public class MinsetTest {
 
             Set<RoadPoint> minset = Minset.minimize(candidates);
 
-            HashSet<Long> refset = new HashSet<Long>(Arrays.asList(0L, 3L));
-            HashSet<Long> set = new HashSet<Long>();
+            HashSet<Long> refset = new HashSet<>(Arrays.asList(0L, 3L));
+            HashSet<Long> set = new HashSet<>();
             for (RoadPoint element : minset) {
                 assertTrue(refset.contains(element.edge().id()));
                 set.add(element.edge().id());
@@ -257,7 +256,7 @@ public class MinsetTest {
             assertTrue(set.containsAll(refset));
         }
         {
-            Set<RoadPoint> candidates = new HashSet<RoadPoint>();
+            Set<RoadPoint> candidates = new HashSet<>();
             candidates.add(new RoadPoint(map.get(0), 1));
             candidates.add(new RoadPoint(map.get(1), 0));
             candidates.add(new RoadPoint(map.get(2), 0.1));
@@ -267,8 +266,8 @@ public class MinsetTest {
 
             Set<RoadPoint> minset = Minset.minimize(candidates);
 
-            HashSet<Long> refset = new HashSet<Long>(Arrays.asList(0L, 2L, 3L));
-            HashSet<Long> set = new HashSet<Long>();
+            HashSet<Long> refset = new HashSet<>(Arrays.asList(0L, 2L, 3L));
+            HashSet<Long> set = new HashSet<>();
             for (RoadPoint element : minset) {
                 assertTrue(refset.contains(element.edge().id()));
                 set.add(element.edge().id());
@@ -277,7 +276,7 @@ public class MinsetTest {
             assertTrue(set.containsAll(refset));
         }
         {
-            Set<RoadPoint> candidates = new HashSet<RoadPoint>();
+            Set<RoadPoint> candidates = new HashSet<>();
             candidates.add(new RoadPoint(map.get(0), 1));
             candidates.add(new RoadPoint(map.get(1), 0));
             candidates.add(new RoadPoint(map.get(2), 0.1));
@@ -287,8 +286,8 @@ public class MinsetTest {
 
             Set<RoadPoint> minset = Minset.minimize(candidates);
 
-            HashSet<Long> refset = new HashSet<Long>(Arrays.asList(0L, 2L, 3L, 8L));
-            HashSet<Long> set = new HashSet<Long>();
+            HashSet<Long> refset = new HashSet<>(Arrays.asList(0L, 2L, 3L, 8L));
+            HashSet<Long> set = new HashSet<>();
             for (RoadPoint element : minset) {
                 assertTrue(refset.contains(element.edge().id()));
                 set.add(element.edge().id());

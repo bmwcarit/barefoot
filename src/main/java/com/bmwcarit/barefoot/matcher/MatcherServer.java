@@ -63,7 +63,7 @@ public class MatcherServer extends AbstractServer {
          * @return List of {@link MatcherSample} objects.
          */
         public List<MatcherSample> format(String input) {
-            List<MatcherSample> samples = new LinkedList<MatcherSample>();
+            List<MatcherSample> samples = new LinkedList<>();
 
             try {
                 Object jsoninput = new JSONTokener(input).nextValue();
@@ -75,7 +75,7 @@ public class MatcherServer extends AbstractServer {
                     jsonsamples = ((JSONArray) jsoninput);
                 }
 
-                Set<Long> times = new HashSet<Long>();
+                Set<Long> times = new HashSet<>();
                 for (int i = 0; i < jsonsamples.length(); ++i) {
                     MatcherSample sample = new MatcherSample(jsonsamples.getJSONObject(i));
                     samples.add(sample);
@@ -244,24 +244,22 @@ public class MatcherServer extends AbstractServer {
 
         public MatcherResponseFactory(Properties properties, RoadMap map, InputFormatter input,
                 OutputFormatter output) {
-            matcher =
-                    new Matcher(map, new Dijkstra<Road, RoadPoint>(), new TimePriority(),
-                            new Geography());
+            matcher = new Matcher(map, new Dijkstra<Road, RoadPoint>(), new TimePriority(),
+                    new Geography());
 
             matcher.setMaxRadius(Double.parseDouble(properties.getProperty("matcher.radius.max",
                     Double.toString(matcher.getMaxRadius()))));
-            matcher.setMaxDistance(Double.parseDouble(properties.getProperty(
-                    "matcher.distance.max", Double.toString(matcher.getMaxDistance()))));
+            matcher.setMaxDistance(Double.parseDouble(properties.getProperty("matcher.distance.max",
+                    Double.toString(matcher.getMaxDistance()))));
             matcher.setLambda(Double.parseDouble(properties.getProperty("matcher.lambda",
                     Double.toString(matcher.getLambda()))));
-            matcher.setSigma(Double.parseDouble(properties.getProperty("matcher.sigma",
-                    Double.toString(matcher.getSigma()))));
+            matcher.setSigma(Double.parseDouble(
+                    properties.getProperty("matcher.sigma", Double.toString(matcher.getSigma()))));
             interval = Integer.parseInt(properties.getProperty("matcher.interval.min", "1000"));
             distance = Integer.parseInt(properties.getProperty("matcher.distance.min", "0"));
 
-            int matcherThreads =
-                    Integer.parseInt(properties.getProperty("matcher.threads",
-                            Integer.toString(Runtime.getRuntime().availableProcessors())));
+            int matcherThreads = Integer.parseInt(properties.getProperty("matcher.threads",
+                    Integer.toString(Runtime.getRuntime().availableProcessors())));
 
             StaticScheduler.reset(matcherThreads, (long) 1E4);
 
@@ -288,7 +286,7 @@ public class MatcherServer extends AbstractServer {
 
                         final List<MatcherSample> samples = input.format(request);
                         final AtomicReference<MatcherKState> state =
-                                new AtomicReference<MatcherKState>();
+                                new AtomicReference<>();
 
                         InlineScheduler scheduler = StaticScheduler.scheduler();
                         scheduler.spawn(new Task() {

@@ -13,6 +13,7 @@
 package com.bmwcarit.barefoot.matcher;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,9 +45,6 @@ import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.WktImportFlags;
 
-/**
- *
- */
 public class MatcherKStateTest {
     private final SpatialOperator spatial = new Geography();
     private final Router<Road, RoadPoint> router = new Dijkstra<>();
@@ -132,10 +130,14 @@ public class MatcherKStateTest {
         assertEquals(state.sequence().size(), other.sequence().size());
         assertEquals(state.samples().size(), other.samples().size());
 
-        for (int i = 0; i < state.sequence().size(); ++i) {
-            assertEquals(state.sequence().get(i).id(), other.sequence().get(i).id());
-            assertEquals(state.sequence().get(i).filtprob(), other.sequence().get(i).filtprob(), 1E-10);
-            assertEquals(state.sequence().get(i).seqprob(), other.sequence().get(i).seqprob(), 1E-10);
+        Set<String> ids = new HashSet<>();
+
+        for (MatcherCandidate cand : state.vector()) {
+            ids.add(cand.id());
+        }
+
+        for (MatcherCandidate cand : other.vector()) {
+            assertTrue(ids.contains(cand.id()));
         }
 
         MatcherSample sample2 = new MatcherSample(42, new Point(11.010, 48.000));
@@ -153,8 +155,10 @@ public class MatcherKStateTest {
 
         for (int i = 0; i < state.sequence().size(); ++i) {
             assertEquals(state.sequence().get(i).id(), other.sequence().get(i).id());
-            assertEquals(state.sequence().get(i).filtprob(), other.sequence().get(i).filtprob(), 1E-10);
-            assertEquals(state.sequence().get(i).seqprob(), other.sequence().get(i).seqprob(), 1E-10);
+            assertEquals(state.sequence().get(i).filtprob(), other.sequence().get(i).filtprob(),
+                    1E-10);
+            assertEquals(state.sequence().get(i).seqprob(), other.sequence().get(i).seqprob(),
+                    1E-10);
         }
     }
 }

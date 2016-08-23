@@ -45,8 +45,9 @@ public class TrackerServerTest {
     private class Server implements Runnable {
         @Override
         public void run() {
-            TrackerControl.initServer(TrackerServerTest.class.getResource("tracker.properties")
-                    .getPath(), ServerTest.class.getResource("oberbayern.properties").getPath());
+            TrackerControl.initServer(
+                    TrackerServerTest.class.getResource("tracker.properties").getPath(),
+                    ServerTest.class.getResource("oberbayern.properties").getPath());
             TrackerControl.runServer();
         }
 
@@ -89,8 +90,8 @@ public class TrackerServerTest {
         assertEquals("SUCCESS", code);
     }
 
-    public MatcherKState requestState(InetAddress host, int port, String id) throws JSONException,
-            InterruptedException, IOException {
+    public MatcherKState requestState(InetAddress host, int port, String id)
+            throws JSONException, InterruptedException, IOException {
         int trials = 120;
         int timeout = 500;
         Socket client = null;
@@ -124,8 +125,8 @@ public class TrackerServerTest {
         String response = reader.readLine();
         client.close();
 
-        return new MatcherKState(new JSONObject(response), new MatcherFactory(TrackerControl
-                .getServer().getMap()));
+        return new MatcherKState(new JSONObject(response),
+                new MatcherFactory(TrackerControl.getServer().getMap()));
     }
 
     @Test
@@ -138,10 +139,11 @@ public class TrackerServerTest {
 
         server.start();
         {
-            String json =
-                    new String(Files.readAllBytes(Paths.get(ServerTest.class.getResource(
-                            "x0001-015.json").getPath())), Charset.defaultCharset());
-            List<MatcherSample> samples = new LinkedList<MatcherSample>();
+            String json = new String(
+                    Files.readAllBytes(
+                            Paths.get(ServerTest.class.getResource("x0001-015.json").getPath())),
+                    Charset.defaultCharset());
+            List<MatcherSample> samples = new LinkedList<>();
             JSONArray jsonsamples = new JSONArray(json);
             for (int i = 0; i < jsonsamples.length(); ++i) {
                 MatcherSample sample = new MatcherSample(jsonsamples.getJSONObject(i));
@@ -156,10 +158,10 @@ public class TrackerServerTest {
             assertEquals(check.sequence().size(), state.sequence().size());
 
             for (int i = 0; i < state.sequence().size(); i++) {
-                assertEquals(check.sequence().get(i).point().edge().id(), state.sequence().get(i)
-                        .point().edge().id());
-                assertEquals(check.sequence().get(i).point().fraction(), state.sequence().get(i)
-                        .point().fraction(), 1E-10);
+                assertEquals(check.sequence().get(i).point().edge().id(),
+                        state.sequence().get(i).point().edge().id());
+                assertEquals(check.sequence().get(i).point().fraction(),
+                        state.sequence().get(i).point().fraction(), 1E-10);
             }
         }
         server.stop();

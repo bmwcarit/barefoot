@@ -77,9 +77,8 @@ public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, M
                 if (candidate.transition() == null) {
                     continue;
                 }
-                JSONObject jsoncandidate =
-                        new JSONObject(GeometryEngine.geometryToGeoJson(candidate.transition()
-                                .route().geometry()));
+                JSONObject jsoncandidate = new JSONObject(GeometryEngine
+                        .geometryToGeoJson(candidate.transition().route().geometry()));
                 jsonsequence.put(jsoncandidate.getJSONArray("coordinates"));
             }
         }
@@ -119,11 +118,12 @@ public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, M
                 JSONObject jsoncandidate = candidate.toJSON();
                 jsoncandidate.put("time", this.samples().get(i).time() / 1000);
                 if (candidate.transition() != null) {
-                    jsoncandidate.put("geom", GeometryEngine.geometryToWkt(candidate.transition()
-                            .route().geometry(), WktExportFlags.wktExportLineString));
+                    jsoncandidate.put("geom",
+                            GeometryEngine.geometryToWkt(candidate.transition().route().geometry(),
+                                    WktExportFlags.wktExportLineString));
                 } else {
-                    jsoncandidate.put("geom", GeometryEngine.geometryToWkt(candidate.point()
-                            .geometry(), WktExportFlags.wktExportPoint));
+                    jsoncandidate.put("geom", GeometryEngine.geometryToWkt(
+                            candidate.point().geometry(), WktExportFlags.wktExportPoint));
                 }
                 jsonsequence.put(jsoncandidate);
             }
@@ -147,8 +147,9 @@ public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, M
             for (MatcherCandidate candidate : this.sequence()) {
                 JSONObject jsoncandidate = candidate.point().toJSON();
                 if (candidate.transition() != null) {
-                    jsoncandidate.put("route", GeometryEngine.geometryToWkt(candidate.transition()
-                            .route().geometry(), WktExportFlags.wktExportLineString));
+                    jsoncandidate.put("route",
+                            GeometryEngine.geometryToWkt(candidate.transition().route().geometry(),
+                                    WktExportFlags.wktExportLineString));
                 }
                 json.put(jsoncandidate);
             }
@@ -189,8 +190,8 @@ public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, M
             JSONObject jsoncandidate = new JSONObject();
             jsoncandidate.put("point", GeometryEngine.geometryToWkt(candidate.point().geometry(),
                     WktExportFlags.wktExportPoint));
-            jsoncandidate.put("prob", Double.isInfinite(candidate.filtprob()) ? "Infinity"
-                    : candidate.filtprob());
+            jsoncandidate.put("prob",
+                    Double.isInfinite(candidate.filtprob()) ? "Infinity" : candidate.filtprob());
 
             routes = monitorRoute(candidate);
             if (routes.getPathCount() > 0) {
@@ -215,9 +216,8 @@ public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, M
 
             for (int i = 0; i < candidates.length(); ++i) {
                 {
-                    JSONObject point =
-                            candidates.getJSONObject(i).getJSONObject("candidate")
-                                    .getJSONObject("point");
+                    JSONObject point = candidates.getJSONObject(i).getJSONObject("candidate")
+                            .getJSONObject("point");
                     Road road = map.get(point.getLong("road"));
                     if (road == null) {
                         throw new JSONException("road not found in map");
@@ -225,9 +225,8 @@ public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, M
                     point.put("road", getOSMRoad(road));
                 }
                 if (candidates.getJSONObject(i).getJSONObject("candidate").has("transition")) {
-                    JSONObject route =
-                            candidates.getJSONObject(i).getJSONObject("candidate")
-                                    .getJSONObject("transition").getJSONObject("route");
+                    JSONObject route = candidates.getJSONObject(i).getJSONObject("candidate")
+                            .getJSONObject("transition").getJSONObject("route");
 
                     JSONArray roads = route.getJSONArray("roads");
                     JSONArray osmroads = new JSONArray();

@@ -54,7 +54,7 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
         envelope = new Envelope2D();
         envelope.setCoords(-180, -90, 180, 90);
         index = new QuadTree(envelope, height);
-        geometries = new HashMap<Integer, byte[]>();
+        geometries = new HashMap<>();
     }
 
     /**
@@ -67,7 +67,7 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
         this.spatial = spatial;
         this.envelope = envelope;
         index = new QuadTree(envelope, height);
-        geometries = new HashMap<Integer, byte[]>();
+        geometries = new HashMap<>();
     }
 
     /**
@@ -86,9 +86,8 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
 
         index.insert(id, env);
 
-        ByteBuffer wkb =
-                OperatorExportToWkb.local().execute(WkbExportFlags.wkbExportLineString, polyline,
-                        null);
+        ByteBuffer wkb = OperatorExportToWkb.local().execute(WkbExportFlags.wkbExportLineString,
+                polyline, null);
         geometries.put(id, wkb.array());
     }
 
@@ -135,7 +134,7 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
             return null;
         }
 
-        Set<Tuple<Integer, Double>> nearests = new HashSet<Tuple<Integer, Double>>();
+        Set<Tuple<Integer, Double>> nearests = new HashSet<>();
         double radius = 100, min = Double.MAX_VALUE;
 
         do {
@@ -146,10 +145,9 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
 
             while ((handle = it.next()) != -1) {
                 int id = index.getElement(handle);
-                Polyline geometry =
-                        (Polyline) OperatorImportFromWkb.local().execute(
-                                WkbImportFlags.wkbImportDefaults, Type.Polyline,
-                                ByteBuffer.wrap(geometries.get(id)), null);
+                Polyline geometry = (Polyline) OperatorImportFromWkb.local().execute(
+                        WkbImportFlags.wkbImportDefaults, Type.Polyline,
+                        ByteBuffer.wrap(geometries.get(id)), null);
 
                 double f = spatial.intercept(geometry, c);
                 Point p = spatial.interpolate(geometry, spatial.length(geometry), f);
@@ -164,7 +162,7 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
                     nearests.clear();
                 }
 
-                nearests.add(new Tuple<Integer, Double>(id, f));
+                nearests.add(new Tuple<>(id, f));
             }
 
             radius *= 2;
@@ -176,7 +174,7 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
 
     @Override
     public Set<Tuple<Integer, Double>> radius(Point c, double radius) {
-        Set<Tuple<Integer, Double>> neighbors = new HashSet<Tuple<Integer, Double>>();
+        Set<Tuple<Integer, Double>> neighbors = new HashSet<>();
 
         Envelope2D env = spatial.envelope(c, radius);
 
@@ -185,17 +183,16 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
 
         while ((handle = it.next()) != -1) {
             int id = index.getElement(handle);
-            Polyline geometry =
-                    (Polyline) OperatorImportFromWkb.local().execute(
-                            WkbImportFlags.wkbImportDefaults, Type.Polyline,
-                            ByteBuffer.wrap(geometries.get(id)), null);
+            Polyline geometry = (Polyline) OperatorImportFromWkb.local().execute(
+                    WkbImportFlags.wkbImportDefaults, Type.Polyline,
+                    ByteBuffer.wrap(geometries.get(id)), null);
 
             double f = spatial.intercept(geometry, c);
             Point p = spatial.interpolate(geometry, spatial.length(geometry), f);
             double d = spatial.distance(p, c);
 
             if (d < radius) {
-                neighbors.add(new Tuple<Integer, Double>(id, f));
+                neighbors.add(new Tuple<>(id, f));
             }
         }
 
@@ -208,10 +205,10 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
             return null;
         }
 
-        Set<Integer> visited = new HashSet<Integer>();
+        Set<Integer> visited = new HashSet<>();
 
         PriorityQueue<Triple<Integer, Double, Double>> queue =
-                new PriorityQueue<Triple<Integer, Double, Double>>(k,
+                new PriorityQueue<>(k,
                         new Comparator<Triple<Integer, Double, Double>>() {
                             @Override
                             public int compare(Triple<Integer, Double, Double> left,
@@ -236,10 +233,9 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
                     continue;
                 }
 
-                Polyline geometry =
-                        (Polyline) OperatorImportFromWkb.local().execute(
-                                WkbImportFlags.wkbImportDefaults, Type.Polyline,
-                                ByteBuffer.wrap(geometries.get(id)), null);
+                Polyline geometry = (Polyline) OperatorImportFromWkb.local().execute(
+                        WkbImportFlags.wkbImportDefaults, Type.Polyline,
+                        ByteBuffer.wrap(geometries.get(id)), null);
 
                 double f = spatial.intercept(geometry, c);
                 Point p = spatial.interpolate(geometry, spatial.length(geometry), f);
@@ -247,7 +243,7 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
 
                 if (d < radius) { // Only within radius, we can be sure that we have semantically
                                   // correct k-nearest neighbors.
-                    queue.add(new Triple<Integer, Double, Double>(id, f, d));
+                    queue.add(new Triple<>(id, f, d));
                     visited.add(id);
                 }
             }
@@ -256,11 +252,11 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
 
         } while (queue.size() < k);
 
-        Set<Tuple<Integer, Double>> result = new HashSet<Tuple<Integer, Double>>();
+        Set<Tuple<Integer, Double>> result = new HashSet<>();
 
         while (result.size() < k) {
             Triple<Integer, Double, Double> e = queue.poll();
-            result.add(new Tuple<Integer, Double>(e.one(), e.two()));
+            result.add(new Tuple<>(e.one(), e.two()));
         }
 
         return result;

@@ -69,12 +69,12 @@ public class AbstractServerTest {
                 int maxResponseTime, int maxConnectionCount) {
             Properties serverProperties = new Properties();
             serverProperties.setProperty("server.port", Integer.toString(portNumber));
-            serverProperties
-                    .setProperty("server.timeout.request", Integer.toString(maxRequestTime));
+            serverProperties.setProperty("server.timeout.request",
+                    Integer.toString(maxRequestTime));
             serverProperties.setProperty("server.timeout.response",
                     Integer.toString(maxResponseTime));
-            serverProperties
-                    .setProperty("server.connections", Integer.toString(maxConnectionCount));
+            serverProperties.setProperty("server.connections",
+                    Integer.toString(maxConnectionCount));
             return serverProperties;
         }
     }
@@ -100,7 +100,8 @@ public class AbstractServerTest {
     }
 
     @Test
-    public void ReponseSuccessTest() throws InterruptedException, UnknownHostException, IOException {
+    public void ReponseSuccessTest()
+            throws InterruptedException, UnknownHostException, IOException {
         final TestServer server =
                 new TestServer(TestServer.createServerProperty(12345, 200, 400, 2), true);
         Thread thread = new Thread() {
@@ -285,7 +286,7 @@ public class AbstractServerTest {
 
         int success = 0, error = 0, connect = 0, timeout = 0;
 
-        List<Socket> clients = new LinkedList<Socket>();
+        List<Socket> clients = new LinkedList<>();
         for (int i = 0; i < numClients; ++i) {
             // Connect to server
             Socket client = new Socket();

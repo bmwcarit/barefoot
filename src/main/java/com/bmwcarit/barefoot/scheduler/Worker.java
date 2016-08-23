@@ -92,7 +92,8 @@ class Worker extends Thread {
         current = this.queue.pollFirst();
 
         if (current != null && logger.isTraceEnabled()) {
-            logger.trace("worker {} fetched task {} from local queue", workerid, current.toString());
+            logger.trace("worker {} fetched task {} from local queue", workerid,
+                    current.toString());
         }
 
         // Second, try fetch task from global queue.

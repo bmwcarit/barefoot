@@ -1,14 +1,14 @@
 /*
-* Copyright (C) 2015, BMW Car IT GmbH
-* 
-* Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
-*
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-* in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
-* writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-* WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
-* language governing permissions and limitations under the License.
+ * Copyright (C) 2015, BMW Car IT GmbH
+ *
+ * Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
+ * writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
  */
 
 package com.bmwcarit.barefoot.roadmap;
@@ -25,9 +25,6 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.bmwcarit.barefoot.road.BaseRoad;
-import com.bmwcarit.barefoot.roadmap.Road;
-import com.bmwcarit.barefoot.roadmap.RoadMap;
-import com.bmwcarit.barefoot.roadmap.RoadPoint;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Point;
@@ -50,7 +47,7 @@ public class RoadMapTest {
         String p4 = "11.3427522 48.0832129";
         String p5 = "11.3469701 48.0825356";
 
-        List<BaseRoad> osm = new LinkedList<BaseRoad>();
+        List<BaseRoad> osm = new LinkedList<>();
         osm.add(new BaseRoad(1L, 1L, 2L, 1L, true, (short) 1, 1F, 60F, 60F, 100F,
                 (Polyline) GeometryEngine.geometryFromWkt("LINESTRING(" + p1 + "," + p2 + ")",
                         WktImportFlags.wktImportDefaults, Geometry.Type.Polyline)));
@@ -116,7 +113,7 @@ public class RoadMapTest {
 
         {
             Set<RoadPoint> points = map.spatial().nearest(new Point(11.343629, 48.083797));
-            Set<Long> neighbors = new HashSet<Long>(Arrays.asList(6L));
+            Set<Long> neighbors = new HashSet<>(Arrays.asList(6L));
 
             assertEquals(neighbors.size(), points.size());
             for (RoadPoint point : points) {
@@ -125,7 +122,7 @@ public class RoadMapTest {
         }
         {
             Set<RoadPoint> points = map.spatial().nearest(new Point(11.344827, 48.083752));
-            Set<Long> neighbors = new HashSet<Long>(Arrays.asList(8L, 9L));
+            Set<Long> neighbors = new HashSet<>(Arrays.asList(8L, 9L));
 
             assertEquals(neighbors.size(), points.size());
             for (RoadPoint point : points) {
@@ -146,7 +143,7 @@ public class RoadMapTest {
 
         {
             Set<RoadPoint> points = map.spatial().radius(new Point(11.343629, 48.083797), 10.0);
-            Set<Long> neighbors = new HashSet<Long>(Arrays.asList(6L));
+            Set<Long> neighbors = new HashSet<>(Arrays.asList(6L));
 
             assertEquals(neighbors.size(), points.size());
             for (RoadPoint point : points) {
@@ -155,7 +152,7 @@ public class RoadMapTest {
         }
         {
             Set<RoadPoint> points = map.spatial().radius(new Point(11.344827, 48.083752), 10.0);
-            Set<Long> neighbors = new HashSet<Long>(Arrays.asList(8L, 9L));
+            Set<Long> neighbors = new HashSet<>(Arrays.asList(8L, 9L));
 
             assertEquals(neighbors.size(), points.size());
             for (RoadPoint point : points) {
@@ -164,7 +161,7 @@ public class RoadMapTest {
         }
         {
             Set<RoadPoint> points = map.spatial().radius(new Point(11.344166, 48.084077), 30.0);
-            Set<Long> neighbors = new HashSet<Long>(Arrays.asList(2L, 4L, 5L, 6L, 8L, 9L));
+            Set<Long> neighbors = new HashSet<>(Arrays.asList(2L, 4L, 5L, 6L, 8L, 9L));
 
             assertEquals(neighbors.size(), points.size());
             for (RoadPoint point : points) {
@@ -173,7 +170,7 @@ public class RoadMapTest {
         }
         {
             Set<RoadPoint> points = map.spatial().radius(new Point(11.344099, 48.084972), 10.0);
-            Set<Long> neighbors = new HashSet<Long>();
+            Set<Long> neighbors = new HashSet<>();
 
             assertEquals(neighbors.size(), points.size());
             for (RoadPoint point : points) {

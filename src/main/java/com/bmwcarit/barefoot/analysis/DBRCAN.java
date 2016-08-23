@@ -90,8 +90,8 @@ public class DBRCAN {
         long precision = (long) Math.pow(10, Math.abs(Math.log10(epsilon)));
         assert (precision < Double.MAX_VALUE);
 
-        return Math.floor(value) + (double) Math.round((value - Math.floor(value)) * precision)
-                / precision;
+        return Math.floor(value)
+                + (double) Math.round((value - Math.floor(value)) * precision) / precision;
     }
 
     /**
@@ -152,7 +152,7 @@ public class DBRCAN {
      * Search index of values defined as residue class.
      */
     protected static class SearchIndex implements ISearchIndex<Double> {
-        private final List<List<Double>> sequence = new ArrayList<List<Double>>();
+        private final List<List<Double>> sequence = new ArrayList<>();
         private final double modulo;
 
         /**
@@ -164,7 +164,7 @@ public class DBRCAN {
         public SearchIndex(final double modulo, List<Double> elements) {
             this.modulo = modulo;
 
-            SortedMap<Double, List<Double>> map = new TreeMap<Double, List<Double>>();
+            SortedMap<Double, List<Double>> map = new TreeMap<>();
             for (Double element : elements) {
                 double key = epsilonRound(modulo(element, modulo));
                 if (!map.containsKey(key)) {
@@ -191,7 +191,7 @@ public class DBRCAN {
          */
         @Override
         public List<Double> radius(Double center, double radius) {
-            List<Double> neighbors = new LinkedList<Double>();
+            List<Double> neighbors = new LinkedList<>();
             int n = sequence.size();
             double min = center - Math.min(radius, modulo / 2);
             double max = center + Math.min(radius, modulo / 2 - epsilon);
@@ -272,7 +272,8 @@ public class DBRCAN {
                 index = (right - left) / 2 + left;
                 double element =
                         modulo(sequence.get(index == left ? index + 1 : index).get(0), modulo);
-                if (epsilonCompare(modvalue, element) == 0 || epsilonCompare(modvalue, element) > 0) {
+                if (epsilonCompare(modvalue, element) == 0
+                        || epsilonCompare(modvalue, element) > 0) {
                     left = index == left ? index + 1 : index;
                 } else {
                     right = index;
@@ -328,18 +329,18 @@ public class DBRCAN {
      */
     public static Tuple<Double, Double> bounds(List<Double> cluster, double modulo, double epsilon,
             double buffer) {
-        Set<Double> set = new HashSet<Double>();
+        Set<Double> set = new HashSet<>();
         for (Double element : cluster) {
             set.add(modulo(element, modulo));
         }
 
         if (set.size() == 1) {
             Double element = set.iterator().next();
-            return new Tuple<Double, Double>(epsilonRound(modulo(element - buffer, modulo)),
+            return new Tuple<>(epsilonRound(modulo(element - buffer, modulo)),
                     epsilonRound(modulo(element + buffer, modulo)));
         }
 
-        List<Double> sequence = new LinkedList<Double>(set);
+        List<Double> sequence = new LinkedList<>(set);
         Collections.sort(sequence);
         Double left = null, right = null, maximum = null;
 
@@ -357,7 +358,7 @@ public class DBRCAN {
         }
 
         if (left != null && right != null) {
-            return new Tuple<Double, Double>(epsilonRound(modulo(right - buffer, modulo)),
+            return new Tuple<>(epsilonRound(modulo(right - buffer, modulo)),
                     epsilonRound(modulo(left + buffer, modulo)));
         }
 
@@ -377,12 +378,12 @@ public class DBRCAN {
      */
     private static Set<Tuple<List<Double>, Integer>> cluster(List<Double> elements, double modulo,
             double epsilon) {
-        Set<Tuple<List<Double>, Integer>> clusters = new HashSet<Tuple<List<Double>, Integer>>();
+        Set<Tuple<List<Double>, Integer>> clusters = new HashSet<>();
         int size = 1, minimum = 1;
         while (size > 0) {
             Set<List<Double>> results = DBRCAN.cluster(elements, modulo, epsilon, minimum);
             for (List<Double> result : results) {
-                clusters.add(new Tuple<List<Double>, Integer>(result, minimum));
+                clusters.add(new Tuple<>(result, minimum));
             }
             size = results.size();
             minimum *= 2;
@@ -410,7 +411,7 @@ public class DBRCAN {
         assert (DBRCAN.epsilonCompare(buffer, epsilon / 2) <= 0);
 
         Set<Tuple<List<Double>, Integer>> clusters = cluster(elements, modulo, epsilon);
-        LinkedList<Tuple<Double, Integer>> function = new LinkedList<Tuple<Double, Integer>>();
+        LinkedList<Tuple<Double, Integer>> function = new LinkedList<>();
 
         /*
          * The following only works because of the following constraints: (1) Given two clusters A
@@ -423,8 +424,8 @@ public class DBRCAN {
          * bound of a subsequent cluster, given an epsilon of greater than zero.
          */
 
-        Map<Double, Integer> starts = new HashMap<Double, Integer>();
-        Map<Double, Integer> ends = new HashMap<Double, Integer>();
+        Map<Double, Integer> starts = new HashMap<>();
+        Map<Double, Integer> ends = new HashMap<>();
         int minimum = 0;
 
         for (Tuple<List<Double>, Integer> cluster : clusters) {
@@ -448,31 +449,31 @@ public class DBRCAN {
         }
 
         for (Entry<Double, Integer> entry : starts.entrySet()) {
-            function.add(new Tuple<Double, Integer>(entry.getKey(), Math.max(minimum,
-                    entry.getValue())));
+            function.add(new Tuple<>(entry.getKey(),
+                    Math.max(minimum, entry.getValue())));
         }
 
         for (Entry<Double, Integer> entry : ends.entrySet()) {
             if (buffer == 0 || !starts.containsKey(entry.getKey())) {
-                function.add(new Tuple<Double, Integer>(entry.getKey(), Math.max(minimum,
-                        entry.getValue())));
+                function.add(new Tuple<>(entry.getKey(),
+                        Math.max(minimum, entry.getValue())));
             }
         }
 
         Collections.sort(function, new Comparator<Tuple<Double, Integer>>() {
             @Override
             public int compare(Tuple<Double, Integer> left, Tuple<Double, Integer> right) {
-                return (DBRCAN.epsilonCompare(left.one(), right.one()) < 0) ? -1 : (DBRCAN
-                        .epsilonCompare(left.one(), right.one()) > 0) ? 1 : (left.two() < right
-                        .two()) ? 1 : -1;
+                return (DBRCAN.epsilonCompare(left.one(), right.one()) < 0) ? -1
+                        : (DBRCAN.epsilonCompare(left.one(), right.one()) > 0) ? 1
+                                : (left.two() < right.two()) ? 1 : -1;
             }
         });
 
         if (function.size() == 0) {
-            function.push(new Tuple<Double, Integer>(0.0, minimum));
+            function.push(new Tuple<>(0.0, minimum));
         } else if (DBRCAN.epsilonCompare(function.get(0).one(), 0.0) != 0) {
-            function.push(new Tuple<Double, Integer>(0.0, Math.max(minimum, function.getLast()
-                    .two())));
+            function.push(
+                    new Tuple<>(0.0, Math.max(minimum, function.getLast().two())));
         }
 
         return function;

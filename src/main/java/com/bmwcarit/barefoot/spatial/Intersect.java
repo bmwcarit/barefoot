@@ -19,6 +19,8 @@ package com.bmwcarit.barefoot.spatial;
 import net.sf.geographiclib.GeoMath;
 import net.sf.geographiclib.Geodesic;
 import net.sf.geographiclib.GeodesicData;
+import net.sf.geographiclib.Gnomonic;
+import net.sf.geographiclib.GnomonicData;
 
 /**
  * Geodesic intersection.

@@ -30,13 +30,14 @@ import com.bmwcarit.barefoot.tracker.TemporaryMemory.TemporaryElement;
 import com.bmwcarit.barefoot.util.Tuple;
 
 /**
- *
+ * Memory class for storing elements temporarily by defining a time to live (TTL). This class is a
+ * work-around solution and will be very likely replaced in future releases.
  */
-public class TemporaryMemory<E extends TemporaryElement<E>> {
+class TemporaryMemory<E extends TemporaryElement<E>> {
     private final static Logger logger = LoggerFactory.getLogger(TemporaryMemory.class);
-    private final Map<String, E> map = new HashMap<String, E>();
-    private final Queue<Tuple<Long, E>> queue = new PriorityBlockingQueue<Tuple<Long, E>>(1,
-            new Comparator<Tuple<Long, E>>() {
+    private final Map<String, E> map = new HashMap<>();
+    private final Queue<Tuple<Long, E>> queue =
+            new PriorityBlockingQueue<>(1, new Comparator<Tuple<Long, E>>() {
                 @Override
                 public int compare(Tuple<Long, E> left, Tuple<Long, E> right) {
                     return (int) (left.one() - right.one());
@@ -104,7 +105,7 @@ public class TemporaryMemory<E extends TemporaryElement<E>> {
         public void updateAndUnlock(int ttl, boolean publish) {
             death = Math.max(death + 1, Calendar.getInstance().getTimeInMillis() + ttl * 1000);
             logger.debug("element '{}' updated with ttl {} (death in {})", id, ttl, death);
-            memory.queue.add(new Tuple<Long, E>(death, (E) this));
+            memory.queue.add(new Tuple<>(death, (E) this));
             if (publish) {
                 memory.publisher.publish(id, (E) this);
             }
@@ -181,7 +182,7 @@ public class TemporaryMemory<E extends TemporaryElement<E>> {
             return true;
         } else {
             if (!element.lock.tryLock()) {
-               return false;
+                return false;
             }
             map.remove(id);
             element.lock.unlock();

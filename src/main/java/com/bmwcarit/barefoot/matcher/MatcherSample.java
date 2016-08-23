@@ -42,7 +42,8 @@ public class MatcherSample extends com.bmwcarit.barefoot.markov.Sample {
     }
 
     /**
-     * Creates a {@link MatcherSample} object with measured position, time of measurement, and azimuth.
+     * Creates a {@link MatcherSample} object with measured position, time of measurement, and
+     * azimuth.
      *
      * @param time Time of measurement in milliseconds epoch time.
      * @param point Point of measured position.
@@ -91,9 +92,8 @@ public class MatcherSample extends com.bmwcarit.barefoot.markov.Sample {
         super(json);
         id = json.getString("id");
         String wkt = json.getString("point");
-        point =
-                (Point) GeometryEngine.geometryFromWkt(wkt, WktImportFlags.wktImportDefaults,
-                        Type.Point);
+        point = (Point) GeometryEngine.geometryFromWkt(wkt, WktImportFlags.wktImportDefaults,
+                Type.Point);
         if (json.has("azimuth")) {
             azimuth = norm(json.getDouble("azimuth"));
         } else {
@@ -102,8 +102,8 @@ public class MatcherSample extends com.bmwcarit.barefoot.markov.Sample {
     }
 
     private static double norm(double azimuth) {
-        return azimuth >= 360 ? azimuth - (360 * (int) (azimuth / 360)) : azimuth < 0 ? azimuth
-                - (360 * ((int) (azimuth / 360) - 1)) : azimuth;
+        return azimuth >= 360 ? azimuth - (360 * (int) (azimuth / 360))
+                : azimuth < 0 ? azimuth - (360 * ((int) (azimuth / 360) - 1)) : azimuth;
     }
 
     /**

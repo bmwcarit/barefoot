@@ -40,8 +40,8 @@ public interface RoadReader {
 
     /**
      * Opens the reader and restricts reading of {@link BaseRoad} objects to spatially contained or
-     * overlapping with a {@link Polygon} and to only certain road types (see {@link BaseRoad#type()}
-     * ) that are not excluded.
+     * overlapping with a {@link Polygon} and to only certain road types (see
+     * {@link BaseRoad#type()} ) that are not excluded.
      *
      * @param polygon Spatial restriction for reading with a certain {@link Polygon}. Must be null
      *        to disallow spatial restriction.

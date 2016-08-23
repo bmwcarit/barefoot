@@ -73,9 +73,8 @@ public class BaseRoad implements Serializable {
         this.maxspeedForward = maxspeedForward;
         this.maxspeedBackward = maxspeedBackward;
         this.length = length;
-        this.geometry =
-                OperatorExportToWkb.local()
-                        .execute(WkbExportFlags.wkbExportLineString, geometry, null).array();
+        this.geometry = OperatorExportToWkb.local()
+                .execute(WkbExportFlags.wkbExportLineString, geometry, null).array();
     }
 
     /**
@@ -94,7 +93,8 @@ public class BaseRoad implements Serializable {
      * @param wkb Road's geometry in WKB format from source to target.
      */
     public BaseRoad(long id, long source, long target, long osmId, boolean oneway, short type,
-            float priority, float maxspeedForward, float maxspeedBackward, float length, byte[] wkb) {
+            float priority, float maxspeedForward, float maxspeedBackward, float length,
+            byte[] wkb) {
         this.id = id;
         this.source = source;
         this.target = target;

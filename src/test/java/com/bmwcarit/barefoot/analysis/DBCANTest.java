@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.bmwcarit.barefoot.analysis.DBCAN;
 import com.bmwcarit.barefoot.analysis.DBCAN.ISearchIndex;
 
 public class DBCANTest {
@@ -162,9 +161,8 @@ public class DBCANTest {
             assertEquals(index.searchRight(6.0), 5);
         }
         {
-            DBCAN.SearchIndex index =
-                    new DBCAN.SearchIndex(Arrays.asList(0.0, 0.0, 1.0, 2.1, 2.1, 2.1, 3.0, 4.0,
-                            5.0, 5.0, 5.0, 5.0));
+            DBCAN.SearchIndex index = new DBCAN.SearchIndex(
+                    Arrays.asList(0.0, 0.0, 1.0, 2.1, 2.1, 2.1, 3.0, 4.0, 5.0, 5.0, 5.0, 5.0));
 
             assertEquals(index.searchLeft(-1.0), 0);
             assertEquals(index.searchLeft(0.0), 0);
@@ -218,9 +216,8 @@ public class DBCANTest {
             }
         }
         {
-            ISearchIndex<Double> index =
-                    new DBCAN.SearchIndex(Arrays.asList(0.0, 0.0, 1.0, 2.0, 3.0, 3.0, 4.0, 5.0,
-                            5.0, 5.0));
+            ISearchIndex<Double> index = new DBCAN.SearchIndex(
+                    Arrays.asList(0.0, 0.0, 1.0, 2.0, 3.0, 3.0, 4.0, 5.0, 5.0, 5.0));
             {
                 List<Double> result = index.radius(-1.0, 1.0);
                 List<Double> interval = Arrays.asList(0.0, 0.0);
@@ -231,12 +228,12 @@ public class DBCANTest {
             }
             {
                 List<Double> result = index.radius(-2.0, 1.0);
-                List<Double> interval = new LinkedList<Double>();
+                List<Double> interval = new LinkedList<>();
                 assertEquals(result.size(), interval.size());
             }
             {
                 List<Double> result = index.radius(6.0, 0.5);
-                List<Double> interval = new LinkedList<Double>();
+                List<Double> interval = new LinkedList<>();
                 assertEquals(result.size(), interval.size());
             }
             {
@@ -278,12 +275,11 @@ public class DBCANTest {
     @Test
     public void testCluster() {
         {
-            List<Double> list =
-                    Arrays.asList(0.0, 3.0, 6.0, 6.5, 8.0, 11.0, 13.5, 15.5, 18.0, 20.5, 23.0,
-                            24.0, 24.5, 25.0, 28.0);
+            List<Double> list = Arrays.asList(0.0, 3.0, 6.0, 6.5, 8.0, 11.0, 13.5, 15.5, 18.0, 20.5,
+                    23.0, 24.0, 24.5, 25.0, 28.0);
             {
                 Set<List<Double>> results = DBCAN.cluster(list, 2, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(Arrays.asList(23.0, 24.0, 24.5, 25.0));
                 clusters.add(Arrays.asList(6.0, 6.5, 8.0));
                 clusters.add(Arrays.asList(13.5, 15.5));
@@ -306,7 +302,7 @@ public class DBCANTest {
             }
             {
                 Set<List<Double>> results = DBCAN.cluster(list, 3, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(list);
 
                 assertEquals(clusters.size(), results.size());
@@ -327,7 +323,7 @@ public class DBCANTest {
             }
             {
                 Set<List<Double>> results = DBCAN.cluster(list, 1, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(Arrays.asList(23.0, 24.0, 24.5, 25.0));
                 clusters.add(Arrays.asList(6.0, 6.5));
 
@@ -349,7 +345,7 @@ public class DBCANTest {
             }
             {
                 Set<List<Double>> results = DBCAN.cluster(list, 0.5, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(Arrays.asList(24.0, 24.5, 25.0));
                 clusters.add(Arrays.asList(6.0, 6.5));
 
@@ -371,18 +367,17 @@ public class DBCANTest {
             }
             {
                 Set<List<Double>> results = DBCAN.cluster(list, 0.25, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
 
                 assertEquals(clusters.size(), results.size());
             }
         }
         {
-            List<Double> list =
-                    Arrays.asList(0.0, 3.0, 3.0, 3.0, 6.0, 6.5, 6.5, 8.0, 11.0, 13.5, 13.5, 15.5,
-                            18.0, 20.5, 23.0, 24.0, 24.5, 25.0, 28.0, 28.0, 28.0);
+            List<Double> list = Arrays.asList(0.0, 3.0, 3.0, 3.0, 6.0, 6.5, 6.5, 8.0, 11.0, 13.5,
+                    13.5, 15.5, 18.0, 20.5, 23.0, 24.0, 24.5, 25.0, 28.0, 28.0, 28.0);
             {
                 Set<List<Double>> results = DBCAN.cluster(list, 2, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(Arrays.asList(23.0, 24.0, 24.5, 25.0));
                 clusters.add(Arrays.asList(6.0, 6.5, 6.5, 8.0));
                 clusters.add(Arrays.asList(13.5, 13.5, 15.5));
@@ -407,7 +402,7 @@ public class DBCANTest {
             }
             {
                 Set<List<Double>> results = DBCAN.cluster(list, 3, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(list);
 
                 assertEquals(clusters.size(), results.size());
@@ -428,7 +423,7 @@ public class DBCANTest {
             }
             {
                 Set<List<Double>> results = DBCAN.cluster(list, 1, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(Arrays.asList(23.0, 24.0, 24.5, 25.0));
                 clusters.add(Arrays.asList(6.0, 6.5, 6.5));
                 clusters.add(Arrays.asList(3.0, 3.0, 3.0));
@@ -453,7 +448,7 @@ public class DBCANTest {
             }
             {
                 Set<List<Double>> results = DBCAN.cluster(list, 0.5, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(Arrays.asList(24.0, 24.5, 25.0));
                 clusters.add(Arrays.asList(6.0, 6.5, 6.5));
                 clusters.add(Arrays.asList(3.0, 3.0, 3.0));
@@ -478,7 +473,7 @@ public class DBCANTest {
             }
             {
                 Set<List<Double>> results = DBCAN.cluster(list, 0.25, 2);
-                Set<List<Double>> clusters = new HashSet<List<Double>>();
+                Set<List<Double>> clusters = new HashSet<>();
                 clusters.add(Arrays.asList(6.5, 6.5));
                 clusters.add(Arrays.asList(3.0, 3.0, 3.0));
                 clusters.add(Arrays.asList(28.0, 28.0, 28.0));

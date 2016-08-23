@@ -125,7 +125,8 @@ public abstract class ServerControl {
 
     public static void main(String[] args) {
         if (args.length < 2 || args.length > 3) {
-            logger.error("missing arguments\nusage: [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties");
+            logger.error(
+                    "missing arguments\nusage: [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties");
             System.exit(1);
         }
 

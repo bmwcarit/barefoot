@@ -26,8 +26,8 @@ import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.SpatialReference;
 
 /**
- * Barefoot map road reader for reading {@link BaseRoad} object from barefoot map files, usually with
- * file extension 'bfmap'.
+ * Barefoot map road reader for reading {@link BaseRoad} object from barefoot map files, usually
+ * with file extension 'bfmap'.
  */
 public class BfmapReader implements RoadReader {
 
@@ -94,9 +94,7 @@ public class BfmapReader implements RoadReader {
                 if (road == null) {
                     return null;
                 }
-            } while (exclusions != null
-                    && exclusions.contains(road.type())
-                    || polygon != null
+            } while (exclusions != null && exclusions.contains(road.type()) || polygon != null
                     && !GeometryEngine.contains(polygon, road.geometry(),
                             SpatialReference.create(4326))
                     && !GeometryEngine.overlaps(polygon, road.geometry(),

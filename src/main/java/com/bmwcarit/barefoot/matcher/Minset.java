@@ -26,6 +26,15 @@ import com.bmwcarit.barefoot.roadmap.RoadPoint;
  * redundant candidates.
  */
 public abstract class Minset {
+    /**
+     * Floating point precision for considering a {@link RoadPoint} be the same as a vertex,
+     * fraction is zero or one (default: 1E-8).
+     */
+    public static double precision = 1E-8;
+
+    private static double round(double value) {
+        return Math.round(value / precision) * precision;
+    }
 
     /**
      * Removes semantically redundant matching candidates from a set of matching candidates (as
@@ -61,9 +70,9 @@ public abstract class Minset {
      */
     public static Set<RoadPoint> minimize(Set<RoadPoint> candidates) {
 
-        HashMap<Long, RoadPoint> map = new HashMap<Long, RoadPoint>();
-        HashMap<Long, Integer> misses = new HashMap<Long, Integer>();
-        HashSet<Long> removes = new HashSet<Long>();
+        HashMap<Long, RoadPoint> map = new HashMap<>();
+        HashMap<Long, Integer> misses = new HashMap<>();
+        HashSet<Long> removes = new HashSet<>();
 
         for (RoadPoint candidate : candidates) {
             map.put(candidate.edge().id(), candidate);
@@ -81,7 +90,8 @@ public abstract class Minset {
                     misses.put(id, misses.get(id) + 1);
                 }
 
-                if (map.containsKey(successor.id()) && map.get(successor.id()).fraction() == 0) {
+                if (map.containsKey(successor.id())
+                        && round(map.get(successor.id()).fraction()) == 0) {
                     removes.add(successor.id());
                     misses.put(id, misses.get(id) + 1);
                 }
@@ -90,7 +100,7 @@ public abstract class Minset {
 
         for (RoadPoint candidate : candidates) {
             Long id = candidate.edge().id();
-            if (map.containsKey(id) && !removes.contains(id) && candidate.fraction() == 1
+            if (map.containsKey(id) && !removes.contains(id) && round(candidate.fraction()) == 1
                     && misses.get(id) == 0) {
                 removes.add(id);
             }
@@ -100,6 +110,6 @@ public abstract class Minset {
             map.remove(id);
         }
 
-        return new HashSet<RoadPoint>(map.values());
+        return new HashSet<>(map.values());
     }
 }

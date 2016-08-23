@@ -31,7 +31,7 @@ public class Path<E extends AbstractEdge<E>> {
     public Path(Point<E> single) {
         this.source = single;
         this.target = single;
-        this.edges = new LinkedList<E>(Arrays.asList(single.edge()));
+        this.edges = new LinkedList<>(Arrays.asList(single.edge()));
         if (!valid()) {
             throw new RuntimeException("unvalid path");
         }
@@ -47,7 +47,7 @@ public class Path<E extends AbstractEdge<E>> {
     public Path(Point<E> source, Point<E> target, List<E> edges) {
         this.source = source;
         this.target = target;
-        this.edges = new LinkedList<E>(edges);
+        this.edges = new LinkedList<>(edges);
         if (!valid()) {
             throw new RuntimeException("unvalid path");
         }
@@ -81,8 +81,8 @@ public class Path<E extends AbstractEdge<E>> {
     }
 
     /**
-     * Checks if the path is valid, i.e. if the sequence of {@link AbstractEdge}s is connected and connects
-     * source and target {@link Point}.
+     * Checks if the path is valid, i.e. if the sequence of {@link AbstractEdge}s is connected and
+     * connects source and target {@link Point}.
      *
      * @return True if the path is valid, false otherwise.
      */
