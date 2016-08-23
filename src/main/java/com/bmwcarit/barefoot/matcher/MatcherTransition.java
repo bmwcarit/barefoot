@@ -45,7 +45,7 @@ public class MatcherTransition extends StateTransition {
      */
     public MatcherTransition(JSONObject json, RoadMap map) throws JSONException {
         super(json);
-        route = Route.FromJSON(json.getJSONObject("route"), map);
+        route = Route.fromJSON(json.getJSONObject("route"), map);
     }
 
     /**

@@ -209,8 +209,8 @@ public class Route extends Path<Road> {
      * @return {@link Route} object.
      * @throws JSONException thrown on JSON extraction or parsing error.
      */
-    public static Route FromJSON(JSONObject json, RoadMap map) throws JSONException {
-        LinkedList<Road> roads = new LinkedList<Road>();
+    public static Route fromJSON(JSONObject json, RoadMap map) throws JSONException {
+        LinkedList<Road> roads = new LinkedList<>();
 
         JSONObject jsontarget = json.getJSONObject("target");
         JSONObject jsonsource = json.getJSONObject("source");
@@ -220,7 +220,8 @@ public class Route extends Path<Road> {
         JSONArray jsonroads = json.getJSONArray("roads");
 
         for (int j = 0; j < jsonroads.length(); ++j) {
-            roads.add(map.get(jsonroads.getLong(j)));
+            JSONObject jsonroad = jsonroads.getJSONObject(j);
+            roads.add(Road.fromJSON(jsonroad, map));
         }
 
         return new Route(source, target, roads);
@@ -240,7 +241,7 @@ public class Route extends Path<Road> {
 
         JSONArray jsonroads = new JSONArray();
         for (Road road : path()) {
-            jsonroads.put(road.id());
+            jsonroads.put(road.toJSON());
         }
 
         json.put("roads", jsonroads);

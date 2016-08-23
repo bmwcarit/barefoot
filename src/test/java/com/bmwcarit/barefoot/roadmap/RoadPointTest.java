@@ -1,6 +1,6 @@
 /*
 * Copyright (C) 2015, BMW Car IT GmbH
-* 
+*
 * Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
 *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
@@ -21,9 +21,6 @@ import org.junit.Test;
 
 import com.bmwcarit.barefoot.road.BaseRoad;
 import com.bmwcarit.barefoot.road.Heading;
-import com.bmwcarit.barefoot.roadmap.Road;
-import com.bmwcarit.barefoot.roadmap.RoadMap;
-import com.bmwcarit.barefoot.roadmap.RoadPoint;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Polyline;

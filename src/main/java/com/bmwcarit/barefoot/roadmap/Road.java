@@ -13,6 +13,9 @@
 
 package com.bmwcarit.barefoot.roadmap;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.bmwcarit.barefoot.road.BaseRoad;
 import com.bmwcarit.barefoot.road.Heading;
 import com.bmwcarit.barefoot.topology.AbstractEdge;
@@ -108,6 +111,15 @@ public class Road extends AbstractEdge<Road> {
     }
 
     /**
+     * Gets road {@link Heading} relative to its {@link BaseRoad}.
+     *
+     * @return Road's {@link Heading} relative to its {@link BaseRoad}.
+     */
+    public Heading heading() {
+        return heading;
+    }
+
+    /**
      * Gets road's geometry as a {@link Polyline} from the road's source to its target.
      *
      * @return Road's geometry as {@link Polyline} from source to target.
@@ -123,5 +135,36 @@ public class Road extends AbstractEdge<Road> {
      */
     public BaseRoad base() {
         return base;
+    }
+
+    /**
+     * Gets a JSON representation of the {@link Road}.
+     *
+     * @return {@link JSONObject} object.
+     * @throws JSONException thrown on JSON extraction or parsing error.
+     */
+    public JSONObject toJSON() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("road", base().id());
+        json.put("heading", heading());
+        return json;
+    }
+
+    /**
+     * Creates a {@link Route} object from its JSON representation.
+     *
+     * @param json JSON representation of the {@link Route}.
+     * @param map {@link RoadMap} object as the reference of {@link RoadPoint}s and {@link Road}s.
+     * @return {@link Road} object.
+     * @throws JSONException thrown on JSON extraction or parsing error.
+     */
+    public static Road fromJSON(JSONObject json, RoadMap map) throws JSONException {
+        long baseid = json.getLong("road");
+        Road road = map.get(Heading.valueOf(json.getString("heading")) == Heading.forward
+                ? baseid * 2 : baseid * 2 + 1);
+        if (road == null) {
+            throw new JSONException("road id " + json.getLong("road") + " not found");
+        }
+        return road;
     }
 }

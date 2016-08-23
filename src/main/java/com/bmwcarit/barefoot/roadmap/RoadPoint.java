@@ -56,14 +56,13 @@ public class RoadPoint extends com.bmwcarit.barefoot.topology.Point<Road> {
     }
 
     /**
-     * Gets the JSON representaiton of the {@link RoadPoint}.
+     * Gets the JSON representation of the {@link RoadPoint}.
      *
-     * @return JSON representaiton of the {@link RoadPoint}.
+     * @return JSON representation of the {@link RoadPoint}.
      * @throws JSONException thrown on JSON extraction or parsing error.
      */
     public JSONObject toJSON() throws JSONException {
-        JSONObject json = new JSONObject();
-        json.put("road", edge().id());
+        JSONObject json = edge().toJSON();
         json.put("frac", fraction());
         return json;
     }
@@ -77,11 +76,8 @@ public class RoadPoint extends com.bmwcarit.barefoot.topology.Point<Road> {
      * @throws JSONException thrown on JSON extraction or parsing error.
      */
     public static RoadPoint fromJSON(JSONObject json, RoadMap map) throws JSONException {
-        Road road = map.get(json.getLong("road"));
-        Double fraction = json.getDouble("frac");
-        if (road == null) {
-            throw new JSONException("road id " + json.getLong("road") + " not found");
-        }
+        Road road = Road.fromJSON(json, map);
+        double fraction = json.getDouble("frac");
         return new RoadPoint(road, fraction);
     }
 }

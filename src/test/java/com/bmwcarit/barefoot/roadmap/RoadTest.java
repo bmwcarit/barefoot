@@ -1,6 +1,6 @@
 /*
 * Copyright (C) 2015, BMW Car IT GmbH
-* 
+*
 * Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
 *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
@@ -15,9 +15,12 @@ package com.bmwcarit.barefoot.roadmap;
 
 import static org.junit.Assert.assertEquals;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 
-import com.bmwcarit.barefoot.roadmap.Road;
+import com.bmwcarit.barefoot.road.BaseRoad;
+import com.bmwcarit.barefoot.road.Heading;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Point;
@@ -88,5 +91,23 @@ public class RoadTest {
                 assertEquals(p1.getY(), p2.getY(), 1E-6);
             }
         }
+    }
+
+    @Test
+    public void testJSON() throws JSONException {
+        String wkt = "LINESTRING(11.3136273 48.0972002,11.3138846 48.0972999)";
+        BaseRoad osm =
+                new BaseRoad(0L, 1L, 2L, 4L, true, (short) 5, 5.1F, 6.1F, 6.2F, 7.1F,
+                        (Polyline) GeometryEngine.geometryFromWkt(wkt,
+                                WktImportFlags.wktImportDefaults, Geometry.Type.Polyline));
+
+        Road road = new Road(osm, Heading.forward);
+        RoadMap map = new RoadMap();
+        map.add(road);
+
+        String json = road.toJSON().toString();
+        Road road2 = Road.fromJSON(new JSONObject(json), map);
+
+        assertEquals(road, road2);
     }
 }

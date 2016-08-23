@@ -31,8 +31,8 @@ import com.esri.core.geometry.WktExportFlags;
 public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, MatcherSample> {
 
     /**
-     * Creates empty {@link MatcherKState} object with default parameters, i.e. capacity is
-     * unbounded.
+     * Creates empty {@link MatcherKState} object with default parameters, which means capacity is
+     * unbound.
      */
     public MatcherKState() {
         super();
@@ -116,19 +116,11 @@ public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, M
         if (this.sequence() != null) {
             for (int i = 0; i < this.sequence().size(); ++i) {
                 MatcherCandidate candidate = this.sequence().get(i);
-                JSONObject jsoncandidate = new JSONObject();
-                jsoncandidate.put("id", candidate.id());
+                JSONObject jsoncandidate = candidate.toJSON();
                 jsoncandidate.put("time", this.samples().get(i).time() / 1000);
-                jsoncandidate.put("road", candidate.point().edge().id());
-                jsoncandidate.put("frac", candidate.point().fraction());
                 if (candidate.transition() != null) {
                     jsoncandidate.put("geom", GeometryEngine.geometryToWkt(candidate.transition()
                             .route().geometry(), WktExportFlags.wktExportLineString));
-                    StringBuilder roads = new StringBuilder();
-                    for (int j = 0; j < candidate.transition().route().size(); ++j) {
-                        roads.append(candidate.transition().route().get(j).id() + " ");
-                    }
-                    jsoncandidate.put("roads", roads);
                 } else {
                     jsoncandidate.put("geom", GeometryEngine.geometryToWkt(candidate.point()
                             .geometry(), WktExportFlags.wktExportPoint));
@@ -153,9 +145,7 @@ public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, M
         JSONArray json = new JSONArray();
         if (this.sequence() != null) {
             for (MatcherCandidate candidate : this.sequence()) {
-                JSONObject jsoncandidate = new JSONObject();
-                jsoncandidate.put("road", candidate.point().edge().id());
-                jsoncandidate.put("frac", candidate.point().fraction());
+                JSONObject jsoncandidate = candidate.point().toJSON();
                 if (candidate.transition() != null) {
                     jsoncandidate.put("route", GeometryEngine.geometryToWkt(candidate.transition()
                             .route().geometry(), WktExportFlags.wktExportLineString));
