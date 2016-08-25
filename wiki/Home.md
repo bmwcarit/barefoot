@@ -363,7 +363,7 @@ In addition, a request may also demand a certain response format which can be sp
 The tracker server is a stand-alone server for online map matching. Here, objects send position updates to some the tracking server periodically. The tracker server matches each position update right away (online) and, hence, keeps track of the objects' movements on the map in (near) real-time. The setup consists of a tracker server and a monitor, as illustrated below, which provides a website that shows object movements in the browser.
 
 <p align="center">
-<img src="https://github.com/bmwcarit/barefoot/raw/master/doc-files/com/bmwcarit/barefoot/tracker/tracker-monitor" width="650">
+<img src="https://github.com/bmwcarit/barefoot/raw/master/doc-files/com/bmwcarit/barefoot/tracker/tracker-monitor.png" width="650">
 </p>
 
 #### Setup
