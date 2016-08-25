@@ -37,6 +37,7 @@ public class Graph<E extends AbstractEdge<E>> implements Serializable {
      * Adds an {@link AbstractEdge} to the graph. (Requires construction.)
      *
      * @param edge Edge to be added.
+     * @return Returns a self reference to this graph.
      */
     public Graph<E> add(E edge) {
         edges.put(edge.id(), edge);
@@ -82,7 +83,8 @@ public class Graph<E extends AbstractEdge<E>> implements Serializable {
 
     /**
      * Constructs the graph which means edges are connected for iteration between connections.
-     * @return
+     *
+     * @return Returns a self reference to this graph.
      */
     public Graph<E> construct() {
         Map<Long, ArrayList<E>> map = new HashMap<>();

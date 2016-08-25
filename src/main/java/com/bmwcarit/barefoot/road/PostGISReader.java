@@ -56,8 +56,7 @@ public class PostGISReader extends PostgresSource implements RoadReader {
      * @param table Name of the table.
      * @param user User for accessing the database.
      * @param password Password of the user.
-     * @param config Mapping of road class identifiers to priority factor and default maximum speed
-     *        (see {@link Configuration}).
+     * @param config Road type configuration.
      */
     public PostGISReader(String host, int port, String database, String table, String user,
             String password, Map<Short, Tuple<Double, Integer>> config) {

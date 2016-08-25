@@ -135,7 +135,7 @@ public class Loader {
         }
         file.close();
 
-        return read(new JSONObject(json));
+        return roadtypes(new JSONObject(json));
     }
 
     /**
@@ -145,7 +145,7 @@ public class Loader {
      * @return Mapping of road class identifiers to priority factor and default maximum speed.
      * @throws JSONException thrown on JSON extraction or parsing error.
      */
-    public static Map<Short, Tuple<Double, Integer>> read(JSONObject jsonconfig)
+    public static Map<Short, Tuple<Double, Integer>> roadtypes(JSONObject jsonconfig)
             throws JSONException {
 
         Map<Short, Tuple<Double, Integer>> config = new HashMap<>();
