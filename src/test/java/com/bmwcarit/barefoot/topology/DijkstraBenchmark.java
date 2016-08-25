@@ -37,11 +37,11 @@ import org.slf4j.LoggerFactory;
 import com.bmwcarit.barefoot.matcher.MatcherSample;
 import com.bmwcarit.barefoot.matcher.MatcherTest;
 import com.bmwcarit.barefoot.roadmap.Distance;
-import com.bmwcarit.barefoot.roadmap.OberbayernBenchmark;
 import com.bmwcarit.barefoot.roadmap.Road;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
 import com.bmwcarit.barefoot.roadmap.RoadPoint;
 import com.bmwcarit.barefoot.roadmap.Route;
+import com.bmwcarit.barefoot.roadmap.Testmap;
 import com.bmwcarit.barefoot.roadmap.Time;
 import com.bmwcarit.barefoot.roadmap.TimePriority;
 import com.bmwcarit.barefoot.util.Stopwatch;
@@ -52,10 +52,10 @@ import com.esri.core.geometry.WktExportFlags;
 
 public class DijkstraBenchmark {
     private static Logger logger = LoggerFactory.getLogger(DijkstraBenchmark.class);
-    private RoadMap map = null;
+    private final RoadMap map;
 
     public DijkstraBenchmark() throws IOException, JSONException {
-        map = OberbayernBenchmark.instance();
+        this.map = Testmap.instance();
     }
 
     @Test

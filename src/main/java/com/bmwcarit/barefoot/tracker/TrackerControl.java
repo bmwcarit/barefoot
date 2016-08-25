@@ -38,7 +38,7 @@ public abstract class TrackerControl {
      * Initializes stand-alone online map matching server (tracker). Server properties file must
      * include matcher, server, and tracker properties, see
      * {@link TrackerServer#TrackerServer(Properties, RoadMap)}. Database properties file must
-     * include database connection properties, see {@link Loader#load(Properties, boolean)}.
+     * include database connection properties, see {@link Loader#roadmap(Properties, boolean)}.
      *
      * @param pathServerProperties Path to server properties file.
      * @param pathDatabaseProperties Path to database properties file.
@@ -60,7 +60,7 @@ public abstract class TrackerControl {
 
         RoadMap map = null;
         try {
-            map = Loader.load(databaseProperties, true);
+            map = Loader.roadmap(databaseProperties, true);
         } catch (SourceException e) {
             logger.error(e.getMessage());
             System.exit(1);

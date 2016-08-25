@@ -15,16 +15,16 @@ package com.bmwcarit.barefoot.road;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Properties;
 
 import org.json.JSONException;
 import org.junit.Test;
 
-import com.bmwcarit.barefoot.util.Tuple;
+import com.bmwcarit.barefoot.roadmap.Loader;
 import com.esri.core.geometry.Geometry.Type;
 import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Polygon;
@@ -33,35 +33,11 @@ import com.esri.core.geometry.WktImportFlags;
 
 public class PostGISReaderTest {
 
-    private static RoadReader reader = null;
-
-    public static RoadReader Load() throws IOException, JSONException {
-
-        if (reader != null) {
-            return reader;
-        }
-
-        Properties props = new Properties();
-        props.load(PostGISReaderTest.class.getResourceAsStream("oberbayern.db.properties"));
-
-        String host = props.getProperty("host");
-        int port = Integer.parseInt(props.getProperty("port"));
-        String database = props.getProperty("database");
-        String table = props.getProperty("table");
-        String user = props.getProperty("user");
-        String password = props.getProperty("password");
-        String path = props.getProperty("road-types");
-
-        Map<Short, Tuple<Double, Integer>> config = Configuration.read(path);
-
-        reader = new PostGISReader(host, port, database, table, user, password, config);
-
-        return reader;
-    }
-
     @Test
     public void testPostGISReader() throws IOException, JSONException {
-        RoadReader reader = Load();
+        Properties properties = new Properties();
+        properties.load(new FileInputStream("config/oberbayern.properties"));
+        RoadReader reader = Loader.reader(properties);
         boolean readone = false;
 
         reader.open();
@@ -78,11 +54,13 @@ public class PostGISReaderTest {
 
     @Test
     public void testPolygon() throws IOException, JSONException {
+        Properties properties = new Properties();
+        properties.load(new FileInputStream("config/oberbayern.properties"));
+        RoadReader reader = Loader.reader(properties);
         Polygon polygon = (Polygon) GeometryEngine.geometryFromWkt(
                 "POLYGON ((11.40848 47.93157, 11.45109 47.93157,11.45109 47.89296,11.40848 47.89296,11.40848 47.93157))",
                 WktImportFlags.wktImportDefaults, Type.Polygon);
         BaseRoad road = null;
-        RoadReader reader = Load();
 
         reader.open(polygon, null);
         int count = 0;
@@ -101,12 +79,14 @@ public class PostGISReaderTest {
 
     @Test
     public void testExclusion() throws IOException, JSONException {
+        Properties properties = new Properties();
+        properties.load(new FileInputStream("config/oberbayern.properties"));
+        RoadReader reader = Loader.reader(properties);
         Polygon polygon = (Polygon) GeometryEngine.geometryFromWkt(
                 "POLYGON ((11.40848 47.93157, 11.45109 47.93157,11.45109 47.89296,11.40848 47.89296,11.40848 47.93157))",
                 WktImportFlags.wktImportDefaults, Type.Polygon);
         HashSet<Short> exclusion = new HashSet<>(Arrays.asList((short) 117));
         BaseRoad road = null;
-        RoadReader reader = Load();
 
         reader.open(polygon, exclusion);
         int count = 0;

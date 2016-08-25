@@ -166,7 +166,7 @@ public class RoadMap extends Graph<Road> implements Serializable {
      * Constructs road network topology and spatial index.
      */
     @Override
-    public void construct() {
+    public RoadMap construct() {
         long memory = 0;
 
         System.gc();
@@ -187,6 +187,8 @@ public class RoadMap extends Graph<Road> implements Serializable {
         memory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) - memory;
         logger.info("~{} megabytes used for spatial index (estimate)",
                 Math.max(0, Math.round(memory / 1E6)));
+
+        return this;
     }
 
     /**

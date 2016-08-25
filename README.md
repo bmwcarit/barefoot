@@ -2,21 +2,21 @@
 
 An open source Java library for online and offline map matching with OpenStreetMap. Together with its extensive set of geometric and spatial functions, an in-memory map data structure and basic machine learning functions, it is a versatile basis for scalable location-based services and spatio-temporal data analysis on the map. It is designed for use in parallel and distributed systems and, hence, includes a stand-alone map matching server and can be used in distributed systems for map matching services in the cloud.
 
-#### State-of-the-art map matching
-
-Barefoot uses a Hidden Markov Model map matching algorithm, proposed by Newson and Krumm (Microsoft Research) in [1], together with OpenStreetMap data. It supports both, offline and online map matching [2]. Most applications rely on offline map matching, which matches a recorded GPS trace in a single step. In contrast, online map matching determines object positions and movements iteratively from live GPS position updates in real-time.
-
 #### Flexible and extensive
 
-The Barefoot (eco-) system consists of a software library and a container-based (Docker) map server setup (Figure 3), which is flexible to be used as a central map repository in a distributed system or side-by-side with Barefoot's stand-alone map matching server in a single node system. Access to map data is provided with a fast and flexible in-memory map data structure. Together with GeographicLib [3] and ESRI's geometry API [4], it provides an extensive set of geographic and geometric operations for spatial data analysis on the map.
+Barefoot consists of a software library and a (Docker-based) map server that provides access to street map data from OpenStreetMap and is flexible to be used in distributed cloud infrastructures as map data server or side-by-side with Barefoot's stand-alone servers for offline (matcher server) and online map matching (tracker server), or other applications built with Barefoot library. Access to map data is provided with a fast and flexible in-memory map data structure. Together with GeographicLib [1] and ESRI's geometry API [2], it provides an extensive set of geographic and geometric operations for spatial data analysis on the map.
 
 <p align="center">
 <img src="doc-files/com/bmwcarit/barefoot/barefoot-ecosystem.png?raw=true" width="650">
 </p>
 
+#### State-of-the-art map matching
+
+Barefoot includes a Hidden Markov Model map matching implementation for both, offline map matching as proposed by Newson and Krumm in [3] and online map matching as proposed by Goh et al. in [4]. Offline map matching is the path reconstruction of a moving object from a recorded GPS trace. In contrast, online map matching determines an object's position and movement on the map iteratively from live GPS position updates in real-time.
+
 #### Scalable and versatile
 
-Barefoot is designed for use in parallel and distributed high-throughput systems [5]. For processing large amounts of data batches (offline map matching), it can be easily integrated in Apache Hadoop or Apache Spark (see example below), whereas Apache Storm and Apache Spark Streaming provide a runtime environment for processing massive data streams (online map matching). To support other data analysis functions, Barefoot comes with basic machine learning support, e.g., DBSCAN for spatial cluster analysis [6]. Further machine learning support is planned for future releases.
+Barefoot is designed for use in parallel and distributed high-throughput systems [5]. For map matching large batches of GPS traces (offline map matching), it can be easily integrated in Apache Hadoop or Apache Spark (see example below), whereas Apache Storm and Apache Spark Streaming provide a runtime environment for processing massive data streams (online map matching). To support other data analysis functions, Barefoot comes with basic machine learning support, e.g., DBSCAN for spatial cluster analysis [6].
 
 #### Open source and open data
 
@@ -26,15 +26,22 @@ Barefoot is licensed under the business-friendly Apache License 2.0 and uses onl
 
 ### Manual
 
-See [here](MANUAL.md).
+See [wiki](https://github.com/bmwcarit/barefoot/wiki).
 
 ### Javadoc
 
-See [here](http://bmwcarit.github.io/barefoot/doc/index.html).
+See [Javadoc](http://bmwcarit.github.io/barefoot/doc/index.html).
 
 ## Showcases and Quick Starts
 
-### Matcher server (Quick Start)
+### Online and offline HMM map matching 
+
+Barefoot provides a HMM map matching solution that can be used via the software library API, see the [wiki](https://github.com/bmwcarit/barefoot/wiki#hmm-map-matching), or via REST-like APIs provided with the stand-alone servers (matcher and tracker servers), see below or the [wiki](https://github.com/bmwcarit/barefoot/wiki#stand-alone-servers). This map matching solution covers both, online and offline map matching:
+
+- __Offline map matching__: Most map matching applications rely on the matching of a sequence of position measurements recorded in the past (traces) for reconstruction of the object's path on the map. Offline map matching finds the best matching  on the map and exploits availability of the full trace.
+- __Online map matching__: In many other applications, objects send position updates to some monitoring system periodically. An online map matching system matches each position update right away and, hence, keeps track of the objects' movements on the map in (near) real-time.
+
+#### Matcher server (Quick Start)
 
 Map matching of a GPS trace (violet markers) in Munich city area shown as geometrical path (orange path)
 
@@ -46,13 +53,11 @@ Map matching of a GPS trace (violet markers) in Munich city area shown as geomet
 
 ##### Map server
 
-_Note: The following example uses the setup of the test map server. For further details, see the [manual](MANUAL.md#map-server)._
+_Note: The following example uses the setup of the test map server. For further details, see the [wiki](https://github.com/bmwcarit/barefoot/wiki#map-server)._
 
 1. Install prerequisites.
 
-  - Docker (version 1.6 or higher, see [https://docs.docker.com/installation/ubuntulinux/](https://docs.docker.com/installation/ubuntulinux/))
-  - Maven (e.g. with `sudo apt-get install maven`)
-  - Java JDK (Java version 7 or higher, e.g. with `sudo apt-get install openjdk-1.7-jdk`)
+  - Docker Engine (version 1.6 or higher, see [https://docs.docker.com/installation/ubuntulinux/](https://docs.docker.com/installation/ubuntulinux/))
 
 2. Download OSM extract (examples require `oberbayern.osm.pbf`)
 
@@ -64,7 +69,7 @@ curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pb
 
   ``` bash
 cd barefoot
-sudo docker build --rm=true -t barefoot-map ./map
+sudo docker build -t barefoot-map ./map
   ```
 
 4. Create Docker container.
@@ -92,9 +97,14 @@ sudo docker ps -a
 
 ##### Matcher server
 
-_Note: The following example is a quick start setup. For further details, see the [manual](MANUAL.md#map-matching-server-stand-alone)._
+_Note: The following example is a quick start setup. For further details, see the [wiki](https://github.com/bmwcarit/barefoot/wiki#matcher-server)._
 
-1. Package Barefoot JAR. (Includes dependencies and executable main class.)
+1. Install prerequisites.
+
+  - Maven (e.g. with `sudo apt-get install maven`)
+  - Java JDK (Java version 7 or higher, e.g. with `sudo apt-get install openjdk-1.7-jdk`)
+
+2. Package Barefoot JAR. (Includes dependencies and executable main class.)
 
   ``` bash
 mvn package
@@ -102,7 +112,7 @@ mvn package
 
   _Note: Add `-DskipTests` to skip tests._
 
-2. Start server with standard configuration for map server and map matching, and option for GeoJSON output format.
+3. Start server with standard configuration for map server and map matching, and option for GeoJSON output format.
 
   ``` bash
 java -jar target/barefoot-0.1.0-server-jar-with-dependencies.jar --geojson config/server.properties config/oberbayern.properties
@@ -110,7 +120,7 @@ java -jar target/barefoot-0.1.0-server-jar-with-dependencies.jar --geojson confi
 
   _Note: Stop server with Ctrl-c._
 
-3. Test setup with provided sample data.
+4. Test setup with provided sample data.
 
   ``` bash
 python util/submit/batch.py --host localhost --port 1234  --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json
@@ -120,12 +130,14 @@ SUCCESS
 
   _Note: On success, i.e. result code is SUCCESS, the output can be visualized with [http://geojson.io/](http://geojson.io/) and should show the same path as in the figure above. Otherwise, result code is either TIMEOUT or ERROR._
 
-### Tracker server (Quick Start)
+#### Tracker server (Quick Start)
 
 Online (real-time) map matching of a GPS trace in Munich city area with most likely position (blue dot) and alternative possible positions and routes (green dots and paths with transparency according to their probability). Alternative positions and routes disappear with continuously processed updates, which shows the principle of online map matching converging alternatives over time.
 
 <p align="center">
 <img src="doc-files/com/bmwcarit/barefoot/tracker/monitor-1600x1000.gif" width="650">
+<br/>
+<a href="https://www.mapbox.com/about/maps/">&#xA9; Mapbox</a> <a href="http://www.openstreetmap.org/">&#xA9; OpenStreetMap</a> <a href="https://www.mapbox.com/map-feedback/"><b>Improve this map</b></a>
 </p>
 
 ##### Map server
@@ -134,10 +146,12 @@ Online (real-time) map matching of a GPS trace in Munich city area with most lik
 
 ##### Tracker server
 
-_Note: The following example is a quick start setup. For further details, see the [manual](MANUAL.md#map-matching-server-stand-alone)._
+_Note: The following example is a quick start setup. For further details, see the [wiki](https://github.com/bmwcarit/barefoot/wiki#tracker-server)._
 
 1. Install prerequisites.
 
+  - Maven (e.g. with `sudo apt-get install maven`)
+  - Java JDK (Java version 7 or higher, e.g. with `sudo apt-get install openjdk-1.7-jdk`)
   - ZeroMQ (e.g. with `sudo apt-get install libzmq3-dev`)
   - NodeJS (e.g. with `sudo apt-get install nodejs`)
 
@@ -178,15 +192,6 @@ SUCCESS
 
   _Note: On success, i.e. result code is SUCCESS, the tracking is visible in the browser on [http://localhost:3000](http://localhost:3000). Otherwise, result code is either TIMEOUT or ERROR._
 
-#### Map matching API (online and offline)
-
-The Barefoot library provides an easy-to-use HMM map matching API for online and offline map matching.
-
-- In (near) real-time systems, objects measure their position with some frequency producing a stream of position measurement. Each position measurement of the stream is map matched right away, which is referred to as __online map matching__.
-- In contrast, many applications use batches of position measurements recorded some time in the past. Map matching such a batches is referred to as __offline map matching__.
-
-For further API details and information on the theory of HMM map matching, see the [manual](MANUAL.md#map-matching-api).
-
 ### Spatial search and operations
 
 #### Spatial operations
@@ -226,25 +231,22 @@ Other spatial operations and formats provided with GeographicLib and ESRI Geomet
 
 #### Spatial search
 
-Spatial radius search in the road map given a center point (red marker) returns road segments (colored lines) and closest points (colored markers) on the road.
+Spatial search in the road map requires access to spatial data of the road map and spatial operations for distance and point-to-line projection. Barefoot implements the following basic search operations:
 
-<p align="center">
-<img src="doc-files/com/bmwcarit/barefoot/spatial/radius-satellite.png" width="700">
-<br/>
-<a href="https://www.mapbox.com/about/maps/">&#xA9; Mapbox</a> <a href="http://www.openstreetmap.org/">&#xA9; OpenStreetMap</a> <a href="https://www.mapbox.com/map-feedback/"><b>Improve this map</b></a> <a href="https://www.digitalglobe.com/">&#xA9; DigitalGlobe</a> <a href="http://geojson.io">&#xA9; geojson.io</a>
-</p>
+- radius
+- nearest
+- k-nearest (kNN)
+
+The following code snippet shows a radius search given a certain map:
 
 ``` java
-import com.bmwcarit.barefoot.road.PostGISReader;
-import com.bmwcarit.barefoot.road.RoadReader;
+import com.bmwcarit.barefoot.roadmap.Loader;
+import com.bmwcarit.barefoot.roadmap.Road;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
-import com.bmwcarit.barefoot.roadmap.RoadPoint;
 
 import com.esri.core.geometry.GeometryEngine;
 
-RoadReader reader = new PostGISReader(...);
-RoadMap map = RoadMap.Load(reader);
-map.construct();
+RoadMap map = Loader.roadmap("config/oberbayern.properties", true).construct();
 
 Point c = new Point(11.550474464893341, 48.034123185269095);
 double r = 50; // radius search within 50 meters
@@ -256,11 +258,13 @@ for (RoadPoint point : points) {
 }
 ```
 
-The provided spatial search operations are:
+A radius search, given a center point (red marker), returns road segments (colored lines) with their closest points (colored markers) on the road.
 
-- radius
-- nearest
-- k-nearest neighbors
+<p align="center">
+<img src="doc-files/com/bmwcarit/barefoot/spatial/radius-satellite.png" width="700">
+<br/>
+<a href="https://www.mapbox.com/about/maps/">&#xA9; Mapbox</a> <a href="http://www.openstreetmap.org/">&#xA9; OpenStreetMap</a> <a href="https://www.mapbox.com/map-feedback/"><b>Improve this map</b></a> <a href="https://www.digitalglobe.com/">&#xA9; DigitalGlobe</a> <a href="http://geojson.io">&#xA9; geojson.io</a>
+</p>
 
 ### Simple routing (Dijkstra)
 
@@ -268,13 +272,9 @@ TBD.
 
 ### Spatial cluster analysis
 
-Spatial cluster analysis of trip start and target points for a New York City taxi driver in January 2013. (The shown example is data of the New York hack license BA96DE419E711691B9445D6A6307C170. For details of the dataset, see below.)
+Spatial cluster analysis aggregates point data to high density clusters for detecting e.g. points of interest like frequent start and end points of trips. For that purpose, Barefoot includes a DBSCAN implementation for simple density-based spatial cluster analysis, which is an unsupervised machine learning algorithm. For details, see the [wiki](https://github.com/bmwcarit/barefoot/wiki#spatial-cluster-analysis).
 
-<p align="center">
-<img src="doc-files/com/bmwcarit/barefoot/analysis/dbscan-satellite.png" width="700">
-<br/>
-<a href="https://www.mapbox.com/about/maps/">&#xA9; Mapbox</a> <a href="http://www.openstreetmap.org/">&#xA9; OpenStreetMap</a> <a href="https://www.mapbox.com/map-feedback/"><b>Improve this map</b></a> <a href="https://www.digitalglobe.com/">&#xA9; DigitalGlobe</a> <a href="http://geojson.io">&#xA9; geojson.io</a>
-</p> 
+The following code snippet shows the simple usage of the algorithm: 
 
 ``` java
 import com.bmwcarit.barefoot.analysis.DBSCAN;
@@ -297,6 +297,14 @@ for (List<Point> cluster : clusters) {
 }
 ```
 
+As an example, the figure below shows typical locations for standing times of a New York City taxi driver (hack license BA96DE419E711691B9445D6A6307C170) derived by spatial cluster analysis of start and end points of all trips in January 2013. For details on the data set, see below.
+
+<p align="center">
+<img src="doc-files/com/bmwcarit/barefoot/analysis/dbscan-satellite.png" width="700">
+<br/>
+<a href="https://www.mapbox.com/about/maps/">&#xA9; Mapbox</a> <a href="http://www.openstreetmap.org/">&#xA9; OpenStreetMap</a> <a href="https://www.mapbox.com/map-feedback/"><b>Improve this map</b></a> <a href="https://www.digitalglobe.com/">&#xA9; DigitalGlobe</a> <a href="http://geojson.io">&#xA9; geojson.io</a>
+</p>
+
 ## License
 
 Copyright 2015 BMW Car IT GmbH
@@ -317,14 +325,6 @@ limitations under the License.
 
 - Sebastian Mattheis
 
-## Contributors
-
-- Richard Zinck (review and feedback)
-- Muthu Kumar Kumar (visualization for debugging)
-- Sahbi Chaieb (map matching evaluation)
-- Bastian Beggel (in-memory road map review and evaluation)
-- Heiko Greiner, TU Dresden (feedback and testing data for bugfixing high sampling rate map-matching)
-
 ## Dependencies
 
 #### Barefoot library
@@ -334,7 +334,7 @@ _The following dependencies are linked only dynamically in the Java source of Ba
 * ESRI Geometry API, 1.1, Apache-2.0 ([https://github.com/Esri/geometry-api-java](https://github.com/Esri/geometry-api-java))
  * Java, JSON 20090211 (see below)
  * Jackson, 1.9.12, Apache-2.0 ([https://github.com/FasterXML/jackson-core](https://github.com/FasterXML/jackson-core))
-* GeographicLib-Java, 1.43, MIT License ([http://geographiclib.sourceforge.net/](http://geographiclib.sourceforge.net/))
+* GeographicLib-Java, 1.46, MIT License ([http://geographiclib.sourceforge.net/](http://geographiclib.sourceforge.net/))
 * Java JSON, 20090211, MIT License with extra clause "The Software shall be used for Good, not Evil." ([http://www.json.org](http://www.json.org))
 * PostgreSQL JDBC, 9.2-1003-jdbc4, BSD 3-Clause ([http://jdbc.postgresql.org/about/license.html](http://jdbc.postgresql.org/about/license.html))
 * JUnit, 4.11, CPL-1.0 ([https://github.com/junit-team/junit](https://github.com/junit-team/junit))
@@ -419,13 +419,13 @@ _The following dependencies are linked only dynamically in the Python source of 
 
 ## References
 
-[1] P. Newson and J. Krumm. [Hidden Markov Map Matching Through Noise and Sparseness](http://research.microsoft.com/en-us/um/people/jckrumm/Publications%202009/map%20matching%20ACM%20GIS%20camera%20ready.pdf). In _Proceedings of International Conference on Advances in Geographic Information Systems_, 2009.
+[1] [GeographicLib](http://geographiclib.sourceforge.net/).
 
-[2] C.Y. Goh, J. Dauwels, N. Mitrovic, M.T. Asif, A. Oran, and P. Jaillet. [Online map-matching based on Hidden Markov model for real-time traffic sensing applications](http://www.mit.edu/~jaillet/general/map_matching_itsc2012-final.pdf). In _International IEEE Conference on Intelligent Transportation Systems_, 2012.
+[2] [ESRI's Geometry API](https://github.com/Esri/geometry-api-java).
 
-[3] [GeographicLib](http://geographiclib.sourceforge.net/).
+[3] P. Newson and J. Krumm. [Hidden Markov Map Matching Through Noise and Sparseness](http://research.microsoft.com/en-us/um/people/jckrumm/Publications%202009/map%20matching%20ACM%20GIS%20camera%20ready.pdf). In _Proceedings of International Conference on Advances in Geographic Information Systems_, 2009.
 
-[4] [ESRI's Geometry API](https://github.com/Esri/geometry-api-java).
+[4] C.Y. Goh, J. Dauwels, N. Mitrovic, M.T. Asif, A. Oran, and P. Jaillet. [Online map-matching based on Hidden Markov model for real-time traffic sensing applications](http://www.mit.edu/~jaillet/general/map_matching_itsc2012-final.pdf). In _International IEEE Conference on Intelligent Transportation Systems_, 2012.
 
 [5] S. Mattheis, K. Al-Zahid, B. Engelmann, A. Hildisch, S. Holder, O. Lazarevych, D. Mohr, F. Sedlmeier, and R. Zinck. [Putting the car on the map: A scalable map matching system for the Open Source Community](http://subs.emis.de/LNI/Proceedings/Proceedings232/2109.pdf). In _INFORMATIK 2014: Workshop Automotive Software Engineering_, 2014.
 

@@ -27,9 +27,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.bmwcarit.barefoot.road.BaseRoad;
-import com.bmwcarit.barefoot.road.Configuration;
 import com.bmwcarit.barefoot.road.Heading;
-import com.bmwcarit.barefoot.road.PostGISReader;
 import com.bmwcarit.barefoot.spatial.Geography;
 import com.bmwcarit.barefoot.spatial.SpatialOperator;
 import com.bmwcarit.barefoot.topology.Graph;
@@ -582,9 +580,7 @@ public class RouteTest {
     @Ignore
     @Test
     public void testGeometryBug() throws SourceException, JSONException, IOException {
-        RoadMap map = RoadMap.Load(new PostGISReader("127.0.0.1", 5432, "bayern", "bfmap_ways",
-                "osmuser", "pass", Configuration.read("./bfmap/road-types.json")));
-        map.construct();
+        RoadMap map = Testmap.instance();
 
         String json = "{\"roads\":[2675296, 3766758, 3209202, 2051292, 2815288, 2051286, 3209220, "
                 + "83452, 7820, 5272, 2815282, 3209196, 3209200, 3209192, 3455442, 3766816],"

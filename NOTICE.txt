@@ -19,7 +19,7 @@ For details, see deps/esri-geometry-api/ or https://github.com/Esri/geometry-api
   Jackson 1.9.12, which is available under a "Apache License 2.0" license.
   For details, see deps/jackson/.
 
-GeographicLib-Java 1.43, which is available under a "MIT License" license.
+GeographicLib-Java 1.46, which is available under a "MIT License" license.
 For details, see deps/geographiclib/ or http://geographiclib.sourceforge.net/.
 
 Java JSON 20090211, which is available under a "MIT License" license.

@@ -21,7 +21,7 @@ import java.util.HashSet;
 import org.json.JSONException;
 import org.junit.Test;
 
-import com.bmwcarit.barefoot.roadmap.OberbayernBenchmark;
+import com.bmwcarit.barefoot.roadmap.Testmap;
 import com.bmwcarit.barefoot.roadmap.Road;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
 
@@ -32,7 +32,7 @@ public class BfmapReaderTest {
         {
             RoadWriter writer = new BfmapWriter(
                     BfmapReaderTest.class.getResource("").getPath() + "oberbayern.bfmap.test");
-            RoadReader reader = OberbayernBenchmark.instance().reader();
+            RoadReader reader = Testmap.instance().reader();
             BaseRoad road = null;
 
             writer.open();
@@ -47,7 +47,7 @@ public class BfmapReaderTest {
         HashSet<Long> set = new HashSet<>();
 
         {
-            RoadMap map = OberbayernBenchmark.instance();
+            RoadMap map = Testmap.instance();
             RoadReader reader = new BfmapReader(
                     BfmapReaderTest.class.getResource("oberbayern.bfmap.test").getPath());
             BaseRoad road = null;
@@ -74,7 +74,7 @@ public class BfmapReaderTest {
         }
 
         {
-            RoadReader reader = OberbayernBenchmark.instance().reader();
+            RoadReader reader = Testmap.instance().reader();
             BaseRoad road = null;
 
             reader.open();

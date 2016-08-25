@@ -16,6 +16,7 @@ package com.bmwcarit.barefoot.matcher;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -41,8 +42,7 @@ public class ServerTest {
     private class Server implements Runnable {
         @Override
         public void run() {
-            ServerControl.initServer(ServerTest.class.getResource("server.properties").getPath(),
-                    ServerTest.class.getResource("oberbayern.properties").getPath(),
+            ServerControl.initServer("config/server.properties", "config/oberbayern.properties",
                     new InputFormatter(), new OutputFormatter());
             ServerControl.runServer();
         }
@@ -69,6 +69,7 @@ public class ServerTest {
                 Thread.sleep(timeout);
 
                 if (trials == 0) {
+                    client.close();
                     throw new IOException(e.getMessage());
                 } else {
                     trials -= 1;
@@ -100,12 +101,12 @@ public class ServerTest {
     }
 
     @Test
-    public void TestServer()
+    public void testServer()
             throws IOException, JSONException, InterruptedException, ParseException {
         Server server = new Server();
         InetAddress host = InetAddress.getLocalHost();
         Properties properties = new Properties();
-        properties.load(ServerTest.class.getResource("server.properties").openStream());
+        properties.load(new FileInputStream("config/server.properties"));
         int port = Integer.parseInt(properties.getProperty("server.port"));
 
         server.start();

@@ -31,15 +31,16 @@ import java.util.Set;
  */
 public class Graph<E extends AbstractEdge<E>> implements Serializable {
     private static final long serialVersionUID = 1L;
-    protected final HashMap<Long, E> edges = new HashMap<Long, E>();
+    protected final HashMap<Long, E> edges = new HashMap<>();
 
     /**
      * Adds an {@link AbstractEdge} to the graph. (Requires construction.)
      *
      * @param edge Edge to be added.
      */
-    public void add(E edge) {
+    public Graph<E> add(E edge) {
         edges.put(edge.id(), edge);
+        return this;
     }
 
     /**
@@ -81,13 +82,14 @@ public class Graph<E extends AbstractEdge<E>> implements Serializable {
 
     /**
      * Constructs the graph which means edges are connected for iteration between connections.
+     * @return
      */
-    public void construct() {
-        Map<Long, ArrayList<E>> map = new HashMap<Long, ArrayList<E>>();
+    public Graph<E> construct() {
+        Map<Long, ArrayList<E>> map = new HashMap<>();
 
         for (E edge : edges.values()) {
             if (!map.containsKey(edge.source())) {
-                map.put(edge.source(), new ArrayList<E>(Arrays.asList(edge)));
+                map.put(edge.source(), new ArrayList<>(Arrays.asList(edge)));
             } else {
                 map.get(edge.source()).add(edge);
             }
@@ -104,6 +106,8 @@ public class Graph<E extends AbstractEdge<E>> implements Serializable {
             ArrayList<E> successors = map.get(edges.get(edges.size() - 1).target());
             edges.get(edges.size() - 1).successor(successors != null ? successors.get(0) : null);
         }
+
+        return this;
     }
 
     /**
@@ -123,10 +127,10 @@ public class Graph<E extends AbstractEdge<E>> implements Serializable {
      * @return Set of (weakly) connected components.
      */
     public Set<Set<E>> components() {
-        Set<E> unvisited = new HashSet<E>(edges.values());
-        Map<E, Integer> visited = new HashMap<E, Integer>();
-        Map<Integer, Set<E>> components = new HashMap<Integer, Set<E>>();
-        Queue<E> queue = new LinkedList<E>();
+        Set<E> unvisited = new HashSet<>(edges.values());
+        Map<E, Integer> visited = new HashMap<>();
+        Map<Integer, Set<E>> components = new HashMap<>();
+        Queue<E> queue = new LinkedList<>();
 
         int componentcounter = 0;
 
@@ -137,7 +141,7 @@ public class Graph<E extends AbstractEdge<E>> implements Serializable {
 
             queue.add(edge);
 
-            Set<E> buffer = new HashSet<E>();
+            Set<E> buffer = new HashSet<>();
             int componentid = componentcounter++;
 
             while (!queue.isEmpty()) {
@@ -177,6 +181,6 @@ public class Graph<E extends AbstractEdge<E>> implements Serializable {
                 components.put(componentid, buffer);
             }
         }
-        return new HashSet<Set<E>>(components.values());
+        return new HashSet<>(components.values());
     }
 }

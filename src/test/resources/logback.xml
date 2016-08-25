@@ -20,11 +20,8 @@
 		</encoder>
 	</appender>
 	
-	<!--
-	<logger name="com.bmwcarit.barefoot.matcher.Matcher" level="TRACE">
-		<appender-ref ref="FILE" />
+	<logger name="com.bmwcarit.barefoot.tracker.TrackerServer" level="DEBUG">
 	</logger>
-	-->
 	
 	<root level="INFO">
 		<appender-ref ref="CONSOLE" />

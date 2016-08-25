@@ -44,7 +44,7 @@ public abstract class ServerControl {
      * matcher and server properties, see
      * {@link MatcherServer#MatcherServer(Properties, RoadMap, InputFormatter, OutputFormatter)}.
      * Database properties file must include database connection properties, see
-     * {@link Loader#load(Properties, boolean)}.
+     * {@link Loader#roadmap(Properties, boolean)}.
      *
      * @param pathServerProperties Path to server properties file.
      * @param pathDatabaseProperties Path to database properties file.
@@ -69,7 +69,7 @@ public abstract class ServerControl {
 
         RoadMap map = null;
         try {
-            map = Loader.load(databaseProperties, true);
+            map = Loader.roadmap(databaseProperties, true);
         } catch (SourceException e) {
             logger.error(e.getMessage());
             System.exit(1);

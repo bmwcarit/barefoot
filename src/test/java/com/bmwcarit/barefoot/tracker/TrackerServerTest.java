@@ -15,6 +15,7 @@ package com.bmwcarit.barefoot.tracker;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -45,9 +46,7 @@ public class TrackerServerTest {
     private class Server implements Runnable {
         @Override
         public void run() {
-            TrackerControl.initServer(
-                    TrackerServerTest.class.getResource("tracker.properties").getPath(),
-                    ServerTest.class.getResource("oberbayern.properties").getPath());
+            TrackerControl.initServer("config/tracker.properties", "config/oberbayern.properties");
             TrackerControl.runServer();
         }
 
@@ -74,6 +73,7 @@ public class TrackerServerTest {
 
                 if (trials == 0) {
                     logger.error(e.getMessage());
+                    client.close();
                     throw new IOException();
                 } else {
                     trials -= 1;
@@ -104,6 +104,7 @@ public class TrackerServerTest {
 
                 if (trials == 0) {
                     logger.error(e.getMessage());
+                    client.close();
                     throw new IOException();
                 } else {
                     trials -= 1;
@@ -134,7 +135,7 @@ public class TrackerServerTest {
         Server server = new Server();
         InetAddress host = InetAddress.getLocalHost();
         Properties properties = new Properties();
-        properties.load(TrackerServerTest.class.getResource("tracker.properties").openStream());
+        properties.load(new FileInputStream("config/tracker.properties"));
         int port = Integer.parseInt(properties.getProperty("server.port"));
 
         server.start();
