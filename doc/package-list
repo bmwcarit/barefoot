@@ -6,4 +6,5 @@ com.bmwcarit.barefoot.roadmap
 com.bmwcarit.barefoot.scheduler
 com.bmwcarit.barefoot.spatial
 com.bmwcarit.barefoot.topology
+com.bmwcarit.barefoot.tracker
 com.bmwcarit.barefoot.util
