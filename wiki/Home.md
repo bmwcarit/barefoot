@@ -88,7 +88,7 @@ $ sudo docker ps -a
 CONTAINER ID        IMAGE                     COMMAND                CREATED             STATUS              PORTS                      NAMES
 acef54deeedb        barefoot-map              /bin/sh -c 'service    3 minutes ago       Up 2 seconds        0.0.0.0:5432->5432/tcp     <container>
   ```
-  
+
 #### Whitebox: PostgreSQL/PostGIS
 
 _Note: A manually PostgreSQL/PostGIS database setup is no longer a supported approach for setting up map servers. The following documentation is a 'whitebox' documentation for development of Docker-based map servers._
@@ -397,7 +397,7 @@ cd util/monitor && npm install && cd ../..
   ```
   ... and start:
   ``` bash
-node util/monitor/monitor.js 127.0.0.1 1235
+node util/monitor/monitor.js 3000 127.0.0.1 1235
   ```
 
 5. Test setup with provided sample data.
@@ -409,7 +409,7 @@ SUCCESS
   ```
 
   _Note: On success, i.e. result code is SUCCESS, the tracking is visible in the browser on [http://localhost:3000](http://localhost:3000). Otherwise, result code is either TIMEOUT or ERROR._
-  
+
 <p align="center">
 <img src="https://github.com/bmwcarit/barefoot/raw/master/doc-files/com/bmwcarit/barefoot/tracker/monitor-1600x1000.gif" width="650">
 <br/>
@@ -561,7 +561,7 @@ for (MatcherCandidate cand : state.sequence()) {
 }
 ```
 Online map matching processes samples and updates state memory iteratively:
- 
+
 ``` java
 // Create initial (empty) state memory
 MatcherKState state = new MatcherKState();
@@ -574,8 +574,8 @@ for (MatcherSample sample : samples) {
     // Access map matching result: estimate for most recent sample
     MatcherCandidate estimate = state.estimate();
     System.out.println(estimate.point().edge().base().refid()); // OSM id
-} 
- 
+}
+
 ```
 
 
@@ -820,7 +820,7 @@ A radius search, given a center point (red marker), returns road segments (color
 
 Spatial cluster analysis aggregates point data to high density clusters for detecting e.g. points of interest like frequent start and end points of trips. For that purpose, Barefoot includes a DBSCAN implementation for simple density-based spatial cluster analysis, which is an unsupervised machine learning algorithm. For details, see the [wiki](https://github.com/bmwcarit/barefoot/wiki#spatial-cluster-analysis).
 
-The following code snippet shows the simple usage of the algorithm: 
+The following code snippet shows the simple usage of the algorithm:
 
 ``` java
 import com.bmwcarit.barefoot.analysis.DBSCAN;
@@ -849,4 +849,4 @@ As an example, the figure below shows typical locations for standing times of a 
 <img src="https://github.com/bmwcarit/barefoot/raw/master/doc-files/com/bmwcarit/barefoot/analysis/dbscan-satellite.png" width="700">
 <br/>
 <a href="https://www.mapbox.com/about/maps/">&#xA9; Mapbox</a> <a href="http://www.openstreetmap.org/">&#xA9; OpenStreetMap</a> <a href="https://www.mapbox.com/map-feedback/"><b>Improve this map</b></a> <a href="https://www.digitalglobe.com/">&#xA9; DigitalGlobe</a> <a href="http://geojson.io">&#xA9; geojson.io</a>
-</p> 
+</p>
