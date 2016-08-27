@@ -14,295 +14,292 @@ language governing permissions and limitations under the License.
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Barefoot Monitor</title>
-	<style type="text/css">
-		html, body, #map {
-			width: 100%;
-			height: 100%;
-			margin: 0;
-			font-family: Arial, Helvetica, sans-serif;
-		}
-    </style>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ol3/3.7.0/ol.css">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/ol3/3.7.0/ol.js"></script>
-	<script src="/socket.io/socket.io.js"></script>
+<title>Barefoot Monitor</title>
+<style type="text/css">
+html, body, #map {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	font-family: Arial, Helvetica, sans-serif;
+}
+</style>
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/ol3/3.7.0/ol.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ol3/3.7.0/ol.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <div id="map" class="map"></div>
+	<div id="map" class="map"></div>
 	<script>
 		var formatter = new ol.format.WKT();
-        var objects = new ol.source.Vector();
-        var route = new ol.source.Vector();
-        var candidates = new ol.source.Vector();
-        
+		var objects = new ol.source.Vector();
+		var route = new ol.source.Vector();
+		var candidates = new ol.source.Vector();
+
 		var map = new ol.Map({
-			layers: [
-				new ol.layer.Tile({
-					title: 'Mapnik',
-					type: 'base',
-					visible: true,
-					source: new ol.source.OSM()
-				}),
-                new ol.layer.Vector({
-			        title: 'Focus',
-			        visible: true,
-			        source: candidates,
-			        opacity: 1.0,
-                    style: new ol.style.Style({
-                        image: new ol.style.Circle({
-                            stroke: new ol.style.Stroke({
-					            color: 'white',
-					            width: 2
-				            }),
-				            fill: new ol.style.Fill({
-					            color: 'forestgreen'
-				            }),
-                            radius: 8
-                        })
-			        })
-		        }),
-                new ol.layer.Vector({
-			        title: 'Route',
-			        visible: true,
-			        source: route,
-                    opacity: 0.6,
-                    style: new ol.style.Style({
-                        stroke: new ol.style.Stroke({
-				            color: 'red',
-				            width: 6
-			            })
-			        })
-		        }),
-                new ol.layer.Vector({
-			        title: 'Objects',
-			        visible: true,
-			        source: objects,
-                    opacity: 0.6,
-                    style: new ol.style.Style({
-                        image: new ol.style.Circle({
-                            stroke: new ol.style.Stroke({
-					            color: 'white',
-					            width: 2
-				            }),
-				            fill: new ol.style.Fill({
-					            color: 'red'
-				            }),
-                            radius: 8
-                        })
-			        })
-		        })
-			],
-			target: 'map',
-			view: new ol.View({
-				center: [1163030.75153, 6650243.90794],
-				zoom: 5
+			layers : [ new ol.layer.Tile({
+				title : 'Mapnik',
+				type : 'base',
+				visible : true,
+				source : new ol.source.OSM()
+			}), new ol.layer.Vector({
+				title : 'Focus',
+				visible : true,
+				source : candidates,
+				opacity : 1.0,
+				style : new ol.style.Style({
+					image : new ol.style.Circle({
+						stroke : new ol.style.Stroke({
+							color : 'white',
+							width : 2
+						}),
+						fill : new ol.style.Fill({
+							color : 'forestgreen'
+						}),
+						radius : 8
+					})
+				})
+			}), new ol.layer.Vector({
+				title : 'Route',
+				visible : true,
+				source : route,
+				opacity : 0.6,
+				style : new ol.style.Style({
+					stroke : new ol.style.Stroke({
+						color : 'red',
+						width : 6
+					})
+				})
+			}), new ol.layer.Vector({
+				title : 'Objects',
+				visible : true,
+				source : objects,
+				opacity : 0.6,
+				style : new ol.style.Style({
+					image : new ol.style.Circle({
+						stroke : new ol.style.Stroke({
+							color : 'white',
+							width : 2
+						}),
+						fill : new ol.style.Fill({
+							color : 'red'
+						}),
+						radius : 8
+					})
+				})
+			}) ],
+			target : 'map',
+			view : new ol.View({
+				center : [ 1163030.75153, 6650243.90794 ],
+				zoom : 5
 			})
 		});
-		
-        /**
-         * Shows/updates route of object's state.
-         */
+
+		/**
+		 * Shows/updates route of object's state.
+		 */
 		function showRoute(state) {
 			console.log('show/update route of ' + state.id);
 			route.clear();
 			if (state.route == undefined) {
-                var geometry = formatter.readGeometry(state.point, {
-                    dataProjection: 'EPSG:4326',
-                    featureProjection: 'EPSG:3857'
-                });
-            } else {
-            	var geometry = formatter.readGeometry(state.route, {
-                    dataProjection: 'EPSG:4326',
-                    featureProjection: 'EPSG:3857'
-                });
-            }
-            var feature = new ol.Feature({
-                geometry: geometry
-            });
-            feature.setId(state.id);
-            feature.state = state;
-            route.addFeature(feature);
+				var geometry = formatter.readGeometry(state.point, {
+					dataProjection : 'EPSG:4326',
+					featureProjection : 'EPSG:3857'
+				});
+			} else {
+				var geometry = formatter.readGeometry(state.route, {
+					dataProjection : 'EPSG:4326',
+					featureProjection : 'EPSG:3857'
+				});
+			}
+			var feature = new ol.Feature({
+				geometry : geometry
+			});
+			feature.setId(state.id);
+			feature.state = state;
+			route.addFeature(feature);
 		}
-		
-        /**
-         * Removes route of object's state.
-         */
+
+		/**
+		 * Removes route of object's state.
+		 */
 		function unshowRoute() {
 			route.clear();
 		}
-		
-		var mouse = new ol.interaction.Select({
-            condition: ol.events.condition.pointerMove,
-            filter: function(feature, layer) {
-            	if (layer.getSource() == objects) {
-            		return true;
-            	} else {
-            		return false;
-            	}
-            }
-        });
-		
-		mouse.on('select', function(event) {
-            if (event.selected.length > 0) {
-                showRoute(event.selected[0].state);
-            } else {
-            	unshowRoute();
-            }
-            mouse.getFeatures().clear();
-        });
-        
-        var focus = null;
 
-        /**
-         * Sets/updates focus to object's state.
-         */
+		var mouse = new ol.interaction.Select({
+			condition : ol.events.condition.pointerMove,
+			filter : function(feature, layer) {
+				if (layer.getSource() == objects) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		});
+
+		mouse.on('select', function(event) {
+			if (event.selected.length > 0) {
+				showRoute(event.selected[0].state);
+			} else {
+				unshowRoute();
+			}
+			mouse.getFeatures().clear();
+		});
+
+		var focus = null;
+
+		/**
+		 * Sets/updates focus to object's state.
+		 */
 		function showFocus(state) {
 			focus = state;
 			feature = objects.getFeatureById(focus.id)
-			
+
 			if (feature == null) {
 				return;
 			}
-            console.log('set/update focus to ' + focus.id);
-            
+			console.log('set/update focus to ' + focus.id);
+
 			map.getView().setCenter(feature.getGeometry().getCoordinates());
 			candidates.clear();
-			
-			for (var i in focus.candidates) {
+
+			for ( var i in focus.candidates) {
 				var candidate = focus.candidates[i];
 				if (candidate.prob > 0.01) {
 					var prob = Math.log10((candidate.prob * 9) + 1);
-                    var routecolor = [34,139,34,prob];
-                    if (focus.point != candidate.point) {
-					    var pointcolor = routecolor;
-                    } else {
-                        var pointcolor = [255,0,0,prob];
-                    }
+					var routecolor = [ 34, 139, 34, prob ];
+					if (focus.point != candidate.point) {
+						var pointcolor = routecolor;
+					} else {
+						var pointcolor = [ 255, 0, 0, prob ];
+					}
 
-                    var point = new ol.Feature({
-					    geometry: formatter.readGeometry(candidate.point, {
-	                        dataProjection: 'EPSG:4326',
-	                        featureProjection: 'EPSG:3857'
-	                    })
-				    });
-				    point.setStyle(new ol.style.Style({
-					    image: new ol.style.Circle({
-                            stroke: new ol.style.Stroke({
-				                color: 'white',
-				                width: 2
-			                }),
-			                fill: new ol.style.Fill({
-				                color: pointcolor
-			                }),
-                            radius: 8
-                        })
-				    }));
-				    candidates.addFeature(point);
-					
+					var point = new ol.Feature({
+						geometry : formatter.readGeometry(candidate.point, {
+							dataProjection : 'EPSG:4326',
+							featureProjection : 'EPSG:3857'
+						})
+					});
+					point.setStyle(new ol.style.Style({
+						image : new ol.style.Circle({
+							stroke : new ol.style.Stroke({
+								color : 'white',
+								width : 2
+							}),
+							fill : new ol.style.Fill({
+								color : pointcolor
+							}),
+							radius : 8
+						})
+					}));
+					candidates.addFeature(point);
+
 					if (candidate.route != undefined) {
 						var route = new ol.Feature({
-							geometry: formatter.readGeometry(candidate.route, {
-			                    dataProjection: 'EPSG:4326',
-			                    featureProjection: 'EPSG:3857'
-			                })
-		                });
-		                route.setStyle(new ol.style.Style({
-			                stroke: new ol.style.Stroke({
-					            color: routecolor,
-					            width: 6
-				            })
+							geometry : formatter.readGeometry(candidate.route,
+									{
+										dataProjection : 'EPSG:4326',
+										featureProjection : 'EPSG:3857'
+									})
+						});
+						route.setStyle(new ol.style.Style({
+							stroke : new ol.style.Stroke({
+								color : routecolor,
+								width : 6
+							})
 						}));
 						candidates.addFeature(route);
 					}
 				}
 			}
 		}
-		
-        /**
-         * Remove focus of object's state.
-         */
+
+		/**
+		 * Remove focus of object's state.
+		 */
 		function unshowFocus() {
 			if (focus == null) {
 				return;
 			}
 			object = objects.getFeatureById(focus.id)
 			if (object != null) {
-            	object.display = 'block';
-            }
+				object.display = 'block';
+			}
 			focus = null;
 			candidates.clear();
 		}
 
-        var click = new ol.interaction.Select({
-            filter: function(feature, layer) {
-            	if (layer.getSource() == objects) {
-            		return true;
-            	} else if (layer.getSource() == route) {
-                    if (feature.state != undefined) {
-                        return true;
-                    } else {
-                        return false
-                    }
-                } else {
-                    console.log(JSON.stringify(feature));
-            		return false;
-            	}
-            }
-        });
+		var click = new ol.interaction.Select({
+			filter : function(feature, layer) {
+				if (layer.getSource() == objects) {
+					return true;
+				} else if (layer.getSource() == route) {
+					if (feature.state != undefined) {
+						return true;
+					} else {
+						return false
+					}
+				} else {
+					console.log(JSON.stringify(feature));
+					return false;
+				}
+			}
+		});
 
-        click.on('select', function(event) {
-            if (event.selected.length > 0) {
-                showFocus(event.selected[0].state);
-                map.getView().setZoom(18);
-            } else {
-             	unshowFocus();
-            }
-            click.getFeatures().clear();
-            unshowRoute();
-        });
-        
-        map.addInteraction(mouse);
-        map.addInteraction(click);
-		
-        var socket = io();
+		click.on('select', function(event) {
+			if (event.selected.length > 0) {
+				showFocus(event.selected[0].state);
+				map.getView().setZoom(18);
+			} else {
+				unshowFocus();
+			}
+			click.getFeatures().clear();
+			unshowRoute();
+		});
+
+		map.addInteraction(mouse);
+		map.addInteraction(click);
+
+		var socket = io();
 
 		socket.on('message', function(update) {
-            var object = objects.getFeatureById(update.id);
+			var object = objects.getFeatureById(update.id);
 
-            if (!('point' in update)) {
-                console.log('delete object ' + update.id);
+			if (!('point' in update)) {
+				console.log('delete object ' + update.id);
 
-                if (object != undefined) {
-                    objects.removeFeature(object);
-                }
-            } else {
-                var geometry = formatter.readGeometry(update.point, {
-                    dataProjection: 'EPSG:4326',
-                    featureProjection: 'EPSG:3857'
-                });
+				if (object != undefined) {
+					objects.removeFeature(object);
+				}
+			} else {
+				var geometry = formatter.readGeometry(update.point, {
+					dataProjection : 'EPSG:4326',
+					featureProjection : 'EPSG:3857'
+				});
 
-                if (object == undefined) {
-                    console.log('insert object ' + update.id);
-                    var feature = new ol.Feature({
-                        geometry: geometry
-                    });
-                    feature.setId(update.id);
-                    feature.state = update;
-                    objects.addFeature(feature);
-                } else {
-                    console.log('update object ' + update.id);
-                    object.state = update;
-                    object.setGeometry(geometry);
-                    
-                    if (route.getFeatureById(update.id) != undefined) {
-                    	showRoute(update);
-                    }
+				if (object == undefined) {
+					console.log('insert object ' + update.id);
+					var feature = new ol.Feature({
+						geometry : geometry
+					});
+					feature.setId(update.id);
+					feature.state = update;
+					objects.addFeature(feature);
+				} else {
+					console.log('update object ' + update.id);
+					object.state = update;
+					object.setGeometry(geometry);
 
-                    if (focus != null && focus.id == update.id) {
-                        showFocus(update);
-                    }
-                }
-            }
+					if (route.getFeatureById(update.id) != undefined) {
+						showRoute(update);
+					}
+
+					if (focus != null && focus.id == update.id) {
+						showFocus(update);
+					}
+				}
+			}
 		});
 	</script>
 </body>

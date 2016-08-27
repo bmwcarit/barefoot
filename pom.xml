@@ -28,13 +28,13 @@
 				</configuration>
 				<executions>
 					<execution>
-						<id>barefoot-server</id>
+						<id>barefoot-matcher</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
 						</goals>
 						<configuration>
-							<finalName>${project.build.finalName}-server</finalName>
+							<finalName>${project.build.finalName}-matcher</finalName>
 							<archive>
 								<manifest>
 									<mainClass>com.bmwcarit.barefoot.matcher.ServerControl</mainClass>
@@ -65,7 +65,7 @@
 				<version>2.10.1</version>
 				<configuration>
 					<reportOutputDirectory>${project.basedir}</reportOutputDirectory>
-					<destDir>doc</destDir>
+					<destDir>doc/${project.version}</destDir>
 				</configuration>
 			</plugin>
 			<plugin>

@@ -196,7 +196,7 @@ mvn install -DskipTests
 <dependency>
 		<groupId>com.bmw-carit</groupId>
 		<artifactId>barefoot</artifactId>
-		<version>0.1.0</version>
+		<version>VERSION</version>
 </dependency>
   ```
 
@@ -311,7 +311,7 @@ mvn package
 3. Start server with standard configuration for map server and map matching, and option for GeoJSON output format.
 
   ``` bash
-java -jar target/barefoot-0.1.0-jar-with-dependencies.jar [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties
+java -jar target/barefoot-<VERSION>-matcher-jar-with-dependencies.jar [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties
   ```
 
   _Note: Stop server with Ctrl-c._
@@ -384,7 +384,7 @@ mvn package
 3. Start tracker with standard configuration for map server, map matching, and tracking.
 
   ``` bash
-java -jar target/barefoot-0.1.0-tracker-jar-with-dependencies.jar config/tracker.properties config/oberbayern.properties
+java -jar target/barefoot-<VERSION>-tracker-jar-with-dependencies.jar config/tracker.properties config/oberbayern.properties
   ```
 
   _Note: Stop server with Ctrl-c._
