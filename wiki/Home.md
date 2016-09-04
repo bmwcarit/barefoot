@@ -346,7 +346,7 @@ A map matching request is a text message with a JSON array of JSON objects in th
   - `id` is user-specific identifier and has no further meaning for map matching or the server.
   - `time` is a timestamp in milliseconds unix epoch time.
   - `point` is a position (measurement) in WKT (well-known-text) format and with WGS-84 projection (SRID 4326). (In other words, this may be any GPS position in WKT format.)
-  - `heading` is (optional) heading information of the object given as azimuth in degrees from north clockwise.
+  - `azimuth` is (optional) heading information of the object given as azimuth in degrees from north clockwise.
 
 ##### Response message formats
 
@@ -435,7 +435,7 @@ A position update is a text message with a JSON object of the following form:
   - `id` is user-specific identifier and has no further meaning for map matching or the server.
   - `time` is a timestamp in milliseconds unix epoch time.
   - `point` is a position (measurement) in WKT (well-known-text) format and with WGS-84 projection (SRID 4326). (In other words, this may be any GPS position in WKT format.)
-  - `heading` is (optional) heading information of the object given as azimuth in degrees from north clockwise.
+  - `azimuth` is (optional) heading information of the object given as azimuth in degrees from north clockwise.
 
 
 ### Parameters
