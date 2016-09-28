@@ -142,6 +142,7 @@ public class PostGISReader extends PostgresSource implements RoadReader {
                 long osmId = Long.parseLong(result_set.getString(2));
                 short classId = Short.parseShort(result_set.getString(3));
                 if (!config.containsKey(classId)) {
+                	logger.warn("Unknown class id {} found", classId);
                     continue;
                 }
                 long source = Long.parseLong(result_set.getString(4));
