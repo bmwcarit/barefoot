@@ -160,7 +160,7 @@ public class Road extends AbstractEdge<Road> {
      */
     public static Road fromJSON(JSONObject json, RoadMap map) throws JSONException {
         long baseid = json.getLong("road");
-        Road road = map.get(Heading.valueOf(json.getString("heading")) == Heading.forward
+        Road road = map.get(Heading.valueOf(json.get("heading").toString()) == Heading.forward
                 ? baseid * 2 : baseid * 2 + 1);
         if (road == null) {
             throw new JSONException("road id " + json.getLong("road") + " not found");
