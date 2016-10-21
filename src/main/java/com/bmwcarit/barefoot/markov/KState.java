@@ -42,6 +42,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
     private final long t;
     private final LinkedList<Tuple<Set<C>, S>> sequence;
     private final Map<C, Integer> counters;
+    private List<C> candidateStorage;    
 
     /**
      * Creates empty {@link KState} object with default parameters, i.e. capacity is unbounded.
@@ -131,6 +132,14 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
         this.sequence = new LinkedList<>();
         this.counters = new HashMap<>();
     }
+    
+    /**
+     * Sets the candidate store and activates truncation of the matching sequence
+     * @param List<C> ArrayList<C> for the candidate storage
+     */
+    public void setCandidateStorage (List<C> candidateStorage) {
+    	this.candidateStorage = candidateStorage;
+    }
 
     @Override
     public boolean isEmpty() {
@@ -218,18 +227,46 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
 
         sequence.add(new Tuple<>(vector, sample));
 
-        while ((t > 0 && sample.time() - sequence.peekFirst().two().time() > t)
-                || (k >= 0 && sequence.size() > k + 1)) {
-            Set<C> deletes = sequence.removeFirst().one();
-            for (C candidate : deletes) {
-                counters.remove(candidate);
-            }
+        // move stable candidate to the candidate storage, if the storage is set
+		if (candidateStorage != null) {
 
-            for (C candidate : sequence.peekFirst().one()) {
-                candidate.predecessor(null);
-            }
-        }
+			// find the first n sequence elements with an vector length of 1, means they are stable
+			int stableCount = 0;
+			for (Tuple<Set<C>, S> t : sequence) {
+				if (t.one().size() > 1) {
+					break;
+				}
+				stableCount++;
+			}
 
+			// delete all but one stable candidates (the last is kept as an fix point for further matching
+			for (int i=0; i<stableCount-1; i++) {
+				Set<C> deletes = sequence.removeFirst().one();
+				for (C candidate : deletes) {
+					candidateStorage.add(candidate);
+					counters.remove(candidate);
+				}
+
+				for (C candidate : sequence.peekFirst().one()) {
+					candidate.predecessor(null);
+				}
+			}
+		}
+		else {
+			// deletion of candidates,that are to old (t) or sequence is to long (k)
+			while ((t > 0 && sample.time() - sequence.peekFirst().two().time() > t)
+					|| (k >= 0 && sequence.size() > k + 1)) {
+				Set<C> deletes = sequence.removeFirst().one();
+				for (C candidate : deletes) {
+					counters.remove(candidate);
+				}
+
+				for (C candidate : sequence.peekFirst().one()) {
+					candidate.predecessor(null);
+				}
+			}
+		}
+		
         assert (k < 0 || sequence.size() <= k + 1);
     }
 
