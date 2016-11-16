@@ -147,8 +147,7 @@ public class PostGISReader extends PostgresSource implements RoadReader {
                 }
                 long source = Long.parseLong(result_set.getString(4));
                 long target = Long.parseLong(result_set.getString(5));
-                // double length = Double.parseDouble(result_set.getString(6)) *
-                // 1000;
+
                 double reverse = Double.parseDouble(result_set.getString(7)) * 1000;
                 int maxspeedForward = result_set.getObject(8) == null ? config.get(classId).two()
                         : Integer.parseInt(result_set.getString(8));
@@ -160,7 +159,12 @@ public class PostGISReader extends PostgresSource implements RoadReader {
                 Polyline geometry = (Polyline) OperatorImportFromWkb.local().execute(
                         WkbImportFlags.wkbImportDefaults, Type.Polyline, ByteBuffer.wrap(wkb),
                         null);
-                float length = (float) spatial.length(geometry);
+                
+                float length;
+                if (result_set.getString(6).equals("1"))
+                	length = (float) spatial.length(geometry);
+                else
+                	length = Float.parseFloat(result_set.getString(6));
 
                 road = new BaseRoad(gid, source, target, osmId, reverse >= 0 ? false : true,
                         classId, priority, maxspeedForward, maxspeedBackward, length, wkb);
