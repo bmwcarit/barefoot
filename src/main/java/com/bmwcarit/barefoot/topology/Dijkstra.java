@@ -122,7 +122,7 @@ public class Dijkstra<E extends AbstractEdge<E>, P extends Point<E>> implements 
             logger.trace("initialize target {} with edge {} and fraction {}", target,
                     target.edge().id(), target.fraction());
 
-            if (!targetEdges.containsKey(target)) {
+            if (!targetEdges.containsKey(target.edge())) {
                 targetEdges.put(target.edge(), new HashSet<>(Arrays.asList(target)));
             } else {
                 targetEdges.get(target.edge()).add(target);

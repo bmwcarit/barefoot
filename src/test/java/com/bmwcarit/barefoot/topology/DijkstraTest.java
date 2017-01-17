@@ -373,6 +373,40 @@ public class DijkstraTest {
 
                 assertNull(route);
             }
+            {
+                // (0.7, 100) + 50 + 100 + (0.1, 200) = 240
+                // (0.7, 100) + 50 + 100 + (0.8, 200) = 380
+
+                Set<Point<Road>> sources = new HashSet<>();
+                sources.add(new Point<>(map.get(0), 0.3));
+                sources.add(new Point<>(map.get(1), 0.7));
+
+                Set<Point<Road>> targets = new HashSet<>();
+                targets.add(new Point<>(map.get(14), 0.1));
+                targets.add(new Point<>(map.get(14), 0.8));
+
+                Map<Point<Road>, Tuple<Point<Road>, List<Road>>> routes =
+                        router.route(sources, targets, new Weight(), null, null);
+
+                Map<Long, List<Long>> paths = new HashMap<>();
+                paths.put(14L, new LinkedList<>(Arrays.asList(0L, 4L, 8L, 14L)));
+
+                assertEquals(2, routes.size());
+
+                for (Entry<Point<Road>, Tuple<Point<Road>, List<Road>>> pair : routes.entrySet()) {
+                    List<Road> route = pair.getValue().two();
+                    List<Long> path = paths.get(pair.getKey().edge().id());
+
+                    assertNotNull(route);
+                    assertEquals(path.get(0).longValue(), pair.getValue().one().edge().id());
+                    assertEquals(path.size(), route.size());
+
+                    int i = 0;
+                    for (Road road : route) {
+                        assertEquals((long) path.get(i++), road.id());
+                    }
+                }
+            }
         }
     }
 }
