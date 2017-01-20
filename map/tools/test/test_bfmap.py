@@ -149,8 +149,9 @@ class TestBfmap(unittest.TestCase):
         self.assertEquals(30, bwd)
 
     def test_ways2bfmap(self):
-        properties = dict(line.strip().split('=')
-                          for line in open('/mnt/map/tools/test/test.properties'))
+        from os.path import join, dirname, abspath
+        prop_file = join(dirname(abspath(__file__)), 'test.properties')
+        properties = dict(line.strip().split('=') for line in open(prop_file))
         bfmap.schema("localhost", 5432, properties[
                      "database"], "bfmap_ways", properties["user"], properties["password"], False)
         config = bfmap.config(properties["config"])
