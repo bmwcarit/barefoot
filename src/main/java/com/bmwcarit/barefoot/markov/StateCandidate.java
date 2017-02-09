@@ -32,6 +32,7 @@ public class StateCandidate<C extends StateCandidate<C, T, S>, T extends StateTr
     private T transition = null;
     private double seqprob = 0d;
     private double filtprob = 0d;
+    private long time = 0L;
 
     /**
      * Creates a {@link StateCandidate} object and generates a random UUID.
@@ -66,6 +67,7 @@ public class StateCandidate<C extends StateCandidate<C, T, S>, T extends StateTr
         // This does not handle infinite values.
         filtprob = json.getDouble("filtprob");
         seqprob = json.getDouble("seqprob");
+        time = (factory.sample(json).time());
     }
 
     /**
@@ -167,6 +169,25 @@ public class StateCandidate<C extends StateCandidate<C, T, S>, T extends StateTr
         if (transition != null) {
             json.put("transition", transition().toJSON());
         }
+        json.put("time", time);
         return json;
     }
+
+    /**
+     * Gets time of sample for state candidate.
+     *
+     * @return time of point.
+     */
+	public long time() {
+		return time;
+	}
+
+	 /**
+     * Sets time of the state candidate.
+     *
+     * @param time of point from sample.
+     */
+	public void time(long time) {
+		this.time = time;
+	}
 }

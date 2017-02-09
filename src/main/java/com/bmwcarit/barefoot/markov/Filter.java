@@ -196,7 +196,7 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
                 if (candidate_.filtprob() == 0) {
                     continue;
                 }
-
+                candidate_.time(sample.time());
                 candidate_.filtprob(candidate_.filtprob() * candidate.two());
                 result.add(candidate_);
 
@@ -217,6 +217,7 @@ public abstract class Filter<C extends StateCandidate<C, T, S>, T extends StateT
                 normsum += candidate.two();
                 candidate_.filtprob(candidate.two());
                 candidate_.seqprob(Math.log10(candidate.two()));
+                candidate_.time(sample.time());
                 result.add(candidate_);
 
                 if (logger.isTraceEnabled()) {
