@@ -87,7 +87,7 @@ public class Loader {
         if (database == null) {
             throw new SourceException("could not read database properties");
         }
-        String pathDatabase = properties.getProperty("database.dir");
+        String pathDatabase = properties.getProperty("database.dir", "");
 
         File file = new File(Paths.get(pathDatabase, database) + ".bfmap");
         RoadMap map = null;
