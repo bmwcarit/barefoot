@@ -388,6 +388,11 @@ java -jar target/barefoot-<VERSION>-tracker-jar-with-dependencies.jar config/tra
   ```
 
   _Note: Stop server with Ctrl-c._
+  
+  _Note: Java string conversation of floating numbers depends on system localization, which can lead to a wrong output of Tracker Server. Add in this case additional arguments to Java runtime call:_
+  ``` bash
+  -Duser.language=en -Duser.country=US
+  ```
 
 4. Install and start monitor (NodeJS server).
 
