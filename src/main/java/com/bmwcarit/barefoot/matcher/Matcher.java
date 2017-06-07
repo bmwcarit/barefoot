@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.bmwcarit.barefoot.markov.Filter;
 import com.bmwcarit.barefoot.markov.KState;
+import com.bmwcarit.barefoot.road.Heading;
 import com.bmwcarit.barefoot.roadmap.Distance;
 import com.bmwcarit.barefoot.roadmap.Road;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
@@ -178,23 +179,26 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         for (RoadPoint point : points) {
             map.put(point.edge().id(), point);
         }
-
         for (MatcherCandidate predecessor : predecessors) {
             RoadPoint point = map.get(predecessor.point().edge().id());
-            if (point != null && point.fraction() < predecessor.point().fraction()) {
+            if (point != null && point.edge() != null
+                    && spatial.distance(point.geometry(),
+                            predecessor.point().geometry()) < getSigma()
+                    && ((point.edge().heading() == Heading.forward
+                            && point.fraction() < predecessor.point().fraction())
+                            || (point.edge().heading() == Heading.backward
+                                    && point.fraction() > predecessor.point().fraction()))) {
                 points.remove(point);
                 points.add(predecessor.point());
             }
         }
 
-        Set<Tuple<MatcherCandidate, Double>> candidates =
-                new HashSet<>();
-
+        Set<Tuple<MatcherCandidate, Double>> candidates = new HashSet<>();
         logger.debug("{} ({}) candidates", points.size(), points_.size());
 
         for (RoadPoint point : points) {
             double dz = spatial.distance(sample.point(), point.geometry());
-            double emission = 1 / sqrt_2pi_sig2 * Math.exp((-1) * dz / (2 * sig2));
+            double emission = 1 / sqrt_2pi_sig2 * Math.exp((-1) * dz * dz / (2 * sig2));
             if (!Double.isNaN(sample.azimuth())) {
                 double da = sample.azimuth() > point.azimuth()
                         ? Math.min(sample.azimuth() - point.azimuth(),
@@ -203,7 +207,6 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
                                 360 - (point.azimuth() - sample.azimuth()));
                 emission *= Math.max(1E-2, 1 / sqrt_2pi_sigA * Math.exp((-1) * da / (2 * sigA)));
             }
-
 
             MatcherCandidate candidate = new MatcherCandidate(point);
             candidates.add(new Tuple<>(candidate, emission));
@@ -256,8 +259,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
             scheduler.spawn(new Task() {
                 @Override
                 public void run() {
-                    Map<MatcherCandidate, Tuple<MatcherTransition, Double>> map =
-                            new HashMap<>();
+                    Map<MatcherCandidate, Tuple<MatcherTransition, Double>> map = new HashMap<>();
                     Stopwatch sw = new Stopwatch();
                     sw.start();
                     Map<RoadPoint, List<Road>> routes =
@@ -288,8 +290,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
                         double transition = (1 / beta) * Math.exp(
                                 (-1.0) * Math.max(0, route.cost(new TimePriority()) - base) / beta);
 
-                        map.put(candidate, new Tuple<>(
-                                new MatcherTransition(route), transition));
+                        map.put(candidate, new Tuple<>(new MatcherTransition(route), transition));
 
                         logger.trace("{} -> {} {} {} {}", predecessor.id(), candidate.id(), base,
                                 route.length(), transition);

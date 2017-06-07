@@ -123,7 +123,7 @@ public class MatcherTest {
         double l = spatial.distance(i, sample);
         double sig2 = Math.pow(5d, 2);
         double sqrt_2pi_sig2 = Math.sqrt(2d * Math.PI * sig2);
-        double p = 1 / sqrt_2pi_sig2 * Math.exp((-1) * l / (2 * sig2));
+        double p = 1 / sqrt_2pi_sig2 * Math.exp((-1) * l * l / (2 * sig2));
 
         assertEquals(f, candidate.one().point().fraction(), 10E-6);
         assertEquals(p, candidate.two(), 10E-6);
