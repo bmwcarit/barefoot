@@ -187,6 +187,9 @@ public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, M
 
         JSONArray candidates = new JSONArray();
         for (MatcherCandidate candidate : vector()) {
+        	if (candidate.filtprob() < 0.1)
+        		continue;
+        	
             JSONObject jsoncandidate = new JSONObject();
             jsoncandidate.put("point", GeometryEngine.geometryToWkt(candidate.point().geometry(),
                     WktExportFlags.wktExportPoint));

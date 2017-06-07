@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -86,8 +87,9 @@ public class Loader {
         if (database == null) {
             throw new SourceException("could not read database properties");
         }
+        String pathDatabase = properties.getProperty("database.dir", "");
 
-        File file = new File(database + ".bfmap");
+        File file = new File(Paths.get(pathDatabase, database) + ".bfmap");
         RoadMap map = null;
 
         if (!file.exists() || !buffer) {
