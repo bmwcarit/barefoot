@@ -234,15 +234,18 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
     }
 
     protected void remove(C candidate, int index) {
-        Set<C> vector = sequence.get(index).one();
-        counters.remove(candidate);
-        vector.remove(candidate);
-
-        C predecessor = candidate.predecessor();
-        if (predecessor != null) {
-            counters.put(predecessor, counters.get(predecessor) - 1);
-            if (counters.get(predecessor) == 0) {
-                remove(predecessor, index - 1);
+        while (candidate != null) {
+            Set<C> vector = sequence.get(index).one();
+            counters.remove(candidate);
+            vector.remove(candidate);
+            candidate = candidate.predecessor();
+            if (candidate != null) {
+                counters.put(candidate, counters.get(candidate) - 1);
+                if (counters.get(candidate) == 0) {
+                    index -= 1;
+                } else {
+                    candidate = null;
+                }
             }
         }
     }
