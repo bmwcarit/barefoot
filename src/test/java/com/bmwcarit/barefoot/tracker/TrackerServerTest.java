@@ -61,8 +61,8 @@ public class TrackerServerTest {
 
     public void sendSample(InetAddress host, int port, JSONObject sample)
             throws InterruptedException, IOException {
-        int trials = 120;
-        int timeout = 500;
+        int trials = 300;
+        int timeout = 1000;
         Socket client = null;
 
         while (client == null || !client.isConnected()) {
@@ -73,8 +73,10 @@ public class TrackerServerTest {
 
                 if (trials == 0) {
                     logger.error(e.getMessage());
-                    client.close();
-                    throw new IOException();
+                    if (client != null) {
+                        client.close();
+                    }
+                    throw new IOException(e.getMessage());
                 } else {
                     trials -= 1;
                 }
@@ -92,8 +94,8 @@ public class TrackerServerTest {
 
     public MatcherKState requestState(InetAddress host, int port, String id)
             throws JSONException, InterruptedException, IOException {
-        int trials = 120;
-        int timeout = 500;
+        int trials = 300;
+        int timeout = 1000;
         Socket client = null;
 
         while (client == null || !client.isConnected()) {
@@ -104,8 +106,10 @@ public class TrackerServerTest {
 
                 if (trials == 0) {
                     logger.error(e.getMessage());
-                    client.close();
-                    throw new IOException();
+                    if (client != null) {
+                        client.close();
+                    }
+                    throw new IOException(e.getMessage());
                 } else {
                     trials -= 1;
                 }

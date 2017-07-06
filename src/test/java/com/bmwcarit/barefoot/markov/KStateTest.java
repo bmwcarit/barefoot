@@ -252,6 +252,22 @@ public class KStateTest {
     }
 
     @Test
+    public void TestKStateRemoveLongSequence() {
+        // KState remove code was originally recursive, but this could cause a
+        // stack overflow.  This tests that removing a long sequence succeeds 
+        // without causing an exception.
+        KState<MockElem, StateTransition, Sample> state = new KState<>(-1, -1);
+        MockElem candidate = null;
+        int i = 0;
+        for (i = 0; i < 10000; ++i) {
+            candidate = new MockElem(i, Math.log10(0.3), 0.3, candidate);
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(candidate));
+            state.update(vector, new Sample(i));
+        }
+        state.remove(candidate, i - 1);
+    }
+
+    @Test
     public void TestTState() {
         Map<Integer, MockElem> elements = new HashMap<>();
         elements.put(0, new MockElem(0, Math.log10(0.3), 0.3, null));

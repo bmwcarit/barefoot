@@ -58,8 +58,8 @@ public class ServerTest {
 
     private void sendRequest(InetAddress host, int port, JSONArray samples)
             throws InterruptedException, IOException, JSONException {
-        int trials = 120;
-        int timeout = 500;
+        int trials = 300;
+        int timeout = 1000;
         Socket client = null;
 
         while (client == null || !client.isConnected()) {
@@ -69,7 +69,9 @@ public class ServerTest {
                 Thread.sleep(timeout);
 
                 if (trials == 0) {
-                    client.close();
+                    if (client != null) {
+                        client.close();
+                    }
                     throw new IOException(e.getMessage());
                 } else {
                     trials -= 1;
