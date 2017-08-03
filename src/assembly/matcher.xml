@@ -6,12 +6,7 @@
         <format>jar</format>
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
-    <dependencySets>
-        <dependencySet>
-            <outputDirectory>/</outputDirectory>
-            <useProjectArtifact>true</useProjectArtifact>
-            <unpack>true</unpack>
-            <scope>runtime</scope>
-        </dependencySet>
-    </dependencySets>
+    <componentDescriptors>
+        <componentDescriptor>src/assembly/with-dependencies.xml</componentDescriptor>
+    </componentDescriptors>
 </assembly>
