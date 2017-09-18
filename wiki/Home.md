@@ -112,24 +112,23 @@ psql -h <host> -p <port> -U <user> -d <database> -c "CREATE EXTENSION hstore;"
   ```
 
 3. Import the OSM data.
-
-  1. Download and set up OSM database schema.
+    1. Download and set up OSM database schema.
 
     ``` bash
     psql -h <host> -p <port> -U <user> -d <database> -f map/osm/pgsnapshot_schema_0.6.sql
     ```
 
-  2.  Import OSM extract with Osmosis.
+    2.  Import OSM extract with Osmosis.
 
     ``` bash
     osmosis --read-pbf file=<osm.pbf-file> --write-pgsql host=<host>:<port> user=<user> database=<database> password=<password>
     ```
 
-     __Note:__ It may be necessary to define a temporary directory for use by Osmosis, e.g. if Osmosis stops with error 'No space left on device'. To do so, run the following commands beforehand:
+    __Note:__ It may be necessary to define a temporary directory for use by Osmosis, e.g. if Osmosis stops with error 'No space left on device'. To do so, run the following commands beforehand:
 
-     ``` bash
-JAVACMD_OPTIONS=-Djava.io.tmpdir=<path-to-tmp-dir>
-export JAVACMD_OPTIONS
+    ``` bash
+    JAVACMD_OPTIONS=-Djava.io.tmpdir=<path-to-tmp-dir>
+    export JAVACMD_OPTIONS
      ```
 
 4. Extract OSM ways in intermediate table.
