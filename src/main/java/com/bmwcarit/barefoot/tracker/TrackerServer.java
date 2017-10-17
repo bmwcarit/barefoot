@@ -228,7 +228,7 @@ public class TrackerServer extends AbstractServer {
                                 State state = memory.getIfExistsLocked(id);
 
                                 if (state != null) {
-                                    response.append(state.inner.toJSON().toString());
+                                    response.append(state.inner.toMonitorJSON().toString());
                                     state.unlock();
                                 } else {
                                     JSONObject empty = new JSONObject();
@@ -296,6 +296,7 @@ public class TrackerServer extends AbstractServer {
                 JSONObject json = state.inner.toMonitorJSON();
                 json.put("id", id);
                 queue.put(json.toString());
+                logger.debug(json.toString());
             } catch (Exception e) {
                 logger.error("update failed: {}", e.getMessage());
                 e.printStackTrace();
