@@ -208,7 +208,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
                 emission *= Math.max(1E-2, 1 / sqrt_2pi_sigA * Math.exp((-1) * da / (2 * sigA)));
             }
 
-            MatcherCandidate candidate = new MatcherCandidate(point);
+            MatcherCandidate candidate = new MatcherCandidate(sample.id(), point);
             candidates.add(new Tuple<>(candidate, emission));
 
             logger.trace("{} {} {}", candidate.id(), dz, emission);
