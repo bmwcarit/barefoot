@@ -27,7 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.bmwcarit.barefoot.util.Tuple;
+import com.bmwcarit.barefoot.util.Triple;
 
 /**
  * <i>k</i>-State data structure for organizing state memory in HMM inference.
@@ -40,7 +40,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
         extends StateMemory<C, T, S> {
     private final int k;
     private final long t;
-    private final LinkedList<Tuple<Set<C>, S>> sequence;
+    private final LinkedList<Triple<Set<C>, S, C>> sequence;
     private final Map<C, Integer> counters;
 
     /**
@@ -100,13 +100,15 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
             }
 
             S sample = factory.sample(jsonseqelement.getJSONObject("sample"));
+            String kestid = jsonseqelement.getString("kestid");
+            C kestimate = candidates.get(kestid);
 
-            sequence.add(new Tuple<>(vector, sample));
+            sequence.add(new Triple<>(vector, sample, kestimate));
         }
 
-        Collections.sort(sequence, new Comparator<Tuple<Set<C>, S>>() {
+        Collections.sort(sequence, new Comparator<Triple<Set<C>, S, C>>() {
             @Override
-            public int compare(Tuple<Set<C>, S> left, Tuple<Set<C>, S> right) {
+            public int compare(Triple<Set<C>, S, C> left, Triple<Set<C>, S, C> right) {
                 if (left.two().time() < right.two().time()) {
                     return -1;
                 } else if (left.two().time() > right.two().time()) {
@@ -167,7 +169,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
      */
     public List<S> samples() {
         LinkedList<S> samples = new LinkedList<>();
-        for (Tuple<Set<C>, S> element : sequence) {
+        for (Triple<Set<C>, S, C> element : sequence) {
             samples.add(element.two());
         }
         return samples;
@@ -183,6 +185,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
             throw new RuntimeException("out-of-order state update is prohibited");
         }
 
+        C kestimate = null;
         for (C candidate : vector) {
             counters.put(candidate, 0);
             if (candidate.predecessor() != null) {
@@ -192,16 +195,16 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
                 }
                 counters.put(candidate.predecessor(), counters.get(candidate.predecessor()) + 1);
             }
+            if (kestimate == null || candidate.seqprob() > kestimate.seqprob()) {
+                kestimate = candidate;
+            }
         }
 
         if (!sequence.isEmpty()) {
+            Triple<Set<C>, S, C> last = sequence.peekLast();
             Set<C> deletes = new HashSet<>();
-            C estimate = null;
 
-            for (C candidate : sequence.peekLast().one()) {
-                if (estimate == null || candidate.seqprob() > estimate.seqprob()) {
-                    estimate = candidate;
-                }
+            for (C candidate : last.one()) {
                 if (counters.get(candidate) == 0) {
                     deletes.add(candidate);
                 }
@@ -210,13 +213,13 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
             int size = sequence.peekLast().one().size();
 
             for (C candidate : deletes) {
-                if (deletes.size() != size || candidate != estimate) {
+                if (deletes.size() != size || candidate != last.three()) {
                     remove(candidate, sequence.size() - 1);
                 }
             }
         }
 
-        sequence.add(new Tuple<>(vector, sample));
+        sequence.add(new Triple<>(vector, sample, kestimate));
 
         while ((t > 0 && sample.time() - sequence.peekFirst().two().time() > t)
                 || (k >= 0 && sequence.size() > k + 1)) {
@@ -234,6 +237,10 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
     }
 
     protected void remove(C candidate, int index) {
+        if (sequence.get(index).three() == candidate) {
+            return;
+        }
+
         Set<C> vector = sequence.get(index).one();
         counters.remove(candidate);
         vector.remove(candidate);
@@ -282,14 +289,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
             return null;
         }
 
-        C kestimate = null;
-
-        for (C candidate : sequence.peekLast().one()) {
-            if (kestimate == null || candidate.seqprob() > kestimate.seqprob()) {
-                kestimate = candidate;
-            }
-        }
-
+        C kestimate = sequence.peekLast().three();
         LinkedList<C> ksequence = new LinkedList<>();
 
         for (int i = sequence.size() - 1; i >= 0; --i) {
@@ -297,8 +297,8 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
                 ksequence.push(kestimate);
                 kestimate = kestimate.predecessor();
             } else {
-                ksequence.push(sequence.get(i).one().iterator().next());
-                assert (sequence.get(i).one().size() == 1);
+                ksequence.push(sequence.get(i).three());
+                kestimate = sequence.get(i).three().predecessor();
             }
         }
 
@@ -309,7 +309,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
     public JSONObject toJSON() throws JSONException {
         JSONObject json = new JSONObject();
         JSONArray jsonsequence = new JSONArray();
-        for (Tuple<Set<C>, S> element : sequence) {
+        for (Triple<Set<C>, S, C> element : sequence) {
             JSONObject jsonseqelement = new JSONObject();
             JSONArray jsonvector = new JSONArray();
             for (C candidate : element.one()) {
@@ -321,6 +321,7 @@ public class KState<C extends StateCandidate<C, T, S>, T extends StateTransition
             }
             jsonseqelement.put("vector", jsonvector);
             jsonseqelement.put("sample", element.two().toJSON());
+            jsonseqelement.put("kestid", element.three().id());
             jsonsequence.put(jsonseqelement);
         }
 
