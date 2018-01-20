@@ -101,10 +101,10 @@ public class Intercept {
             return earth.Inverse(latb1, lonb1, lata1, lona1);
         }
 
-        double latb2 = (lata1 + lata2) / 2, latb2_ = Double.NaN, lonb2_ = Double.NaN;
-        double lonb2 = ((lona1 >= 0 ? lona1 % 360 : (lona1 % 360) + 360)
-                + (lona2 >= 0 ? lona2 % 360 : (lona2 % 360) + 360)) / 2;
-        lonb2 = (lonb2 > 180 ? lonb2 - 360 : lonb2);
+        GeodesicData inv = Geodesic.WGS84.Inverse(lata1, lona1, lata2, lona2);
+        GeodesicData est =
+                Geodesic.WGS84.Line(inv.lat1, inv.lon1, inv.azi1).Position(inv.s12 * 0.5);
+        double latb2 = est.lat2, latb2_ = Double.NaN, lonb2_ = Double.NaN, lonb2 = est.lon2;
 
         for (int i = 0; i < maxit; ++i) {
             GnomonicData xa1 = gnom.Forward(latb2, lonb2, lata1, lona1);

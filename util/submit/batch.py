@@ -54,7 +54,7 @@ for sample in samples:
 
 tmp = "batch-%s" % random.randint(0, sys.maxint)
 file = open(tmp, "w")
-file.write("{\"format\": \"%s\", \"request\": %s}" % (options.format, json.dumps(samples)))
+file.write("{\"format\": \"%s\", \"request\": %s}\n" % (options.format, json.dumps(samples)))
 file.close()
 
 subprocess.call("cat %s | netcat %s %s" % (tmp, options.host, options.port), shell=True)
