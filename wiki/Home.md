@@ -51,42 +51,42 @@ root@acef54deeedb# bash /mnt/map/osm/import.sh <osm> <database> <user> <password
 #### Docker overview
 Some basic Docker commands for container administration:
 
-- Start/stop container:
+  - Start/stop container:
   ``` bash
-sudo docker start <container>
-sudo docker stop <container>
-   ```
+  sudo docker start <container>
+  sudo docker stop <container>
+  ```
 
-- Attach to container (for maintenance):
+  - Attach to container (for maintenance):
   ``` bash
-sudo docker attach <container>
-root@acef54deeedb# sudo -u postgres psql -d <database>
-psql (9.3.5)
-Type "help" for help.
+  sudo docker attach <container>
+  root@acef54deeedb# sudo -u postgres psql -d <database>
+  psql (9.3.5)
+  Type "help" for help.
 
-<database>=# \q
-root@acef54deeedb#
+  <database>=# \q
+  root@acef54deeedb#
   ```
   _Note: To detach the interactive shell from a running container without stopping it, use the escape sequence Ctrl-p + Ctrl-q._
 
-- Execute commands on container (e.g. a shell for maintenance):
+  - Execute commands on container (e.g. a shell for maintenance):
 
   ``` bash
-sudo docker exec -it <container> /bin/bash
-root@acef54deeedb# sudo -u postgres psql -d <database>
-psql (9.3.5)
-Type "help" for help.
+  sudo docker exec -it <container> /bin/bash
+  root@acef54deeedb# sudo -u postgres psql -d <database>
+  psql (9.3.5)
+  Type "help" for help.
 
-<database>=# \q
-root@acef54deeedb# exit
+  <database>=# \q
+  root@acef54deeedb# exit
   ```
   _Note: Here, shell can be closed and container doesn't stop._
 
-- List containers:
+  - List containers:
   ``` bash
-$ sudo docker ps -a
-CONTAINER ID        IMAGE                     COMMAND                CREATED             STATUS              PORTS                      NAMES
-acef54deeedb        barefoot-map              /bin/sh -c 'service    3 minutes ago       Up 2 seconds        0.0.0.0:5432->5432/tcp     <container>
+  $ sudo docker ps -a
+  CONTAINER ID        IMAGE                     COMMAND                CREATED             STATUS              PORTS                      NAMES
+  acef54deeedb        barefoot-map              /bin/sh -c 'service    3 minutes ago       Up 2 seconds        0.0.0.0:5432->5432/tcp     <container>
   ```
 
 #### Whitebox: PostgreSQL/PostGIS
@@ -112,24 +112,23 @@ psql -h <host> -p <port> -U <user> -d <database> -c "CREATE EXTENSION hstore;"
   ```
 
 3. Import the OSM data.
-
-  1. Download and set up OSM database schema.
-
-    ``` bash
-psql -h <host> -p <port> -U <user> -d <database> -f map/osm/pgsnapshot_schema_0.6.sql
-    ```
-
-  2.  Import OSM extract with Osmosis.
+    1. Download and set up OSM database schema.
 
     ``` bash
-osmosis --read-pbf file=<osm.pbf-file> --write-pgsql host=<host>:<port> user=<user> database=<database> password=<password>
+    psql -h <host> -p <port> -U <user> -d <database> -f map/osm/pgsnapshot_schema_0.6.sql
     ```
 
-     __Note:__ It may be necessary to define a temporary directory for use by Osmosis, e.g. if Osmosis stops with error 'No space left on device'. To do so, run the following commands beforehand:
+    2.  Import OSM extract with Osmosis.
 
-     ``` bash
-JAVACMD_OPTIONS=-Djava.io.tmpdir=<path-to-tmp-dir>
-export JAVACMD_OPTIONS
+    ``` bash
+    osmosis --read-pbf file=<osm.pbf-file> --write-pgsql host=<host>:<port> user=<user> database=<database> password=<password>
+    ```
+
+    __Note:__ It may be necessary to define a temporary directory for use by Osmosis, e.g. if Osmosis stops with error 'No space left on device'. To do so, run the following commands beforehand:
+
+    ``` bash
+    JAVACMD_OPTIONS=-Djava.io.tmpdir=<path-to-tmp-dir>
+    export JAVACMD_OPTIONS
      ```
 
 4. Extract OSM ways in intermediate table.
@@ -137,7 +136,7 @@ export JAVACMD_OPTIONS
   Import of OSM extract can be usually run in slim mode, which creates table `<ways-table>` in a single query:
 
   ``` bash
-map/tools/osm2ways --host <host> --port <port> --database <database> --table <ways-table> --user <user> --slim
+  map/tools/osm2ways --host <host> --port <port> --database <database> --table <ways-table> --user <user> --slim
   ```
 
   If memory is not sufficiently available, normal mode should be used, which requires a prefix `<prefix>` for temporary tables, which prevents overwriting of existing tables:
@@ -173,8 +172,8 @@ _Note: Use this approach only if Barefoot is not available with a public Maven r
 
 1. Checkout the respository.
   ``` bash
-git clone https://github.com/bmwcarit/barefoot.git
-cd barefoot
+  git clone https://github.com/bmwcarit/barefoot.git
+  cd barefoot
   ```
 
 2. Install JAR to your local Maven repository.
@@ -182,22 +181,22 @@ cd barefoot
   _Note: Maven tests will fail if the test map server hasn't been setup as shown [here](https://github.com/bmwcarit/barefoot/wiki#test-map-server)._
 
   ``` bash
-mvn install
+  mvn install
   ```
   ... and to skip tests (if test map server has not been set up) ...
 
   ``` bash
-mvn install -DskipTests
+  mvn install -DskipTests
   ```
 
 3. Add dependency to your Java project with Maven.
 
   ``` xml
-<dependency>
-		<groupId>com.bmw-carit</groupId>
-		<artifactId>barefoot</artifactId>
-		<version>VERSION</version>
-</dependency>
+  <dependency>
+    <groupId>com.bmw-carit</groupId>
+    <artifactId>barefoot</artifactId>
+    <version>VERSION</version>
+  </dependency>
   ```
 
 4. Set up a map server, see [here](https://github.com/bmwcarit/barefoot/wiki#map-server), or a test map server, see [here](https://github.com/bmwcarit/barefoot/wiki#test-map-server).
@@ -205,7 +204,7 @@ mvn install -DskipTests
 #### Build Javadoc
 
   ``` bash
-mvn javadoc:javadoc
+  mvn javadoc:javadoc
   ```
 
 See [here](http://bmwcarit.github.io/barefoot/doc/index.html).
