@@ -134,7 +134,7 @@ public class KStateTest {
 
             state.update(vector, new Sample(3));
 
-            assertEquals(8, state.size());
+            assertEquals(7, state.size());
             assertEquals(13, state.estimate().numid());
 
             List<Integer> sequence = new LinkedList<>(Arrays.asList(2, 6, 9, 13));
@@ -147,7 +147,7 @@ public class KStateTest {
 
             state.update(vector, new Sample(4));
 
-            assertEquals(8, state.size());
+            assertEquals(7, state.size());
             assertEquals(13, state.estimate().numid());
 
             List<Integer> sequence = new LinkedList<>(Arrays.asList(2, 6, 9, 13));
