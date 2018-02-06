@@ -13,6 +13,8 @@
 # language governing permissions and limitations under the License.
 #
 
+set -o errexit -o nounset -x
+
 if [ "$#" -eq "6" ] && ( [ "$6" = "slim" ] || [ "$6" = "normal" ] )
 then
 	input=$1
@@ -35,16 +37,16 @@ else
 fi
 
 echo "Start creation and initialization of database '${database}' ..."
-sudo -u postgres createdb ${database}
-sudo -u postgres psql -d ${database} -c "CREATE EXTENSION hstore;"
-sudo -u postgres psql -d ${database} -c "CREATE EXTENSION postgis;"
+sudo -u postgres createdb ${database} || true
+sudo -u postgres psql -d ${database} -c "CREATE EXTENSION hstore;" || true
+sudo -u postgres psql -d ${database} -c "CREATE EXTENSION postgis;" || true
 echo "Done."
 
 echo "Start creation of user and initialization of credentials ..."
-sudo -u postgres psql -c "CREATE USER \"${user}\" PASSWORD '${password}';"
+sudo -u postgres psql -c "CREATE USER \"${user}\" PASSWORD '${password}';" || true
 sudo -u postgres psql -c "GRANT ALL ON DATABASE \"${database}\" TO \"${user}\";"
 passphrase="localhost:5432:${database}:${user}:${password}"
-if [ ! -e ~/.pgpass ] || [ `less ~/.pgpass | grep -c "$passphrase"` -eq 0 ]
+if [ ! -e ~/.pgpass ] || [ `cat ~/.pgpass | grep -c "$passphrase"` -eq 0 ]
 then
 	echo "$passphrase" >> ~/.pgpass
 	chmod 0600 ~/.pgpass
@@ -55,7 +57,7 @@ echo "Start population of OSM data (osmosis) ..."
 psql -h localhost -d ${database} -U ${user} -f /mnt/map/osm/pgsnapshot_schema_0.6.sql
 rm -rf /mnt/map/osm/tmp
 mkdir /mnt/map/osm/tmp
-if [ -z "$JAVACMD_OPTIONS" ]; then
+if [ -z "${JAVACMD_OPTIONS+x}" ]; then
     JAVACMD_OPTIONS="-Djava.io.tmpdir=/mnt/map/osm/tmp"
 else
     JAVACMD_OPTIONS="$JAVACMD_OPTIONS -Djava.io.tmpdir=/mnt/map/osm/tmp"
