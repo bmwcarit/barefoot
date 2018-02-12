@@ -176,6 +176,11 @@ java -jar target/barefoot-<VERSION>-tracker-jar-with-dependencies.jar config/tra
   ```
 
   _Note: Stop server with Ctrl-c._
+  
+  _Note: Java string conversation of floating numbers depends on system localization, which can lead to a wrong output of Tracker Server. Add in this case additional arguments to Java runtime call:_
+  ``` bash
+  -Duser.language=en -Duser.country=US
+  ```
 
 4. Install and start monitor (NodeJS server).
 
@@ -422,6 +427,9 @@ _The following dependencies are linked only dynamically in the Python source of 
 
 * Some tests and examples use an extract of NYC taxi data which is included in the source repository. The data is licensed under CC0 license (Public Domain). For details see:
   _Brian Donovan and Daniel B. Work  “New York City Taxi Trip Data (2010-2013)”. 1.0. University of Illinois at Urbana-Champaign. Dataset. http://dx.doi.org/10.13012/J8PN93H8, 2014._
+
+## Knows issues
+* Java string conversation of floating numbers depends on system localization and could lead to comma seperated output numbers, which are not processable by Barefoot monitoring tools. It could solved by call ```java``` whith additional arguments ```-Duser.language=en -Duser.country=US``` to the normal application call
 
 ## References
 
