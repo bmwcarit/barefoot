@@ -25,5 +25,7 @@ before_script:
   - curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf --output map/osm/oberbayern.osm.pbf
   # Ensure PostgreSQL server is ready
   - until docker exec barefoot-database sudo --user=postgres -- psql --command='select 1;'; do sleep 1; done
-  # Use interactive option to force bash to read .bashrc and add path to Osmosis
-  - docker exec barefoot-database /bin/bash -i /mnt/map/osm/import.sh
+  # Osmosis takes about 10 minutes to process the Oberbayern map used for testing, which coincides with
+  # Travis' timeout for output updates.  Use `travis_wait` to extend the timeout.
+  # Use interactive option to force bash to read .bashrc and add path to Osmosis.
+  - travis_wait docker exec barefoot-database /bin/bash -i /mnt/map/osm/import.sh
