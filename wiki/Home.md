@@ -19,75 +19,75 @@ Barefoot consists of a software library and a (Docker-based) map server that pro
 
 1. Install prerequisites.
 
-  - Docker Engine (version 1.6 or higher, see [https://docs.docker.com/installation/ubuntulinux/](https://docs.docker.com/installation/ubuntulinux/))
+    - Docker Engine (version 1.6 or higher, see [https://docs.docker.com/installation/ubuntulinux/](https://docs.docker.com/installation/ubuntulinux/))
 
 2. Build Docker image.
 
-  ``` bash
-cd barefoot
-sudo docker build -t barefoot-map ./map
-  ```
+    ``` bash
+    cd barefoot
+    sudo docker build -t barefoot-map ./map
+    ```
 
 3. Create Docker container.
 
-  _Note: Give the <container> a name otherwise Docker chooses a name._
+    _Note: Give the <container> a name otherwise Docker chooses a name._
 
-  ``` bash
-sudo docker run -it -p 5432:5432 --name="<container>" -v ${PWD}/map/:/mnt/map barefoot-map
-  ```
+    ``` bash
+    sudo docker run -it -p 5432:5432 --name="<container>" -v ${PWD}/map/:/mnt/map barefoot-map
+    ```
 
 4. Import OSM extract (inside the container).
 
-  ``` bash
-root@acef54deeedb# bash /mnt/map/osm/import.sh <osm> <database> <user> <password> <config> slim|normal
-  ```
-  _Note: To detach the interactive shell from a running container without stopping it, use the escape sequence Ctrl-p + Ctrl-q._
+    ``` bash
+    root@acef54deeedb# bash /mnt/map/osm/import.sh <osm> <database> <user> <password> <config> slim|normal
+    ```
+    _Note: To detach the interactive shell from a running container without stopping it, use the escape sequence Ctrl-p + Ctrl-q._
 
-  - For importing an OpenStreetMap extract `<osm>`, the `*.osm.pbf` file must be placed into the directory `map/osm/` from outside the container, which is then accessible inside the container at `/mnt/map/osm/`.
-  - The import script reads the extract and writes it into a database with specified name and credentials, i.e. `<database>`, `<user>`, and `<password>`.
-  - A road type configuration `<config>` must be provided by its path and it must describe (in some JSON format) all road types to be imported. An example for roads of motorized vehicles is included at `/mnt/map/tools/road-types.json`.
-  - The standard import mode `normal` runs a bunch of SQL queries to import OSM extract of any size, whereas `slim` mode runs the import in a single query which is faster but requires more memory. The latter should be used only for smaller OSM extracts (extracts of at most the size of e.g. Switzerland).
+    - For importing an OpenStreetMap extract `<osm>`, the `*.osm.pbf` file must be placed into the directory `map/osm/` from outside the container, which is then accessible inside the container at `/mnt/map/osm/`.
+    - The import script reads the extract and writes it into a database with specified name and credentials, i.e. `<database>`, `<user>`, and `<password>`.
+    - A road type configuration `<config>` must be provided by its path and it must describe (in some JSON format) all road types to be imported. An example for roads of motorized vehicles is included at `/mnt/map/tools/road-types.json`.
+    - The standard import mode `normal` runs a bunch of SQL queries to import OSM extract of any size, whereas `slim` mode runs the import in a single query which is faster but requires more memory. The latter should be used only for smaller OSM extracts (extracts of at most the size of e.g. Switzerland).
 
 #### Docker overview
 Some basic Docker commands for container administration:
 
 - Start/stop container:
-  ``` bash
-sudo docker start <container>
-sudo docker stop <container>
-   ```
+    ``` bash
+    sudo docker start <container>
+    sudo docker stop <container>
+     ```
 
 - Attach to container (for maintenance):
-  ``` bash
-sudo docker attach <container>
-root@acef54deeedb# sudo -u postgres psql -d <database>
-psql (9.3.5)
-Type "help" for help.
+    ``` bash
+    sudo docker attach <container>
+    root@acef54deeedb# sudo -u postgres psql -d <database>
+    psql (9.3.5)
+    Type "help" for help.
 
-<database>=# \q
-root@acef54deeedb#
-  ```
-  _Note: To detach the interactive shell from a running container without stopping it, use the escape sequence Ctrl-p + Ctrl-q._
+    <database>=# \q
+    root@acef54deeedb#
+    ```
+    _Note: To detach the interactive shell from a running container without stopping it, use the escape sequence Ctrl-p + Ctrl-q._
 
 - Execute commands on container (e.g. a shell for maintenance):
 
-  ``` bash
-sudo docker exec -it <container> /bin/bash
-root@acef54deeedb# sudo -u postgres psql -d <database>
-psql (9.3.5)
-Type "help" for help.
+    ``` bash
+    sudo docker exec -it <container> /bin/bash
+    root@acef54deeedb# sudo -u postgres psql -d <database>
+    psql (9.3.5)
+    Type "help" for help.
 
-<database>=# \q
-root@acef54deeedb# exit
-  ```
-  _Note: Here, shell can be closed and container doesn't stop._
+    <database>=# \q
+    root@acef54deeedb# exit
+    ```
+    _Note: Here, shell can be closed and container doesn't stop._
 
 - List containers:
-  ``` bash
-$ sudo docker ps -a
-CONTAINER ID        IMAGE                     COMMAND                CREATED             STATUS              PORTS                      NAMES
-acef54deeedb        barefoot-map              /bin/sh -c 'service    3 minutes ago       Up 2 seconds        0.0.0.0:5432->5432/tcp     <container>
-  ```
+    ``` bash
+    $ sudo docker ps -a
+    CONTAINER ID        IMAGE                     COMMAND                CREATED             STATUS              PORTS                      NAMES
+    acef54deeedb        barefoot-map              /bin/sh -c 'service    3 minutes ago       Up 2 seconds        0.0.0.0:5432->5432/tcp     <container>
+    ```
 
 #### Whitebox: PostgreSQL/PostGIS
 
@@ -95,67 +95,67 @@ _Note: A manually PostgreSQL/PostGIS database setup is no longer a supported app
 
 1. Install prerequisites.
 
-  - PostgreSQL (version 9.3 or higher)
-  - PostGIS (version 2.1 or higher)
-  - Osmosis (versionb 0.43.1 or higher)
-  - Python (version 2.7.6 or higher)
-  - Psycopg2
-  - NumPy
-  - Python-GDAL
+    - PostgreSQL (version 9.3 or higher)
+    - PostGIS (version 2.1 or higher)
+    - Osmosis (versionb 0.43.1 or higher)
+    - Python (version 2.7.6 or higher)
+    - Psycopg2
+    - NumPy
+    - Python-GDAL
 
 2. Setup the database and include extensions.
 
-  ``` bash
-createdb -h <host> -p <port> -U <user> <database>
-psql -h <host> -p <port> -U <user> -d <database> -c "CREATE EXTENSION postgis;"
-psql -h <host> -p <port> -U <user> -d <database> -c "CREATE EXTENSION hstore;"
-  ```
+    ``` bash
+    createdb -h <host> -p <port> -U <user> <database>
+    psql -h <host> -p <port> -U <user> -d <database> -c "CREATE EXTENSION postgis;"
+    psql -h <host> -p <port> -U <user> -d <database> -c "CREATE EXTENSION hstore;"
+    ```
 
 3. Import the OSM data.
 
-  1. Download and set up OSM database schema.
+    1. Download and set up OSM database schema.
 
-    ``` bash
-psql -h <host> -p <port> -U <user> -d <database> -f map/osm/pgsnapshot_schema_0.6.sql
-    ```
+        ``` bash
+        psql -h <host> -p <port> -U <user> -d <database> -f map/osm/pgsnapshot_schema_0.6.sql
+        ```
 
-  2.  Import OSM extract with Osmosis.
+    2. Import OSM extract with Osmosis.
 
-    ``` bash
-osmosis --read-pbf file=<osm.pbf-file> --write-pgsql host=<host>:<port> user=<user> database=<database> password=<password>
-    ```
+        ``` bash
+        osmosis --read-pbf file=<osm.pbf-file> --write-pgsql host=<host>:<port> user=<user> database=<database> password=<password>
+        ```
 
-     __Note:__ It may be necessary to define a temporary directory for use by Osmosis, e.g. if Osmosis stops with error 'No space left on device'. To do so, run the following commands beforehand:
+        __Note:__ It may be necessary to define a temporary directory for use by Osmosis, e.g. if Osmosis stops with error 'No space left on device'. To do so, run the following commands beforehand:
 
-     ``` bash
-JAVACMD_OPTIONS=-Djava.io.tmpdir=<path-to-tmp-dir>
-export JAVACMD_OPTIONS
-     ```
+        ``` bash
+        JAVACMD_OPTIONS=-Djava.io.tmpdir=<path-to-tmp-dir>
+        export JAVACMD_OPTIONS
+         ```
 
-4. Extract OSM ways in intermediate table.
+    3. Extract OSM ways in intermediate table.
 
-  Import of OSM extract can be usually run in slim mode, which creates table `<ways-table>` in a single query:
+        Import of OSM extract can be usually run in slim mode, which creates table `<ways-table>` in a single query:
 
-  ``` bash
-map/tools/osm2ways --host <host> --port <port> --database <database> --table <ways-table> --user <user> --slim
-  ```
+        ``` bash
+        map/tools/osm2ways --host <host> --port <port> --database <database> --table <ways-table> --user <user> --slim
+        ```
 
-  If memory is not sufficiently available, normal mode should be used, which requires a prefix `<prefix>` for temporary tables, which prevents overwriting of existing tables:
+        If memory is not sufficiently available, normal mode should be used, which requires a prefix `<prefix>` for temporary tables, which prevents overwriting of existing tables:
 
-  ``` bash
-map/tools/osm2ways --host <host> --port <port> --database <database> --table <ways-table> --user <user> --prefix <prefix>
-  ```
-  _Note: To see SQL commands without being executed, use option `--printonly`._
+        ``` bash
+        map/tools/osm2ways --host <host> --port <port> --database <database> --table <ways-table> --user <user> --prefix <prefix>
+        ```
+        _Note: To see SQL commands without being executed, use option `--printonly`._
 
-4. Compile Barefoot map data.
+    4. Compile Barefoot map data.
 
-  Transform ways `<ways-table>` into routing ways `<bfmap-table>`. A road type configuration `<config>` must be provided by its path and it must describe (in some JSON format) all road types to be imported. An example for roads of motorized vehicles is included at `map/tools/road-types.json`.
+        Transform ways `<ways-table>` into routing ways `<bfmap-table>`. A road type configuration `<config>` must be provided by its path and it must describe (in some JSON format) all road types to be imported. An example for roads of motorized vehicles is included at `map/tools/road-types.json`.
 
-  ``` bash
-map/tools/ways2bfmap --source-host <host> --source-port <port> --source-database <host> --source-table <ways-table> --source-user <user> --target-host <host> --target-port <port> --target-database <database> --target-table <bfmap-ways> --target-user <user> --config <config>
-  ```
+        ``` bash
+        map/tools/ways2bfmap --source-host <host> --source-port <port> --source-database <host> --source-table <ways-table> --source-user <user> --target-host <host> --target-port <port> --target-database <database> --target-table <bfmap-ways> --target-user <user> --config <config>
+        ```
 
-  _Note: To see SQL commands without being executed, use option `--printonly`_
+        _Note: To see SQL commands without being executed, use option `--printonly`_
 
 ## Library
 
@@ -167,46 +167,46 @@ _Note: Use this approach only if Barefoot is not available with a public Maven r
 
 1. Install prerequisites.
 
-  - Git (e.g. with `sudo apt-get install git`)
-  - Maven (e.g. with `sudo apt-get install maven`)
-  - Java JDK (Java version 7 or higher, e.g. with `sudo apt-get install openjdk-1.7-jdk`)
+    - Git (e.g. with `sudo apt-get install git`)
+    - Maven (e.g. with `sudo apt-get install maven`)
+    - Java JDK (Java version 7 or higher, e.g. with `sudo apt-get install openjdk-1.7-jdk`)
 
 1. Checkout the respository.
-  ``` bash
-git clone https://github.com/bmwcarit/barefoot.git
-cd barefoot
-  ```
+    ``` bash
+    git clone https://github.com/bmwcarit/barefoot.git
+    cd barefoot
+    ```
 
 2. Install JAR to your local Maven repository.
 
-  _Note: Maven tests will fail if the test map server hasn't been setup as shown [here](https://github.com/bmwcarit/barefoot/wiki#test-map-server)._
+    _Note: Maven tests will fail if the test map server hasn't been setup as shown [here](https://github.com/bmwcarit/barefoot/wiki#test-map-server)._
 
-  ``` bash
-mvn install
-  ```
-  ... and to skip tests (if test map server has not been set up) ...
+    ``` bash
+    mvn install
+    ```
+    ... and to skip tests (if test map server has not been set up) ...
 
-  ``` bash
-mvn install -DskipTests
-  ```
+    ``` bash
+    mvn install -DskipTests
+    ```
 
 3. Add dependency to your Java project with Maven.
 
-  ``` xml
-<dependency>
-		<groupId>com.bmw-carit</groupId>
-		<artifactId>barefoot</artifactId>
-		<version>VERSION</version>
-</dependency>
-  ```
+    ``` xml
+    <dependency>
+        <groupId>com.bmw-carit</groupId>
+        <artifactId>barefoot</artifactId>
+        <version>VERSION</version>
+    </dependency>
+    ```
 
 4. Set up a map server, see [here](https://github.com/bmwcarit/barefoot/wiki#map-server), or a test map server, see [here](https://github.com/bmwcarit/barefoot/wiki#test-map-server).
 
 #### Build Javadoc
 
-  ``` bash
+``` bash
 mvn javadoc:javadoc
-  ```
+```
 
 See [here](http://bmwcarit.github.io/barefoot/doc/index.html).
 
@@ -224,38 +224,38 @@ _Note: Tests for library development require a test map server, see above. The s
 
 1. Install prerequisites.
 
-  - Docker Engine (version 1.6 or higher, see [https://docs.docker.com/installation/ubuntulinux/](https://docs.docker.com/installation/ubuntulinux/))
+    - Docker Engine (version 1.6 or higher, see [https://docs.docker.com/installation/ubuntulinux/](https://docs.docker.com/installation/ubuntulinux/))
 
 2. Download OSM extract `oberbayern.osm.pbf`.
 
-  ``` bash
-curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf -o map/osm/oberbayern.osm.pbf
-  ```
+    ``` bash
+    curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf -o map/osm/oberbayern.osm.pbf
+    ```
 
 3. Build Docker image.
 
-  ``` bash
-cd barefoot
-sudo docker build -t barefoot-map ./map
-  ```
+    ``` bash
+    cd barefoot
+    sudo docker build -t barefoot-map ./map
+    ```
 
 4. Create Docker container.
 
-  ``` bash
-sudo docker run -it -p 5432:5432 --name="barefoot-oberbayern" -v ${PWD}/map/:/mnt/map barefoot-map
-  ```
+    ``` bash
+    sudo docker run -it -p 5432:5432 --name="barefoot-oberbayern" -v ${PWD}/map/:/mnt/map barefoot-map
+    ```
 
 5. Import OSM extract (inside the container) and use defaults.
 
-  ``` bash
-root@acef54deeedb# bash /mnt/map/osm/import.sh
-  ```
+    ``` bash
+    root@acef54deeedb# bash /mnt/map/osm/import.sh
+    ```
 
 ##### Execute tests
 
-  ``` bash
+``` bash
 mvn test
-  ```
+```
 
 #### Map tools (Python)
 
@@ -263,26 +263,26 @@ _Note: This is only useful, if you work on the Python import scripts._
 
 1. Install prerequisites.
 
-  - Docker Engine (version 1.6 or higher, see [https://docs.docker.com/installation/ubuntulinux/](https://docs.docker.com/installation/ubuntulinux/))
+    - Docker Engine (version 1.6 or higher, see [https://docs.docker.com/installation/ubuntulinux/](https://docs.docker.com/installation/ubuntulinux/))
 
 2. Build Docker image.
 
-  ``` bash
-cd barefoot
-sudo docker build -t barefoot-map ./map
-  ```
+    ``` bash
+    cd barefoot
+    sudo docker build -t barefoot-map ./map
+    ```
 
 3. Create test container.
 
-  ``` bash
-sudo docker run -it --name="barefoot-test" -v ${PWD}/map/:/mnt/map barefoot-map
-  ```
+    ``` bash
+    sudo docker run -it --name="barefoot-test" -v ${PWD}/map/:/mnt/map barefoot-map
+    ```
 
 4. Run test script (in the container).
 
-  ``` bash
-root@8160f9e2a2c0# bash /mnt/map/tools/test/run.sh
-  ```
+    ``` bash
+    root@8160f9e2a2c0# bash /mnt/map/tools/test/run.sh
+    ```
 
 ## Stand-alone servers
 
@@ -302,27 +302,27 @@ The matcher server is a stand-alone server for offline map matching, which is th
 
 2. Package Barefoot JAR. (Includes dependencies and executable main class.)
 
-  ``` bash
-mvn package
-  ```
+    ``` bash
+    mvn package
+    ```
 
-  _Note: Add `-DskipTests` to skip tests._
+    _Note: Add `-DskipTests` to skip tests._
 
 3. Start server with standard configuration for map server and map matching, and option for GeoJSON output format.
 
-  ``` bash
-java -jar target/barefoot-<VERSION>-matcher-jar-with-dependencies.jar [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties
-  ```
+    ``` bash
+    java -jar target/barefoot-<VERSION>-matcher-jar-with-dependencies.jar [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties
+    ```
 
-  _Note: Stop server with Ctrl-c._
+    _Note: Stop server with Ctrl-c._
 
-  - Map server properties include access information to map server.
+    - Map server properties include access information to map server.
 
-    _Note: An example is included at `config/oberbayern.properties` which can be used as reference or for testing._
+        _Note: An example is included at `config/oberbayern.properties` which can be used as reference or for testing._
 
-  - Server properties include configuration for the server and map matching. Settings for configuration are explained [here](https://github.com/bmwcarit/barefoot/wiki#parameters).
+    - Server properties include configuration for the server and map matching. Settings for configuration are explained [here](https://github.com/bmwcarit/barefoot/wiki#parameters).
 
-    _Note: An example is included at `config/server.properties` and can be used for testing. The details for parameter settings are shown below._
+        _Note: An example is included at `config/server.properties` and can be used for testing. The details for parameter settings are shown below._
 
 #### Usage
 
@@ -343,18 +343,18 @@ A map matching request is a text message with a JSON array of JSON objects in th
 ]
 ```
 
-  - `id` is user-specific identifier and has no further meaning for map matching or the server.
-  - `time` is a timestamp in milliseconds unix epoch time.
-  - `point` is a position (measurement) in WKT (well-known-text) format and with WGS-84 projection (SRID 4326). (In other words, this may be any GPS position in WKT format.)
-  - `azimuth` is (optional) heading information of the object given as azimuth in degrees from north clockwise.
+- `id` is user-specific identifier and has no further meaning for map matching or the server.
+- `time` is a timestamp in milliseconds unix epoch time.
+- `point` is a position (measurement) in WKT (well-known-text) format and with WGS-84 projection (SRID 4326). (In other words, this may be any GPS position in WKT format.)
+- `azimuth` is (optional) heading information of the object given as azimuth in degrees from north clockwise.
 
 ##### Response message formats
 
 The matcher server's default response format is the JSON representation of the k-state data structure, see [here](https://github.com/bmwcarit/barefoot/wiki#k-state-data-structure). To change default output format, use the following options for the server:
 
-  - `--slimjson`: Server outputs JSON format with map matched positions, consisting of road id and fraction as precise position on the road, and routes between positions as sequences of road ids.
-  - `--debug`: Server outputs a JSON format similar to slim JSON format, but with timestamps of the measurements and geometries of the routes in WKT format.
-  - `--geojson`: Server outputs the geometry of the map matching on the map in GeoJSON format.
+- `--slimjson`: Server outputs JSON format with map matched positions, consisting of road id and fraction as precise position on the road, and routes between positions as sequences of road ids.
+- `--debug`: Server outputs a JSON format similar to slim JSON format, but with timestamps of the measurements and geometries of the routes in WKT format.
+- `--geojson`: Server outputs the geometry of the map matching on the map in GeoJSON format.
 
 In addition, a request may also demand a certain response format which can be specified with the submission script using option `--format=slimjson|debug|geojson`.
 
@@ -370,45 +370,45 @@ The tracker server is a stand-alone server for online map matching. Here, object
 
 1. Install prerequisites.
 
-  - ZeroMQ (e.g. with `sudo apt-get install libzmq3-dev`)
-  - NodeJS (e.g. with `sudo apt-get install nodejs`)
+    - ZeroMQ (e.g. with `sudo apt-get install libzmq3-dev`)
+    - NodeJS (e.g. with `sudo apt-get install nodejs`)
 
 2. Package Barefoot JAR. (Includes dependencies and executable main class.)
 
-  ``` bash
-mvn package
-  ```
+    ``` bash
+    mvn package
+    ```
 
-  _Note: Add `-DskipTests` to skip tests._
+    _Note: Add `-DskipTests` to skip tests._
 
 3. Start tracker with standard configuration for map server, map matching, and tracking.
 
-  ``` bash
-java -jar target/barefoot-<VERSION>-tracker-jar-with-dependencies.jar config/tracker.properties config/oberbayern.properties
-  ```
+    ``` bash
+    java -jar target/barefoot-<VERSION>-tracker-jar-with-dependencies.jar config/tracker.properties config/oberbayern.properties
+    ```
 
-  _Note: Stop server with Ctrl-c._
+    _Note: Stop server with Ctrl-c._
 
 4. Install and start monitor (NodeJS server).
 
-  Install (required only once)
-  ``` bash
-cd util/monitor && npm install && cd ../..
-  ```
-  ... and start:
-  ``` bash
-node util/monitor/monitor.js 3000 127.0.0.1 1235
-  ```
+    Install (required only once)
+    ``` bash
+    cd util/monitor && npm install && cd ../..
+    ```
+    ... and start:
+    ``` bash
+    node util/monitor/monitor.js 3000 127.0.0.1 1235
+    ```
 
 5. Test setup with provided sample data.
 
-  ``` bash
-python util/submit/stream.py --host localhost --port 1234  --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-001.json
-SUCCESS
-...
-  ```
+    ``` bash
+    python util/submit/stream.py --host localhost --port 1234  --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-001.json
+    SUCCESS
+    ...
+    ```
 
-  _Note: On success, i.e. result code is SUCCESS, the tracking is visible in the browser on [http://localhost:3000](http://localhost:3000). Otherwise, result code is either TIMEOUT or ERROR._
+    _Note: On success, i.e. result code is SUCCESS, the tracking is visible in the browser on [http://localhost:3000](http://localhost:3000). Otherwise, result code is either TIMEOUT or ERROR._
 
 <p align="center">
 <img src="https://github.com/bmwcarit/barefoot/raw/master/doc-files/com/bmwcarit/barefoot/tracker/monitor-1600x1000.gif" width="650">
@@ -432,11 +432,18 @@ A position update is a text message with a JSON object of the following form:
 {"id":"x001","time":1410324847000,"point":"POINT (11.564388282625075 48.16350662940509)"}
 ```
 
-  - `id` is user-specific identifier and has no further meaning for map matching or the server.
-  - `time` is a timestamp in milliseconds unix epoch time.
-  - `point` is a position (measurement) in WKT (well-known-text) format and with WGS-84 projection (SRID 4326). (In other words, this may be any GPS position in WKT format.)
-  - `azimuth` is (optional) heading information of the object given as azimuth in degrees from north clockwise.
+- `id` is user-specific identifier and has no further meaning for map matching or the server.
+- `time` is a timestamp in milliseconds unix epoch time.
+- `point` is a position (measurement) in WKT (well-known-text) format and with WGS-84 projection (SRID 4326). (In other words, this may be any GPS position in WKT format.)
+- `azimuth` is (optional) heading information of the object given as azimuth in degrees from north clockwise.
 
+
+### Known issues
+
+The conversion of input strings to floating-point numbers depends on Java's locale settings. In case `java -XshowSettings:locale -version` shows any other language than 'English' or other region/country than 'US', use the following options to start Java applications:
+``` bash
+-Duser.language=en -Duser.country=US
+```
 
 ### Parameters
 
@@ -477,29 +484,29 @@ To determine the most likely matching candidate, it is necessary to quantify pro
 
   - A position measurement is subject to error and uncertainty. This is quantified with an __emission probability__ _p(z<sub>t</sub> | s<sub>t</sub>)_ that defines a conditioned probability of observing measurement _z<sub>t</sub>_ given that the true position in the map is _s<sub>t</sub>_, where _p(z<sub>t</sub> | s<sub>t</sub>) &sim; p(s<sub>t</sub> | z<sub>t</sub>)_.
 
-  Here, emission probabilities are defined with the distance between measured positions to its true position is used to model measurement errors which is described with gaussian distribution with some standard deviation _&sigma;_ (default is _&sigma; = 5 meters_).
+    Here, emission probabilities are defined with the distance between measured positions to its true position is used to model measurement errors which is described with gaussian distribution with some standard deviation _&sigma;_ (default is _&sigma; = 5 meters_).
 
 - All transitions between different pairs of matching candidates _s<sub>t-1</sub>_ to _s<sub>t</sub>_ have some measure of plausiblity which is quantified with a __transition probability__ _p(s<sub>t</sub> | s<sub>t-1</sub>)_ that is a conditioned probability of reaching _s<sub>t</sub>_ given that _s<sub>t-1</sub>_ is the origin.
 
-  Here, transition probabilities are quantified with the difference of routing distance and line of sight distance between respective position measurements. Transition probabilities are distributed negative exponentially with a rate parameter _&lambda;_ (default is _&lambda; = 0.1_) which is the reciprocal of the mean.
+    Here, transition probabilities are quantified with the difference of routing distance and line of sight distance between respective position measurements. Transition probabilities are distributed negative exponentially with a rate parameter _&lambda;_ (default is _&lambda; = 0.1_) which is the reciprocal of the mean.
 
 In HMM map matching, we distinguish two different solutions to map matching provided by our HMM filter:
 
   - Our HMM filter determines an estimate _s&#773;<sub>t</sub>_ of the object's current position which is the most likely  matching candidate _s<sub>t</sub> &#8712; S<sub>t</sub>_ given measurements _z<sub>0</sub>_ ... _z<sub>t</sub>_, which is defined as:
 
-  _s&#773;<sub>t</sub> = argmax<sub>(s<sub>t</sub> &#8712; S<sub>t</sub>)</sub> p(s<sub>t</sub>|z<sub>0</sub> ... z<sub>t</sub>)_,
+    _s&#773;<sub>t</sub> = argmax<sub>(s<sub>t</sub> &#8712; S<sub>t</sub>)</sub> p(s<sub>t</sub>|z<sub>0</sub> ... z<sub>t</sub>)_,
 
-  where _p(s<sub>t</sub>|z<sub>0</sub> ... z<sub>t</sub>)_ is referred to as the ___filter probability of s<sub>t</sub>___ and can be determined recursively:
+    where _p(s<sub>t</sub>|z<sub>0</sub> ... z<sub>t</sub>)_ is referred to as the ___filter probability of s<sub>t</sub>___ and can be determined recursively:
 
-  _p(s<sub>t</sub>|z<sub>0</sub>...z<sub>t</sub>) = p(s<sub>t</sub>|z<sub>t</sub>) &middot; &#931;<sub>(s<sub>t-1</sub> &#8712; S<sub>t-1</sub>)</sub> p(s<sub>t</sub>|s<sub>t-1</sub>) &middot; p(s<sub>t-1</sub>|z<sub>0</sub> ... z<sub>t-1</sub>)_.
+    _p(s<sub>t</sub>|z<sub>0</sub>...z<sub>t</sub>) = p(s<sub>t</sub>|z<sub>t</sub>) &middot; &#931;<sub>(s<sub>t-1</sub> &#8712; S<sub>t-1</sub>)</sub> p(s<sub>t</sub>|s<sub>t-1</sub>) &middot; p(s<sub>t-1</sub>|z<sub>0</sub> ... z<sub>t-1</sub>)_.
 
 - In addition, we extend our HMM filter to determine an object's most likely path _s<sub>0</sub>_ ... _s<sub>T</sub>_, that is the most likely sequence of matching candidates _s<sub>t</sub> &#8712; S<sub>t</sub>_ given the full knowledge of measurements _z<sub>0</sub>_ ... _z<sub>T</sub>_, which is defined as:
 
-  _s<sub>0</sub> ... s<sub>T</sub> = argmax<sub>(s<sub>T</sub> &#8712; S<sub>T</sub>)</sub> p(s<sub>0</sub> ... s<sub>T</sub>|z<sub>0</sub> ... z<sub>T</sub>)_,
+    _s<sub>0</sub> ... s<sub>T</sub> = argmax<sub>(s<sub>T</sub> &#8712; S<sub>T</sub>)</sub> p(s<sub>0</sub> ... s<sub>T</sub>|z<sub>0</sub> ... z<sub>T</sub>)_,
 
-  where we define _p(s<sub>0</sub> ... s<sub>t</sub>|z<sub>0</sub> ... z<sub>t</sub>)_ as the probability of the most likely sequence that reaches matching candidate _s<sub>t</sub>_, referred to as the ___sequence probability of s<sub>t</sub>___, and can be also determined recursively:
+    where we define _p(s<sub>0</sub> ... s<sub>t</sub>|z<sub>0</sub> ... z<sub>t</sub>)_ as the probability of the most likely sequence that reaches matching candidate _s<sub>t</sub>_, referred to as the ___sequence probability of s<sub>t</sub>___, and can be also determined recursively:
 
-  _p(s<sub>0</sub> ... s<sub>t</sub>|z<sub>0</sub> ... z<sub>t</sub>) = p(s<sub>t</sub>|z<sub>t</sub>) &middot; argmax<sub>(s<sub>t-1</sub> &#8712; S<sub>t-1</sub>)</sub> p(s<sub>t</sub>|s<sub>t-1</sub>) &middot; p(s<sub>0</sub> ... s<sub>t-1</sub>|z<sub>0</sub> ... z<sub>t-1</sub>)_.
+    _p(s<sub>0</sub> ... s<sub>t</sub>|z<sub>0</sub> ... z<sub>t</sub>) = p(s<sub>t</sub>|z<sub>t</sub>) &middot; argmax<sub>(s<sub>t-1</sub> &#8712; S<sub>t-1</sub>)</sub> p(s<sub>t</sub>|s<sub>t-1</sub>) &middot; p(s<sub>0</sub> ... s<sub>t-1</sub>|z<sub>0</sub> ... z<sub>t-1</sub>)_.
 
 _Note: Here, p(s<sub>0</sub> ... s<sub>t</sub>|z<sub>0</sub> ... z<sub>t</sub>) is defined as the probability of the most likely sequence that reaches candidate s<sub>t</sub>, whereas in other literature, cf. [4], it is defined as the probability of the sequence s<sub>0</sub> ... s<sub>t</sub>. This is used for convenience to enable implementation of online and offline map matching in dynamic programming manner (according to online Viterbi algorithm). Nevertheless, the solution is the same._
 
@@ -577,7 +584,6 @@ for (MatcherSample sample : samples) {
 }
 
 ```
-
 
 #### k-State data structure
 

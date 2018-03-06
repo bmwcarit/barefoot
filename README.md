@@ -63,43 +63,43 @@ _Note: The following example uses the setup of the test map server. For further 
 
 1. Install prerequisites.
 
-  - Docker Engine (version 1.6 or higher, see [https://docs.docker.com/installation/ubuntulinux/](https://docs.docker.com/installation/ubuntulinux/))
+    - Docker Engine (version 1.6 or higher, see [https://docs.docker.com/installation/ubuntulinux/](https://docs.docker.com/installation/ubuntulinux/))
 
 2. Download OSM extract (examples require `oberbayern.osm.pbf`)
 
-  ``` bash
-curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf -o barefoot/map/osm/oberbayern.osm.pbf
-  ```
+    ``` bash
+    curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf -o barefoot/map/osm/oberbayern.osm.pbf
+    ```
 
 3. Build Docker image.
 
-  ``` bash
-cd barefoot
-sudo docker build -t barefoot-map ./map
-  ```
+    ``` bash
+    cd barefoot
+    sudo docker build -t barefoot-map ./map
+    ```
 
 4. Create Docker container.
 
-  ``` bash
-sudo docker run -it -p 5432:5432 --name="barefoot-oberbayern" -v ${PWD}/map/:/mnt/map barefoot-map
-  ```
+    ``` bash
+    sudo docker run -it -p 5432:5432 --name="barefoot-oberbayern" -v ${PWD}/map/:/mnt/map barefoot-map
+    ```
 
 5. Import OSM extract (in the container).
   
-  ``` bash
-root@acef54deeedb# bash /mnt/map/osm/import.sh
-  ```
+    ``` bash
+    root@acef54deeedb# bash /mnt/map/osm/import.sh
+    ```
 
-  _Note: To detach the interactive shell from a running container without stopping it, use the escape sequence Ctrl-p + Ctrl-q._
+    _Note: To detach the interactive shell from a running container without stopping it, use the escape sequence Ctrl-p + Ctrl-q._
 
 6. Make sure the container is running ("up").
 
-  ``` bash
-sudo docker ps -a
-...
-  ```
+    ``` bash
+    sudo docker ps -a
+    ...
+    ```
 
-  _Note: The output of the last command should show status 'Up x seconds'._
+    _Note: The output of the last command should show status 'Up x seconds'._
 
 ##### Matcher server
 
@@ -107,34 +107,36 @@ _Note: The following example is a quick start setup. For further details, see th
 
 1. Install prerequisites.
 
-  - Maven (e.g. with `sudo apt-get install maven`)
-  - Java JDK (Java version 7 or higher, e.g. with `sudo apt-get install openjdk-1.7-jdk`)
+    - Maven (e.g. with `sudo apt-get install maven`)
+    - Java JDK (Java version 7 or higher, e.g. with `sudo apt-get install openjdk-1.7-jdk`)
 
 2. Package Barefoot JAR. (Includes dependencies and executable main class.)
 
-  ``` bash
-mvn package
-  ```
+    ``` bash
+    mvn package
+    ```
 
-  _Note: Add `-DskipTests` to skip tests._
+    _Note: Add `-DskipTests` to skip tests._
 
 3. Start server with standard configuration for map server and map matching, and option for GeoJSON output format.
 
-  ``` bash
-java -jar target/barefoot-<VERSION>-matcher-jar-with-dependencies.jar --geojson config/server.properties config/oberbayern.properties
-  ```
+    ``` bash
+    java -jar target/barefoot-<VERSION>-matcher-jar-with-dependencies.jar --geojson config/server.properties config/oberbayern.properties
+    ```
 
-  _Note: Stop server with Ctrl-c._
+    _Note: Stop server with Ctrl-c._
+
+    _Note: In case of 'parse errors', use the following Java options: `-Duser.language=en -Duser.country=US`_
 
 4. Test setup with provided sample data.
 
-  ``` bash
-python util/submit/batch.py --host localhost --port 1234  --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json
-SUCCESS
-...
-  ```
+    ``` bash
+    python util/submit/batch.py --host localhost --port 1234  --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json
+    SUCCESS
+    ...
+    ```
 
-  _Note: On success, i.e. result code is SUCCESS, the output can be visualized with [http://geojson.io/](http://geojson.io/) and should show the same path as in the figure above. Otherwise, result code is either TIMEOUT or ERROR._
+    _Note: On success, i.e. result code is SUCCESS, the output can be visualized with [http://geojson.io/](http://geojson.io/) and should show the same path as in the figure above. Otherwise, result code is either TIMEOUT or ERROR._
 
 #### Tracker server (Quick Start)
 
@@ -156,47 +158,49 @@ _Note: The following example is a quick start setup. For further details, see th
 
 1. Install prerequisites.
 
-  - Maven (e.g. with `sudo apt-get install maven`)
-  - Java JDK (Java version 7 or higher, e.g. with `sudo apt-get install openjdk-1.7-jdk`)
-  - ZeroMQ (e.g. with `sudo apt-get install libzmq3-dev`)
-  - NodeJS (e.g. with `sudo apt-get install nodejs`)
+    - Maven (e.g. with `sudo apt-get install maven`)
+    - Java JDK (Java version 7 or higher, e.g. with `sudo apt-get install openjdk-1.7-jdk`)
+    - ZeroMQ (e.g. with `sudo apt-get install libzmq3-dev`)
+    - NodeJS (e.g. with `sudo apt-get install nodejs`)
 
 2. Package Barefoot JAR. (Includes dependencies and executable main class.)
 
-  ``` bash
-mvn package
-  ```
+    ``` bash
+    mvn package
+    ```
 
-  _Note: Add `-DskipTests` to skip tests._
+    _Note: Add `-DskipTests` to skip tests._
 
 3. Start tracker with standard configuration for map server, map matching, and tracking.
 
-  ``` bash
-java -jar target/barefoot-<VERSION>-tracker-jar-with-dependencies.jar config/tracker.properties config/oberbayern.properties
-  ```
+    ``` bash
+    java -jar target/barefoot-<VERSION>-tracker-jar-with-dependencies.jar config/tracker.properties config/oberbayern.properties
+    ```
 
-  _Note: Stop server with Ctrl-c._
+    _Note: Stop server with Ctrl-c._
+
+    _Note: In case of 'parse errors', use the following Java options: `-Duser.language=en -Duser.country=US`_
 
 4. Install and start monitor (NodeJS server).
 
-  Install (required only once)
-  ``` bash
-cd util/monitor && npm install && cd ../..
-  ```
-  ... and start:
-  ``` bash
-node util/monitor/monitor.js 3000 127.0.0.1 1235
-  ```
+    Install (required only once)
+    ``` bash
+    cd util/monitor && npm install && cd ../..
+    ```
+    ... and start:
+    ``` bash
+    node util/monitor/monitor.js 3000 127.0.0.1 1235
+      ```
 
 5. Test setup with provided sample data.
 
-  ``` bash
-python util/submit/stream.py --host localhost --port 1234 --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-001.json
-SUCCESS
-...
-  ```
+    ``` bash
+    python util/submit/stream.py --host localhost --port 1234 --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-001.json
+    SUCCESS
+    ...
+    ```
 
-  _Note: On success, i.e. result code is SUCCESS, the tracking is visible in the browser on [http://localhost:3000](http://localhost:3000). Otherwise, result code is either TIMEOUT or ERROR._
+    _Note: On success, i.e. result code is SUCCESS, the tracking is visible in the browser on [http://localhost:3000](http://localhost:3000). Otherwise, result code is either TIMEOUT or ERROR._
 
 ### Spatial search and operations
 
