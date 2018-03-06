@@ -1,0 +1,31 @@
+sudo: required
+language: java
+jdk:
+  # Build and test Barefoot library using JDK 7, 8, 9
+  - openjdk7
+  - oraclejdk8
+  - oraclejdk9
+matrix:
+  include:
+    # Add a separate test for Python code
+    - env: NAME="Python Map Tools"
+      install: true
+      before_script:
+        # Ensure PostgreSQL server is ready
+        - until docker exec barefoot-database sudo --user=postgres -- psql --command='select 1;'; do sleep 1; done
+      script: docker exec barefoot-database /bin/bash /mnt/map/tools/test/run.sh
+services:
+  - docker
+before_install:
+  - docker build -t barefoot-map ./map
+  # Stop existing PostgreSQL - https://github.com/travis-ci/travis-ci/issues/4842#issuecomment-311527059
+  - sudo service postgresql stop
+  - docker run -t -d -p 5432:5432 --name="barefoot-database" -v ${PWD}/map/:/mnt/map barefoot-map
+before_script:
+  - curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf --output map/osm/oberbayern.osm.pbf
+  # Ensure PostgreSQL server is ready
+  - until docker exec barefoot-database sudo --user=postgres -- psql --command='select 1;'; do sleep 1; done
+  # Osmosis takes about 10 minutes to process the Oberbayern map used for testing, which coincides with
+  # Travis' timeout for output updates.  Use `travis_wait` to extend the timeout.
+  # Use interactive option to force bash to read .bashrc and add path to Osmosis.
+  - travis_wait docker exec barefoot-database /bin/bash -i /mnt/map/osm/import.sh
