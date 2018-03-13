@@ -40,7 +40,7 @@ echo "Start creation of user and initialization of credentials ..."
 sudo -u postgres psql -c "CREATE USER ${user} PASSWORD '${password}';"
 sudo -u postgres psql -c "GRANT ALL ON DATABASE ${database} TO ${user};"
 passphrase="localhost:5432:${database}:${user}:${password}"
-if [ ! -e ~/.pgpass ] || [ `less ~/.pgpass | grep -c "$passphrase"` -eq 0 ]
+if ! grep -q -s "$passphrase" ~/.pgpass
 then
 	echo "$passphrase" >> ~/.pgpass
 	chmod 0600 ~/.pgpass
