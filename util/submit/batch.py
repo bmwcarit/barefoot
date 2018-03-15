@@ -38,7 +38,7 @@ parser.add_option("--format", dest="format", default="geojson", help="Output for
 if options.file == None or options.host == None or options.port == None:
     parser.print_help()
     exit(1)
-    
+
 if options.format not in ["geojson", "slimjson", "debug"]:
     parser.print_help()
     exit(1)
@@ -57,5 +57,5 @@ file = open(tmp, "w")
 file.write("{\"format\": \"%s\", \"request\": %s}\n" % (options.format, json.dumps(samples)))
 file.close()
 
-subprocess.call("cat %s | netcat %s %s" % (tmp, options.host, options.port), shell=True)
+subprocess.check_call("cat %s | netcat %s %s" % (tmp, options.host, options.port), shell=True)
 os.remove(tmp)
