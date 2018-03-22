@@ -55,12 +55,7 @@ echo "Start population of OSM data (osmosis) ..."
 psql -h localhost -d ${database} -U ${user} -f /mnt/map/osm/pgsnapshot_schema_0.6.sql
 rm -rf /mnt/map/osm/tmp
 mkdir /mnt/map/osm/tmp
-if [ -z "$JAVACMD_OPTIONS" ]; then
-    JAVACMD_OPTIONS="-Djava.io.tmpdir=/mnt/map/osm/tmp"
-else
-    JAVACMD_OPTIONS="$JAVACMD_OPTIONS -Djava.io.tmpdir=/mnt/map/osm/tmp"
-fi
-export JAVACMD_OPTIONS
+export JAVACMD_OPTIONS="${JAVACMD_OPTIONS:-} -Djava.io.tmpdir=/mnt/map/osm/tmp"
 osmosis --read-pbf file=${input} --tf accept-ways highway=* --write-pgsql user="${user}" password="${password}" database="${database}"
 echo "Done."
 
