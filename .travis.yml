@@ -1,10 +1,9 @@
 sudo: required
 language: java
 jdk:
-  # Build and test Barefoot library using JDK 7, 8, 9
+  # Build and test Barefoot library using JDK 7, 8
   - openjdk7
   - oraclejdk8
-  - oraclejdk9
 matrix:
   include:
     - env: NAME="Matcher Server"
@@ -30,6 +29,14 @@ matrix:
         # Ensure PostgreSQL server is ready - for other tests, PostreSQL has plenty of time to start
         - until docker exec barefoot-database sudo --user=postgres -- psql --command='select 1;'; do sleep 1; done
       script: docker exec barefoot-database /bin/bash /mnt/map/tools/test/run.sh
+    - env: NAME="Java Formatting"
+      jdk: oraclejdk8
+      before_install: true
+      install: mvn formatter:format
+      before_script: true
+      script:
+        - git diff --exit-code
+      after_failure: true  To fix this failure automatically, run "mvn formatter:format" on your code using Java 8+
 services:
   - docker
 before_install:
