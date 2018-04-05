@@ -256,7 +256,7 @@ public class MatcherServer extends AbstractServer {
             matcher.setSigma(Double.parseDouble(
                     properties.getProperty("matcher.sigma", Double.toString(matcher.getSigma()))));
             interval = Integer.parseInt(properties.getProperty("matcher.interval.min", "1000"));
-            distance = Integer.parseInt(properties.getProperty("matcher.distance.min", "0"));
+            distance = Double.parseDouble(properties.getProperty("matcher.distance.min", Double.toString(0d)));
 
             int matcherThreads = Integer.parseInt(properties.getProperty("matcher.threads",
                     Integer.toString(Runtime.getRuntime().availableProcessors())));

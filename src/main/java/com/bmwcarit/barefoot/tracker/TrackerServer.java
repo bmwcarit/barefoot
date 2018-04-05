@@ -117,7 +117,7 @@ public class TrackerServer extends AbstractServer {
             matcher.setSigma(Double.parseDouble(
                     properties.getProperty("matcher.sigma", Double.toString(matcher.getSigma()))));
             interval = Integer.parseInt(properties.getProperty("matcher.interval.min", "1000"));
-            distance = Integer.parseInt(properties.getProperty("matcher.distance.min", "0"));
+            distance = Double.parseDouble(properties.getProperty("matcher.distance.min", Double.toString(0d)));
             sensitive = Double.parseDouble(
                     properties.getProperty("tracker.monitor.sensitive", Double.toString(0d)));
             TTL = Integer.parseInt(properties.getProperty("tracker.state.ttl", "60"));
