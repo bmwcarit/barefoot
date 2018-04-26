@@ -449,14 +449,12 @@ public class DBRCAN {
         }
 
         for (Entry<Double, Integer> entry : starts.entrySet()) {
-            function.add(new Tuple<>(entry.getKey(),
-                    Math.max(minimum, entry.getValue())));
+            function.add(new Tuple<>(entry.getKey(), Math.max(minimum, entry.getValue())));
         }
 
         for (Entry<Double, Integer> entry : ends.entrySet()) {
             if (buffer == 0 || !starts.containsKey(entry.getKey())) {
-                function.add(new Tuple<>(entry.getKey(),
-                        Math.max(minimum, entry.getValue())));
+                function.add(new Tuple<>(entry.getKey(), Math.max(minimum, entry.getValue())));
             }
         }
 
@@ -472,8 +470,7 @@ public class DBRCAN {
         if (function.size() == 0) {
             function.push(new Tuple<>(0.0, minimum));
         } else if (DBRCAN.epsilonCompare(function.get(0).one(), 0.0) != 0) {
-            function.push(
-                    new Tuple<>(0.0, Math.max(minimum, function.getLast().two())));
+            function.push(new Tuple<>(0.0, Math.max(minimum, function.getLast().two())));
         }
 
         return function;

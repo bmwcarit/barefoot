@@ -70,11 +70,10 @@ public class StateTest {
         elements.put(1, new MockElem(1, Math.log10(0.2), 0.2, null));
         elements.put(2, new MockElem(2, Math.log10(0.5), 0.5, null));
 
-        StateMemory<MockElem, StateTransition, Sample> state =
-                new StateMemory<>();
+        StateMemory<MockElem, StateTransition, Sample> state = new StateMemory<>();
         {
-            Set<MockElem> vector = new HashSet<>(
-                    Arrays.asList(elements.get(0), elements.get(1), elements.get(2)));
+            Set<MockElem> vector =
+                    new HashSet<>(Arrays.asList(elements.get(0), elements.get(1), elements.get(2)));
 
             state.update(vector, new Sample(0));
 
@@ -88,8 +87,8 @@ public class StateTest {
         elements.put(6, new MockElem(6, Math.log10(0.1), 0.1, elements.get(2)));
 
         {
-            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(3),
-                    elements.get(4), elements.get(5), elements.get(6)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(3), elements.get(4),
+                    elements.get(5), elements.get(6)));
 
             state.update(vector, new Sample(1));
 
@@ -103,8 +102,8 @@ public class StateTest {
         elements.put(10, new MockElem(10, Math.log10(0.1), 0.1, elements.get(6)));
 
         {
-            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(7),
-                    elements.get(8), elements.get(9), elements.get(10)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(7), elements.get(8),
+                    elements.get(9), elements.get(10)));
 
             state.update(vector, new Sample(2));
 
@@ -118,8 +117,8 @@ public class StateTest {
         elements.put(14, new MockElem(14, Math.log10(0.1), 0.1, null));
 
         {
-            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(11),
-                    elements.get(12), elements.get(13), elements.get(14)));
+            Set<MockElem> vector = new HashSet<>(Arrays.asList(elements.get(11), elements.get(12),
+                    elements.get(13), elements.get(14)));
 
             state.update(vector, new Sample(3));
 
@@ -140,8 +139,7 @@ public class StateTest {
     public void TestStateJSON() throws JSONException {
         Map<Integer, MockElem> elements = new HashMap<>();
 
-        StateMemory<MockElem, StateTransition, Sample> state =
-                new StateMemory<>();
+        StateMemory<MockElem, StateTransition, Sample> state = new StateMemory<>();
 
         {
             JSONObject json = state.toJSON();
@@ -153,8 +151,7 @@ public class StateTest {
         elements.put(2, new MockElem(2, Math.log10(0.5), 0.5, null));
 
         state.update(
-                new HashSet<>(
-                        Arrays.asList(elements.get(0), elements.get(1), elements.get(2))),
+                new HashSet<>(Arrays.asList(elements.get(0), elements.get(1), elements.get(2))),
                 new Sample(0));
 
         {

@@ -112,8 +112,7 @@ public class FilterTest {
         }
 
         public Tuple<Double, Double> predecessor(int predecessor) {
-            return new Tuple<>(matrix[predecessor + 1][0],
-                    Math.log10(matrix[predecessor + 1][1]));
+            return new Tuple<>(matrix[predecessor + 1][0], Math.log10(matrix[predecessor + 1][1]));
         }
 
         public double seqprob(int candidate) {
@@ -141,8 +140,7 @@ public class FilterTest {
                 Sample sample) {
             Set<Tuple<MockElement, Double>> candidates = new HashSet<>();
             for (int c = 0; c < states.numCandidates(); ++c) {
-                candidates.add(
-                        new Tuple<>(new MockElement(c), states.emission(c)));
+                candidates.add(new Tuple<>(new MockElement(c), states.emission(c)));
             }
             return candidates;
         }
