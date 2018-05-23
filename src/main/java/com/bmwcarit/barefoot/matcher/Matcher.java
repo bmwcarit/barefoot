@@ -59,7 +59,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
     private final Cost<Road> cost;
     private final SpatialOperator spatial;
 
-    private double sig2 = Math.pow(5d, 2);
+    private double sig2 = Math.pow(10d, 2);
     private double sigA = Math.pow(10d, 2);
     private double sqrt_2pi_sig2 = Math.sqrt(2d * Math.PI * sig2);
     private double sqrt_2pi_sigA = Math.sqrt(2d * Math.PI * sigA);
@@ -205,7 +205,8 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
                                 360 - (sample.azimuth() - point.azimuth()))
                         : Math.min(point.azimuth() - sample.azimuth(),
                                 360 - (point.azimuth() - sample.azimuth()));
-                emission *= Math.max(1E-2, 1 / sqrt_2pi_sigA * Math.exp((-1) * da / (2 * sigA)));
+                emission *=
+                        Math.max(1E-2, 1 / sqrt_2pi_sigA * Math.exp((-1) * da * da / (2 * sigA)));
             }
 
             MatcherCandidate candidate = new MatcherCandidate(point);
@@ -249,8 +250,6 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         final AtomicInteger count = new AtomicInteger();
         final Map<MatcherCandidate, Map<MatcherCandidate, Tuple<MatcherTransition, Double>>> transitions =
                 new ConcurrentHashMap<>();
-        final double base =
-                1.0 * spatial.distance(predecessors.one().point(), candidates.one().point()) / 60;
         final double bound = Math.max(1000d, Math.min(distance,
                 ((candidates.one().time() - predecessors.one().time()) / 1000) * 100));
 
@@ -277,22 +276,17 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
 
                         Route route = new Route(predecessor.point(), candidate.point(), edges);
 
-                        // According to Newson and Krumm 2009, transition probability is lambda *
-                        // Math.exp((-1.0) * lambda * Math.abs(dt - route.length())), however, we
-                        // experimentally choose lambda * Math.exp((-1.0) * lambda * Math.max(0,
-                        // route.length() - dt)) to avoid unnecessary routes in case of u-turns.
-
                         double beta = lambda == 0
-                                ? (2.0 * Math.max(1d,
-                                        candidates.one().time() - predecessors.one().time()) / 1000)
+                                ? Math.max(1d, candidates.one().time() - predecessors.one().time())
+                                        / 1000
                                 : 1 / lambda;
 
-                        double transition = (1 / beta) * Math.exp(
-                                (-1.0) * Math.max(0, route.cost(new TimePriority()) - base) / beta);
+                        double transition = (1 / beta)
+                                * Math.exp((-1.0) * route.cost(new TimePriority()) / beta);
 
                         map.put(candidate, new Tuple<>(new MatcherTransition(route), transition));
 
-                        logger.trace("{} -> {} {} {} {}", predecessor.id(), candidate.id(), base,
+                        logger.trace("{} -> {} {} {}", predecessor.id(), candidate.id(),
                                 route.length(), transition);
                         count.incrementAndGet();
                     }

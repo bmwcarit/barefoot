@@ -34,19 +34,13 @@ import com.bmwcarit.barefoot.topology.Dijkstra;
 
 public class MatcherExample {
 
-    public List<MatcherSample> readSamples() throws IOException, JSONException {
-        String json = new String(
-                Files.readAllBytes(
-                        Paths.get(ServerTest.class.getResource("x0001-001.json").getPath())),
-                Charset.defaultCharset());
-
+    public List<MatcherSample> readSamples(String path) throws IOException, JSONException {
+        String json = new String(Files.readAllBytes(Paths.get(path)), Charset.defaultCharset());
         JSONArray jsonsamples = new JSONArray(json);
         List<MatcherSample> samples = new LinkedList<>();
-
         for (int i = 0; i < jsonsamples.length(); ++i) {
             samples.add(new MatcherSample(jsonsamples.getJSONObject(i)));
         }
-
         return samples;
     }
 
@@ -60,7 +54,8 @@ public class MatcherExample {
                 new Geography());
 
         // Input as sample batch (offline) or sample stream (online)
-        List<MatcherSample> samples = readSamples();
+        List<MatcherSample> samples =
+                readSamples(ServerTest.class.getResource("x0001-001.json").getPath());
 
         // Match full sequence of samples
         MatcherKState state = matcher.mmatch(samples, 1, 500);
@@ -87,7 +82,8 @@ public class MatcherExample {
                 new Geography());
 
         // Input as sample batch (offline) or sample stream (online)
-        List<MatcherSample> samples = readSamples();
+        List<MatcherSample> samples =
+                readSamples(ServerTest.class.getResource("x0001-001.json").getPath());
 
         // Create initial (empty) state memory
         MatcherKState state = new MatcherKState();

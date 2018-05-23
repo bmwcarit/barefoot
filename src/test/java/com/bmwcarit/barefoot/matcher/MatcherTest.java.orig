@@ -144,9 +144,16 @@ public class MatcherTest {
         assertEquals(route.source().edge().id(), transition.one().route().source().edge().id());
         assertEquals(route.target().edge().id(), transition.one().route().target().edge().id());
 
+<<<<<<< HEAD
         double beta = lambda == 0 ? Math.max(1d, target.two().time() - source.two().time()) / 1000
                 : 1 / lambda;
         double p = (1 / beta) * Math.exp((-1.0) * route.cost(new TimePriority()) / beta);
+=======
+        double beta = lambda == 0 ? (target.two().time() - source.two().time()) / 1000 : 1 / lambda;
+        double base = 1.0 * spatial.distance(source.two().point(), target.two().point()) / 60;
+        double p = (1 / beta)
+                * Math.exp((-1.0) * Math.max(0, route.cost(new TimePriority()) - base) / beta);
+>>>>>>> ae3cebb... Temporary commit: generic classes.
 
         assertEquals(transition.two(), p, 10E-6);
     }
