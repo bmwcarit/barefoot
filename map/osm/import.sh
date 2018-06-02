@@ -13,7 +13,7 @@
 # language governing permissions and limitations under the License.
 #
 
-set -o errexit -o nounset -x
+set -o errexit -o nounset
 
 if [ "$#" -eq "6" ] && ( [ "$6" = "slim" ] || [ "$6" = "normal" ] )
 then
