@@ -44,6 +44,7 @@ public class MatcherExample {
         return samples;
     }
 
+    @Ignore
     @Test
     public void offline() throws IOException, JSONException {
         // Load and construct road map

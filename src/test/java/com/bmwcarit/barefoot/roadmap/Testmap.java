@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.json.JSONException;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Point;
@@ -34,8 +32,7 @@ public class Testmap {
         }
     }
 
-    @Ignore
-    @Test
+    // @Test
     public void testRadiusSearch() throws IOException, JSONException {
         RoadMap map = instance();
 

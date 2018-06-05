@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -70,7 +71,8 @@ public class MatcherTest {
                 new Entry(2L, 2L, 3L, false, "LINESTRING(11.020 48.000, 11.030 48.000)"),
                 new Entry(3L, 1L, 4L, true, "LINESTRING(11.010 48.000, 11.011 47.999)"),
                 new Entry(4L, 4L, 5L, true, "LINESTRING(11.011 47.999, 11.021 47.999)"),
-                new Entry(5L, 5L, 6L, true, "LINESTRING(11.021 47.999, 11.021 48.010)")));
+                new Entry(5L, 5L, 6L, true, "LINESTRING(11.021 47.999, 11.021 48.010)"),
+                new Entry(6L, 6L, 7L, false, "LINESTRING(11.021 48.010, 11.021 48.020)")));
 
         private Iterator<BaseRoad> iterator = null;
 
@@ -132,13 +134,17 @@ public class MatcherTest {
     private void assertTransition(Tuple<MatcherTransition, Double> transition,
             Tuple<MatcherCandidate, MatcherSample> source,
             Tuple<MatcherCandidate, MatcherSample> target, double lambda) {
-        List<Road> edges = router.route(source.one().point(), target.one().point(), cost);
+
+        RoadPoint start = transition.one().route().source();
+        RoadPoint end = transition.one().route().target();
+
+        List<Road> edges = router.route(start, end, cost);
 
         if (edges == null) {
             // fail();
         }
 
-        Route route = new Route(source.one().point(), target.one().point(), edges);
+        Route route = new Route(start, end, edges);
 
         assertEquals(route.length(), transition.one().route().length(), 10E-6);
         assertEquals(route.source().edge().id(), transition.one().route().source().edge().id());
@@ -169,10 +175,10 @@ public class MatcherTest {
     }
 
     @Test
-    public void TestCandidates() throws JSONException {
+    public void testCandidates() throws JSONException {
         Matcher filter = new Matcher(map, router, cost, spatial);
+        filter.setMaxRadius(100);
         {
-            filter.setMaxRadius(100);
             Point sample = new Point(11.001, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates = filter
@@ -180,9 +186,8 @@ public class MatcherTest {
 
             assertEquals(0, candidates.size());
         }
+        filter.setMaxRadius(200);
         {
-            double radius = 200;
-            filter.setMaxRadius(radius);
             Point sample = new Point(11.001, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates = filter
@@ -201,8 +206,6 @@ public class MatcherTest {
             assertTrue(set.containsAll(refset));
         }
         {
-            double radius = 200;
-            filter.setMaxRadius(radius);
             Point sample = new Point(11.010, 48.000);
 
             Set<Tuple<MatcherCandidate, Double>> candidates = filter
@@ -222,8 +225,6 @@ public class MatcherTest {
             assertTrue(set.containsAll(refset));
         }
         {
-            double radius = 200;
-            filter.setMaxRadius(radius);
             Point sample = new Point(11.011, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates = filter
@@ -243,29 +244,6 @@ public class MatcherTest {
             assertTrue(set.containsAll(refset));
         }
         {
-            double radius = 300;
-            filter.setMaxRadius(radius);
-            Point sample = new Point(11.011, 48.001);
-
-            Set<Tuple<MatcherCandidate, Double>> candidates = filter
-                    .candidates(new HashSet<MatcherCandidate>(), new MatcherSample(0, sample));
-
-            Set<Long> refset = new HashSet<>(Arrays.asList(0L, 2L, 3L, 8L));
-            Set<Long> set = new HashSet<>();
-
-            for (Tuple<MatcherCandidate, Double> candidate : candidates) {
-                assertTrue(Long.toString(candidate.one().point().edge().id()),
-                        refset.contains(candidate.one().point().edge().id()));
-                assertCandidate(candidate, sample);
-                set.add(candidate.one().point().edge().id());
-            }
-
-            assertEquals(refset.size(), candidates.size());
-            assertTrue(set.containsAll(refset));
-        }
-        {
-            double radius = 200;
-            filter.setMaxRadius(radius);
             Point sample = new Point(11.019, 48.001);
 
             Set<Tuple<MatcherCandidate, Double>> candidates = filter
@@ -284,12 +262,32 @@ public class MatcherTest {
             assertEquals(refset.size(), candidates.size());
             assertTrue(set.containsAll(refset));
         }
+        filter.setMaxRadius(300);
+        {
+            Point sample = new Point(11.011, 48.001);
+
+            Set<Tuple<MatcherCandidate, Double>> candidates = filter
+                    .candidates(new HashSet<MatcherCandidate>(), new MatcherSample(0, sample));
+
+            Set<Long> refset = new HashSet<>(Arrays.asList(0L, 2L, 3L, 8L));
+            Set<Long> set = new HashSet<>();
+
+            for (Tuple<MatcherCandidate, Double> candidate : candidates) {
+                assertTrue(Long.toString(candidate.one().point().edge().id()),
+                        refset.contains(candidate.one().point().edge().id()));
+                assertCandidate(candidate, sample);
+                set.add(candidate.one().point().edge().id());
+            }
+
+            assertEquals(refset.size(), candidates.size());
+            assertTrue(set.containsAll(refset));
+        }
     }
 
     @Test
-    public void TestTransitions() throws JSONException {
+    public void testTransitions() throws JSONException {
         Matcher filter = new Matcher(map, router, cost, spatial);
-        filter.setMaxRadius(200);
+        filter.shortenTurns(false);
         {
             MatcherSample sample1 = new MatcherSample(0, new Point(11.001, 48.001));
             MatcherSample sample2 = new MatcherSample(60000, new Point(11.019, 48.001));
@@ -325,7 +323,6 @@ public class MatcherTest {
                     assertTransition(target.getValue(), new Tuple<>(source.getKey(), sample1),
                             new Tuple<>(target.getKey(), sample2), filter.getLambda());
                 }
-
             }
         }
         {
@@ -368,6 +365,60 @@ public class MatcherTest {
                             new Tuple<>(target.getKey(), sample2), filter.getLambda());
                 }
             }
+        }
+    }
+
+    @Test
+    public void testShortenTurns() throws JSONException {
+        List<MatcherSample> samples =
+                new LinkedList<>(Arrays.asList(new MatcherSample(0, new Point(11.001, 48.001)),
+                        new MatcherSample(60000, new Point(11.011, 48.001)),
+                        new MatcherSample(120000, new Point(11.012, 48.001)),
+                        new MatcherSample(180000, new Point(11.021, 48.010))));
+        Matcher filter = new Matcher(map, router, cost, spatial);
+        float full = 0f, shorten = 0f;
+        filter.shortenTurns(false);
+        {
+            MatcherKState state = filter.mmatch(samples, 0, 0);
+
+            full = 0f;
+            for (int i = 1; i < state.sequence().size(); ++i) {
+                full += (float) state.sequence().get(i).transition().route().length();
+            }
+        }
+        filter.shortenTurns(true);
+        {
+            MatcherKState state = filter.mmatch(samples, 0, 0);
+
+            shorten = 0f;
+            for (int i = 1; i < state.sequence().size(); ++i) {
+                shorten += (float) state.sequence().get(i).transition().route().length();
+            }
+            assertTrue(shorten < full);
+        }
+        MatcherSample temp = samples.get(1);
+        samples.set(1, samples.get(2));
+        samples.set(2, temp);
+        {
+            MatcherKState state = filter.mmatch(samples, 0, 0);
+
+            float length = 0f;
+            for (int i = 1; i < state.sequence().size(); ++i) {
+                length += (float) state.sequence().get(i).transition().route().length();
+            }
+            assertEquals(shorten, length, 1E-10);
+        }
+        samples.remove(1);
+        {
+            MatcherKState state = filter.mmatch(samples, 0, 0);
+            List<Integer> check = Arrays.asList(0, 2, 10);
+
+            float length = 0f;
+            for (int i = 1; i < state.sequence().size(); ++i) {
+                length += (float) state.sequence().get(i).transition().route().length();
+                assertEquals((int) check.get(i), (int) state.sequence().get(i).point().edge().id());
+            }
+            assertEquals(shorten, length, 1E-10);
         }
     }
 }
