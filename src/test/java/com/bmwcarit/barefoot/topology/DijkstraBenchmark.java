@@ -432,8 +432,7 @@ public class DijkstraBenchmark {
         logger.info("MSMT (fastest, priority): {} ms", sw.ms());
 
         sw.start();
-        Map<RoadPoint, Map<RoadPoint, List<Road>>> routes2 =
-                new HashMap<>();
+        Map<RoadPoint, Map<RoadPoint, List<Road>>> routes2 = new HashMap<>();
         for (RoadPoint source : sources) {
             Map<RoadPoint, List<Road>> paths = new HashMap<>();
             for (RoadPoint target : targets) {
@@ -476,8 +475,7 @@ public class DijkstraBenchmark {
         logger.info("MSMT (fastest): {} ms", sw.ms());
 
         sw.start();
-        Map<RoadPoint, Map<RoadPoint, List<Road>>> routes2 =
-                new HashMap<>();
+        Map<RoadPoint, Map<RoadPoint, List<Road>>> routes2 = new HashMap<>();
         for (RoadPoint source : sources) {
             Map<RoadPoint, List<Road>> paths = new HashMap<>();
             for (RoadPoint target : targets) {

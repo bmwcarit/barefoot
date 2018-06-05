@@ -208,15 +208,14 @@ public class QuadTreeIndex implements SpatialIndex<Tuple<Integer, Double>>, Seri
         Set<Integer> visited = new HashSet<>();
 
         PriorityQueue<Triple<Integer, Double, Double>> queue =
-                new PriorityQueue<>(k,
-                        new Comparator<Triple<Integer, Double, Double>>() {
-                            @Override
-                            public int compare(Triple<Integer, Double, Double> left,
-                                    Triple<Integer, Double, Double> right) {
-                                return left.three() < right.three() ? -1
-                                        : left.three() > right.three() ? +1 : 0;
-                            }
-                        });
+                new PriorityQueue<>(k, new Comparator<Triple<Integer, Double, Double>>() {
+                    @Override
+                    public int compare(Triple<Integer, Double, Double> left,
+                            Triple<Integer, Double, Double> right) {
+                        return left.three() < right.three() ? -1
+                                : left.three() > right.three() ? +1 : 0;
+                    }
+                });
 
         double radius = 100;
 

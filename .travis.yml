@@ -1,0 +1,55 @@
+sudo: required
+language: java
+jdk:
+  # Build and test Barefoot library using JDK 7, 8
+  - openjdk7
+  - oraclejdk8
+matrix:
+  include:
+    - env: NAME="Matcher Server"
+      before_script:
+        - curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf --output map/osm/oberbayern.osm.pbf
+        # Osmosis takes about 10 minutes to process the Oberbayern map used for testing, which coincides with
+        # Travis' timeout for output updates.  Use `travis_wait` to extend the timeout.
+        # Use interactive option to force bash to read .bashrc and add path to Osmosis.
+        - travis_wait docker exec barefoot-database /bin/bash -i /mnt/map/osm/import.sh
+        # Start matcher server on port 1234
+        - mvn --quiet -Dexec.executable="echo" -Dexec.args='-n ${project.version}' --non-recursive exec:exec > version
+        - docker run -t -d --net=host --name="barefoot-matcher" -v ${PWD}:/mnt/barefoot --workdir /mnt/barefoot barefoot-map java -jar target/barefoot-`cat version`-matcher-jar-with-dependencies.jar --geojson config/server.properties config/oberbayern.properties
+        - until sudo lsof -Pi :1234 -sTCP:LISTEN -t; do sleep 1; done
+        - docker logs barefoot-matcher
+      script:
+        - python util/submit/batch.py --host localhost --port 1234 --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-015.json
+        - python util/submit/batch.py --host localhost --port 1234 --file src/test/resources/com/bmwcarit/barefoot/matcher/x0001-001.json
+      after_failure:
+        - docker logs barefoot-matcher
+    - env: NAME="Python Map Tools"
+      install: true
+      before_script:
+        # Ensure PostgreSQL server is ready - for other tests, PostreSQL has plenty of time to start
+        - until docker exec barefoot-database sudo --user=postgres -- psql --command='select 1;'; do sleep 1; done
+      script: docker exec barefoot-database /bin/bash /mnt/map/tools/test/run.sh
+    - env: NAME="Java Formatting"
+      jdk: oraclejdk8
+      before_install: true
+      install: mvn formatter:format
+      before_script: true
+      script:
+        - git diff --exit-code
+      after_failure: true  To fix this failure automatically, run "mvn formatter:format" on your code using Java 8+
+services:
+  - docker
+before_install:
+  - docker build -t barefoot-map ./map
+  # Stop existing PostgreSQL - https://github.com/travis-ci/travis-ci/issues/4842#issuecomment-311527059
+  - sudo service postgresql stop
+  # Start PostgreSQL in a container with Barefoot configuration
+  - docker run -t -d --net=host --name="barefoot-database" -v ${PWD}/map/:/mnt/map barefoot-map
+before_script:
+  - curl http://download.geofabrik.de/europe/germany/bayern/oberbayern-latest.osm.pbf --output map/osm/oberbayern.osm.pbf
+  # Osmosis takes about 10 minutes to process the Oberbayern map used for testing, which coincides with
+  # Travis' timeout for output updates.  Use `travis_wait` to extend the timeout.
+  # Use interactive option to force bash to read .bashrc and add path to Osmosis.
+  - travis_wait docker exec barefoot-database /bin/bash -i /mnt/map/osm/import.sh
+script:
+  - mvn test --batch-mode --errors

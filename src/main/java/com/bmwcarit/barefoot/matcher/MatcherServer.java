@@ -285,8 +285,7 @@ public class MatcherServer extends AbstractServer {
                         sw.start();
 
                         final List<MatcherSample> samples = input.format(request);
-                        final AtomicReference<MatcherKState> state =
-                                new AtomicReference<>();
+                        final AtomicReference<MatcherKState> state = new AtomicReference<>();
 
                         InlineScheduler scheduler = StaticScheduler.scheduler();
                         scheduler.spawn(new Task() {

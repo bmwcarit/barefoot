@@ -19,15 +19,14 @@ __license__ = "Apache-2.0"
 
 import optparse
 import json
-import subprocess
-import time
-import datetime
 import random
-import os,sys
+import socket
+import os
+import sys
 
 parser = optparse.OptionParser("batch.py [options]")
 parser.add_option("--host", dest="host", help="IP address of matcher.")
-parser.add_option("--port", dest="port", help="Port of matcher.")
+parser.add_option("--port", type="int", dest="port", help="Port of matcher.")
 parser.add_option("--file", dest="file", help="JSON file with sample data.")
 parser.add_option("--id", dest="id", help="Object id.")
 parser.add_option("--zone", dest="zone", default="+0000", help="Time zone in '(+/-)HHMM' format.")
@@ -35,10 +34,10 @@ parser.add_option("--format", dest="format", default="geojson", help="Output for
 
 (options, args) = parser.parse_args()
 
-if options.file == None or options.host == None or options.port == None:
+if options.file is None or options.host is None or options.port is None:
     parser.print_help()
     exit(1)
-    
+
 if options.format not in ["geojson", "slimjson", "debug"]:
     parser.print_help()
     exit(1)
@@ -49,13 +48,37 @@ with open(options.file) as jsonfile:
 previous = None
 
 for sample in samples:
-    if options.id != None:
+    if options.id is not None:
         sample["id"] = options.id
 
 tmp = "batch-%s" % random.randint(0, sys.maxint)
 file = open(tmp, "w")
-file.write("{\"format\": \"%s\", \"request\": %s}\n" % (options.format, json.dumps(samples)))
-file.close()
+try:
+    try:
+        file.write(
+            "{\"format\": \"%s\", \"request\": %s}\n" %
+            (options.format, json.dumps(samples))
+        )
+    finally:
+        file.close()
 
-subprocess.call("cat %s | netcat %s %s" % (tmp, options.host, options.port), shell=True)
-os.remove(tmp)
+    output = ''
+
+    s = socket.create_connection((options.host, options.port))
+    try:
+        with open(tmp) as f:
+            s.sendall(f.read())
+        s.shutdown(socket.SHUT_WR)
+        buf = s.recv(4096)
+        while buf:
+            if len(output) < 16:
+                output += buf
+            sys.stdout.write(buf)
+            buf = s.recv(4096)
+    finally:
+        s.close()
+finally:
+    os.remove(tmp)
+
+if not output.startswith('SUCCESS\n'):
+    sys.exit(1)

@@ -48,8 +48,7 @@ public class GeographyTest {
     private static Triple<Point, Double, Double> intercept(Point a, Point b, Point c) {
         int iter = 1000;
 
-        Triple<Point, Double, Double> res =
-                new Triple<>(a, spatial.distance(a, c), 0d);
+        Triple<Point, Double, Double> res = new Triple<>(a, spatial.distance(a, c), 0d);
 
         for (int f = 1; f <= iter; ++f) {
 

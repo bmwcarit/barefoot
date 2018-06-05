@@ -162,8 +162,7 @@ public class AbstractServer {
                 BufferedReader reader =
                         new BufferedReader(new InputStreamReader(client.getInputStream()));
                 PrintWriter writer = new PrintWriter(client.getOutputStream());
-                FutureTask<String> requestHandler =
-                        new FutureTask<>(new RequestHandler(reader));
+                FutureTask<String> requestHandler = new FutureTask<>(new RequestHandler(reader));
                 executor.execute(requestHandler);
 
                 String request = null;

@@ -13,12 +13,21 @@
 # language governing permissions and limitations under the License.
 #
 
+set -o errexit -o nounset
+
 . /mnt/map/tools/test/test.properties
 export PYTHONPATH=/mnt/map/tools/
 cd /mnt/map/tools/test
 
 echo "Create ${database} database ..."
 sudo -u postgres psql -q -c "CREATE DATABASE ${database};"
+function cleanup {
+	echo "Delete ${database} database ..."
+	sudo -u postgres psql -q -c "DROP DATABASE ${database};"
+	sudo -u postgres psql -q -c "DROP USER IF EXISTS ${user};"
+	echo "Done."
+}
+trap cleanup EXIT
 sudo -u postgres psql -q -d ${database} -c "CREATE EXTENSION hstore;"
 sudo -u postgres psql -q -d ${database} -c "CREATE EXTENSION postgis;"
 sudo -u postgres psql -q -c "CREATE USER ${user} PASSWORD '${password}';"
@@ -28,8 +37,3 @@ echo "Run bfmap test ..."
 sudo -u postgres psql -q -d ${database} -f /mnt/map/tools/test/${bfmap_table}
 sudo -u postgres psql -q -d ${database} -c "GRANT ALL ON TABLE temp_ways TO ${user};"
 python -m unittest test_bfmap
-
-echo "Delete ${database} database ..."
-sudo -u postgres psql -q -c "DROP DATABASE ${database};"
-sudo -u postgres psql -q -c "DROP USER IF EXISTS ${user};"
-echo "Done."
