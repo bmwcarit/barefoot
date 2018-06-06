@@ -71,7 +71,7 @@ public abstract class ServerControl {
         try {
             map = Loader.roadmap(databaseProperties, true);
         } catch (SourceException e) {
-            logger.error(e.getMessage());
+            logger.error("loading map failed:", e);
             System.exit(1);
         }
         map.construct();

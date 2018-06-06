@@ -34,10 +34,9 @@ public class SourceException extends RuntimeException {
      * Creates a {@link SourceException} with an error message and stack trace.
      *
      * @param message Message of the exception.
-     * @param stack_trace Stack trace of the exception, e.g. when wrapping another exception.
+     * @param inner Inner exception wrapped by this exception.
      */
-    public SourceException(String message, StackTraceElement[] stack_trace) {
-        super(message);
-        super.setStackTrace(stack_trace);
+    public SourceException(String message, Exception inner) {
+        super(message, inner);
     }
 }

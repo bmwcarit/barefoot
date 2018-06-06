@@ -59,13 +59,14 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
     private final Cost<Road> cost;
     private final SpatialOperator spatial;
 
-    private double sig2 = Math.pow(5d, 2);
+    private double sig2 = Math.pow(10d, 2);
     private double sigA = Math.pow(10d, 2);
     private double sqrt_2pi_sig2 = Math.sqrt(2d * Math.PI * sig2);
     private double sqrt_2pi_sigA = Math.sqrt(2d * Math.PI * sigA);
     private double lambda = 0d;
     private double radius = 200;
     private double distance = 15000;
+    private boolean shortenTurns = true;
 
     /**
      * Creates a HMM map matching filter for some map, router, cost function, and spatial operator.
@@ -96,10 +97,10 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
 
     /**
      * Sets standard deviation in meters of gaussian distribution for defining emission
-     * probabilities (default is 5 meters).
+     * probabilities (default is 10 meters).
      *
      * @param sigma Standard deviation in meters of gaussian distribution for defining emission
-     *        probabilities (default is 5 meters).
+     *        probabilities (default is 10 meters).
      */
     public void setSigma(double sigma) {
         this.sig2 = Math.pow(sigma, 2);
@@ -137,7 +138,7 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
     }
 
     /**
-     * Sets maximum radius for candidate selection in meters (default is 100 meters).
+     * Sets maximum radius for candidate selection in meters (default is 200 meters).
      *
      * @param radius Maximum radius for candidate selection in meters.
      */
@@ -161,6 +162,24 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
      */
     public void setMaxDistance(double distance) {
         this.distance = distance;
+    }
+
+    /**
+     * Gets option of shorten turns.
+     *
+     * @return Option of shorten turns.
+     */
+    public boolean shortenTurns() {
+        return this.shortenTurns;
+    }
+
+    /**
+     * Sets option to shorten turns (default true).
+     *
+     * @param shortenTurns Option to shorten turns.
+     */
+    public void shortenTurns(boolean shortenTurns) {
+        this.shortenTurns = shortenTurns;
     }
 
     @Override
@@ -205,7 +224,8 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
                                 360 - (sample.azimuth() - point.azimuth()))
                         : Math.min(point.azimuth() - sample.azimuth(),
                                 360 - (point.azimuth() - sample.azimuth()));
-                emission *= Math.max(1E-2, 1 / sqrt_2pi_sigA * Math.exp((-1) * da / (2 * sigA)));
+                emission *=
+                        Math.max(1E-2, 1 / sqrt_2pi_sigA * Math.exp((-1) * da * da / (2 * sigA)));
             }
 
             MatcherCandidate candidate = new MatcherCandidate(point);
@@ -249,8 +269,6 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
         final AtomicInteger count = new AtomicInteger();
         final Map<MatcherCandidate, Map<MatcherCandidate, Tuple<MatcherTransition, Double>>> transitions =
                 new ConcurrentHashMap<>();
-        final double base =
-                1.0 * spatial.distance(predecessors.one().point(), candidates.one().point()) / 60;
         final double bound = Math.max(1000d, Math.min(distance,
                 ((candidates.one().time() - predecessors.one().time()) / 1000) * 100));
 
@@ -277,22 +295,42 @@ public class Matcher extends Filter<MatcherCandidate, MatcherTransition, Matcher
 
                         Route route = new Route(predecessor.point(), candidate.point(), edges);
 
-                        // According to Newson and Krumm 2009, transition probability is lambda *
-                        // Math.exp((-1.0) * lambda * Math.abs(dt - route.length())), however, we
-                        // experimentally choose lambda * Math.exp((-1.0) * lambda * Math.max(0,
-                        // route.length() - dt)) to avoid unnecessary routes in case of u-turns.
+                        if (shortenTurns() && edges.size() >= 2) {
+                            if (edges.get(0).base().id() == edges.get(1).base().id()
+                                    && edges.get(0).id() != edges.get(1).id()) {
+                                RoadPoint start = predecessor.point(), end = candidate.point();
+                                if (edges.size() > 2) {
+                                    start = new RoadPoint(edges.get(1), 1 - start.fraction());
+                                    edges.remove(0);
+                                } else {
+                                    // Here, additional cost of 5 meters are added to the route
+                                    // length in order to penalize and avoid turns, e.g., at the end
+                                    // of a trace.
+                                    if (start.fraction() < 1 - end.fraction()) {
+                                        end = new RoadPoint(edges.get(0), Math.min(1d,
+                                                1 - end.fraction() + (5d / edges.get(0).length())));
+                                        edges.remove(1);
+                                    } else {
+                                        start = new RoadPoint(edges.get(1), Math.max(0d, 1
+                                                - start.fraction() - (5d / edges.get(1).length())));
+                                        edges.remove(0);
+                                    }
+                                }
+                                route = new Route(start, end, edges);
+                            }
+                        }
 
                         double beta = lambda == 0
-                                ? (2.0 * Math.max(1d,
-                                        candidates.one().time() - predecessors.one().time()) / 1000)
+                                ? Math.max(1d, candidates.one().time() - predecessors.one().time())
+                                        / 1000
                                 : 1 / lambda;
 
-                        double transition = (1 / beta) * Math.exp(
-                                (-1.0) * Math.max(0, route.cost(new TimePriority()) - base) / beta);
+                        double transition = (1 / beta)
+                                * Math.exp((-1.0) * route.cost(new TimePriority()) / beta);
 
                         map.put(candidate, new Tuple<>(new MatcherTransition(route), transition));
 
-                        logger.trace("{} -> {} {} {} {}", predecessor.id(), candidate.id(), base,
+                        logger.trace("{} -> {} {} {}", predecessor.id(), candidate.id(),
                                 route.length(), transition);
                         count.incrementAndGet();
                     }

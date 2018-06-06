@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.bmwcarit.barefoot.road.BaseRoad;
@@ -577,8 +576,7 @@ public class RouteTest {
         }
     }
 
-    @Ignore
-    @Test
+    // @Test
     public void testGeometryBug() throws SourceException, JSONException, IOException {
         RoadMap map = Testmap.instance();
 

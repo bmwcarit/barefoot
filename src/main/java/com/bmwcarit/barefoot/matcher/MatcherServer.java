@@ -255,6 +255,8 @@ public class MatcherServer extends AbstractServer {
                     Double.toString(matcher.getLambda()))));
             matcher.setSigma(Double.parseDouble(
                     properties.getProperty("matcher.sigma", Double.toString(matcher.getSigma()))));
+            matcher.shortenTurns(
+                    Boolean.parseBoolean(properties.getProperty("matcher.shortenturns", "true")));
             interval = Integer.parseInt(properties.getProperty("matcher.interval.min", "1000"));
             distance = Integer.parseInt(properties.getProperty("matcher.distance.min", "0"));
 
@@ -271,6 +273,7 @@ public class MatcherServer extends AbstractServer {
             logger.info("matcher.lambda={}", matcher.getLambda());
             logger.info("matcher.sigma={}", matcher.getSigma());
             logger.info("matcher.threads={}", matcherThreads);
+            logger.info("matcher.shortenturns={}", matcher.shortenTurns());
             logger.info("matcher.interval.min={}", interval);
             logger.info("matcher.distance.min={}", distance);
         }

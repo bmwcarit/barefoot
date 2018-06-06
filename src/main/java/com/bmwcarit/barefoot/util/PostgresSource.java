@@ -81,7 +81,7 @@ public class PostgresSource {
             connection = DriverManager.getConnection(url, props);
             connection.setAutoCommit(false);
         } catch (SQLException e) {
-            throw new SourceException("Opening PostgreSQL connection failed: " + e.getMessage());
+            throw new SourceException("Opening PostgreSQL connection failed: " + e.getMessage(), e);
         }
     }
 
@@ -95,7 +95,7 @@ public class PostgresSource {
             connection.close();
             connection = null;
         } catch (SQLException e) {
-            throw new SourceException("Closing PostgreSQL connection failed: " + e.getMessage());
+            throw new SourceException("Closing PostgreSQL connection failed: " + e.getMessage(), e);
         }
     }
 
@@ -119,7 +119,7 @@ public class PostgresSource {
             query_result = statement.executeQuery(query);
 
         } catch (SQLException e) {
-            throw new SourceException("Executing PostgreSQL query failed: " + e.getMessage());
+            throw new SourceException("Executing PostgreSQL query failed: " + e.getMessage(), e);
         }
 
         return query_result;
