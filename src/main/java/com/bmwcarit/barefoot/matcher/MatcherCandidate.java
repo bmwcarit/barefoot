@@ -27,6 +27,13 @@ public class MatcherCandidate
         extends StateCandidate<MatcherCandidate, MatcherTransition, MatcherSample> {
     private final RoadPoint point;
 
+
+    public MatcherCandidate(String id, RoadPoint point) {
+        super(id);
+        this.point = point;
+    }
+
+
     /**
      * Creates a matching candidate.
      *
