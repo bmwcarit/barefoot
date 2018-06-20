@@ -13,6 +13,7 @@
 
 package com.bmwcarit.barefoot.roadmap;
 
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.bmwcarit.barefoot.road.RoadOutputPath;
 import com.bmwcarit.barefoot.spatial.Geography;
 import com.bmwcarit.barefoot.spatial.SpatialOperator;
 import com.bmwcarit.barefoot.topology.Path;
@@ -200,6 +202,112 @@ public class Route extends Path<Road> {
 
         return geometry;
     }
+    
+
+    /**
+     * Gets geometry list of the {@link Route} from start point to end point.  
+     * The division of geometries is based on openstreetmap road ids
+     *
+     * @return Geometry of the route.
+     */
+    public Hashtable<Integer, RoadOutputPath> geometryList() {
+    	Hashtable<Integer, RoadOutputPath> result = new Hashtable<Integer, RoadOutputPath>();
+    	
+        Polyline geometry = new Polyline();
+        Point lastPoint = null;
+        RoadOutputPath roadOutputPath = null;
+        Road baseRoad = source().edge();
+        geometry.startPath(source().geometry());
+        roadOutputPath = new RoadOutputPath(baseRoad.base(), geometry, baseRoad.heading());
+        
+        result.put(result.size()+1,roadOutputPath);
+        
+        if (source().edge().id() != target().edge().id()) {
+            {
+                double f = source().edge().length() * source().fraction(), s = 0;
+                Point a = source().edge().geometry().getPoint(0);
+                
+                for (int i = 1; i < source().edge().geometry().getPointCount(); ++i) {
+                    Point b = source().edge().geometry().getPoint(i);
+                    s += spatial.distance(a, b);
+                    a = b;
+
+                    if (s <= f) {
+                    	continue;
+                    }
+
+                    geometry.lineTo(b);
+                }
+            }
+            for (int i = 1; i < path().size() - 1; ++i) {
+                Polyline segment = path().get(i).geometry();
+                baseRoad = path().get(i);
+                if(baseRoad.base()!=null&&baseRoad.base().refid()!=roadOutputPath.getId()&&geometry.getPointCount()>0){
+                	lastPoint = geometry.getPoint(geometry.getPointCount()-1);
+                    geometry = new Polyline();
+                    geometry.startPath(lastPoint);
+                    roadOutputPath = new RoadOutputPath(baseRoad.base(), geometry, baseRoad.heading());
+                    result.put(result.size()+1,roadOutputPath);
+                }
+            	
+                for (int j = 1; j < segment.getPointCount(); ++j) {
+                    geometry.lineTo(segment.getPoint(j));
+                }
+            }
+            {
+                double f = target().edge().length() * target().fraction(), s = 0;
+                Point a = target().edge().geometry().getPoint(0);
+                baseRoad = target().edge();
+            	
+                if(baseRoad.base()!=null&&baseRoad.base().refid()!=roadOutputPath.getId()){
+                	lastPoint = geometry.getPoint(geometry.getPointCount()-1);
+                    geometry = new Polyline();
+                    geometry.startPath(lastPoint);
+                    roadOutputPath = new RoadOutputPath(baseRoad.base(), geometry, baseRoad.heading());
+                    result.put(result.size()+1,roadOutputPath);
+                }
+                
+                for (int i = 1; i < target().edge().geometry().getPointCount() - 1; ++i) {
+                    Point b = target().edge().geometry().getPoint(i);
+                    s += spatial.distance(a, b);
+                    a = b;
+
+                    if (s >= f) {
+                    	
+                        geometry.startPath(target().edge().geometry().getPoint(i-1));
+                        break;
+                    }
+
+                    geometry.lineTo(b);
+                }
+            }
+        } else {
+            double sf = source().edge().length() * source().fraction();
+            double tf = target().edge().length() * target().fraction();
+            double s = 0;
+            Point a = source().edge().geometry().getPoint(0);
+                        
+            for (int i = 1; i < source().edge().geometry().getPointCount() - 1; ++i) {
+                Point b = source().edge().geometry().getPoint(i);
+                s += spatial.distance(a, b);
+                a = b;
+
+                if (s <= sf) {
+                    continue;
+                }
+                if (s >= tf) {
+                    break;
+                }
+
+                geometry.lineTo(b);
+            }
+        }
+
+        geometry.lineTo(target().geometry());
+
+        return result;
+    }
+    
 
     /**
      * Creates a {@link Route} object from its JSON representation.

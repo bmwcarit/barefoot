@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bmwcarit.barefoot.matcher.MatcherServer.DebugJSONOutputFormatter;
+import com.bmwcarit.barefoot.matcher.MatcherServer.GeoJSONFeaturesOutputFormatter;
+import com.bmwcarit.barefoot.matcher.MatcherServer.GeoJSONFeaturesInputFormatter;
 import com.bmwcarit.barefoot.matcher.MatcherServer.GeoJSONOutputFormatter;
 import com.bmwcarit.barefoot.matcher.MatcherServer.InputFormatter;
 import com.bmwcarit.barefoot.matcher.MatcherServer.OutputFormatter;
@@ -126,7 +128,7 @@ public abstract class ServerControl {
     public static void main(String[] args) {
         if (args.length < 2 || args.length > 3) {
             logger.error(
-                    "missing arguments\nusage: [--slimjson|--debug|--geojson] /path/to/server/properties /path/to/mapserver/properties");
+                    "missing arguments\nusage: [--slimjson|--debug|--geojson|--geojsonfeatures] [--geojsonfeaturesinput] /path/to/server/properties /path/to/mapserver/properties");
             System.exit(1);
         }
 
@@ -144,6 +146,12 @@ public abstract class ServerControl {
                         break;
                     case "--geojson":
                         output = new GeoJSONOutputFormatter();
+                        break;
+                    case "--geojsonfeatures":
+                    	output = new GeoJSONFeaturesOutputFormatter();
+                        break;
+                    case "--geojsonfeaturesinput":
+                    	input = new GeoJSONFeaturesInputFormatter();
                         break;
                     default:
                         logger.warn("invalid option {} ignored", args[i]);
