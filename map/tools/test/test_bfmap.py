@@ -100,35 +100,58 @@ class TestBfmap(unittest.TestCase):
         segments = bfmap.segment(config, row)
         self.assertEquals(2, len(segments))
 
-    def test_maxspeed(self):
+    def test_extract_limit_number(self):
+        self.assertEquals(60, bfmap.extract_speed_limit("60"))
+
+    def test_extract_limit_space_mph(self):
+        self.assertEquals(60 * 1.609, bfmap.extract_speed_limit("60 mph"))
+
+    def test_extract_limit_nospace_mph(self):
+        self.assertEquals(60 * 1.609, bfmap.extract_speed_limit("60mph"))
+
+    def test_extract_limit_unrecognised(self):
+        self.assertEquals(None, bfmap.extract_speed_limit("national"))
+
+    def test_maxspeed_space_mph(self):
         tags = {"maxspeed": "60 mph"}
         (fwd, bwd) = bfmap.maxspeed(tags)
         self.assertEquals(60 * 1.609, fwd)
         self.assertEquals(60 * 1.609, bwd)
 
+    def test_maxspeed_number(self):
         tags = {"maxspeed": "60"}
         (fwd, bwd) = bfmap.maxspeed(tags)
         self.assertEquals(60, fwd)
         self.assertEquals(60, bwd)
 
+    def test_maxspeed_fb_space_mph(self):
         tags = {"maxspeed:forward": "60 mph", "maxspeed:backward": "60 mph"}
         (fwd, bwd) = bfmap.maxspeed(tags)
         self.assertEquals(60 * 1.609, fwd)
         self.assertEquals(60 * 1.609, bwd)
 
+    def test_maxspeed_fb_kph(self):
         tags = {"maxspeed:forward": "60", "maxspeed:backward": "60"}
         (fwd, bwd) = bfmap.maxspeed(tags)
         self.assertEquals(60, fwd)
         self.assertEquals(60, bwd)
 
+    def test_maxspeed_nospace_mph(self):
         tags = {"maxspeed": "60mph"}
         (fwd, bwd) = bfmap.maxspeed(tags)
-        self.assertEquals("null", fwd)
-        self.assertEquals("null", bwd)
+        self.assertEquals(60 * 1.609, fwd)
+        self.assertEquals(60 * 1.609, bwd)
+
+    def test_maxspeed_specific_overrides_general(self):
+        tags = {"maxspeed": "20", "maxspeed:backward": "30"}
+        (fwd, bwd) = bfmap.maxspeed(tags)
+        self.assertEquals(20, fwd)
+        self.assertEquals(30, bwd)
 
     def test_ways2bfmap(self):
-        properties = dict(line.strip().split('=')
-                          for line in open('/mnt/map/tools/test/test.properties'))
+        from os.path import join, dirname, abspath
+        prop_file = join(dirname(abspath(__file__)), 'test.properties')
+        properties = dict(line.strip().split('=') for line in open(prop_file))
         bfmap.schema("localhost", 5432, properties[
                      "database"], "bfmap_ways", properties["user"], properties["password"], False)
         config = bfmap.config(properties["config"])
