@@ -84,29 +84,34 @@ class Osm2Ways(database.Database):
                    tmp_way_aggs.nodes AS nodes,
                    tmp_way_aggs.counts AS counts,
                    tmp_way_aggs.geoms AS geoms
-            FROM
-              ( SELECT tmp_way_nodes.way_id AS way_id,
+            FROM ( 
+                SELECT tmp_way_nodes.way_id AS way_id,
                        array_agg(tmp_way_nodes.seq_id) AS seq,
                        array_agg(tmp_way_nodes.node_id) AS nodes,
                        array_agg(tmp_node_counts.count) AS counts,
                        array_agg(ST_AsBinary(tmp_way_nodes.geom)) AS geoms
-               FROM
-                 (SELECT way_nodes.way_id AS way_id,
-                         way_nodes.node_id AS node_id,
-                         way_nodes.seq_id AS seq_id,
-                         nodes.geom AS geom
-                  FROM
-                    (SELECT way_id,
-                            node_id,
-                            sequence_id AS seq_id
-                     FROM way_nodes) AS way_nodes
-                  INNER JOIN nodes ON (way_nodes.node_id=nodes.id)) AS tmp_way_nodes
-               INNER JOIN
-                 (SELECT node_id,
-                         count(way_id) AS COUNT
-                  FROM way_nodes
-                  GROUP BY node_id) AS tmp_node_counts ON (tmp_way_nodes.node_id=tmp_node_counts.node_id)
-               GROUP BY tmp_way_nodes.way_id) AS tmp_way_aggs
+                FROM (
+                    SELECT way_nodes.way_id AS way_id,
+                           way_nodes.node_id AS node_id,
+                           way_nodes.seq_id AS seq_id,
+                           nodes.geom AS geom
+                    FROM (
+                        SELECT way_id,
+                               node_id,
+                               sequence_id AS seq_id
+                        FROM way_nodes
+                    ) AS way_nodes
+                    INNER JOIN nodes ON (way_nodes.node_id=nodes.id)
+                ) AS tmp_way_nodes
+                INNER JOIN (
+                    SELECT node_id,
+                           count(way_id) AS COUNT
+                    FROM way_nodes
+                    GROUP BY node_id
+                ) AS tmp_node_counts 
+                ON (tmp_way_nodes.node_id=tmp_node_counts.node_id)
+                GROUP BY tmp_way_nodes.way_id
+            ) AS tmp_way_aggs
             INNER JOIN ways ON (tmp_way_aggs.way_id=ways.id);
         """.format(table)
         self.do_query(query)
@@ -114,53 +119,80 @@ class Osm2Ways(database.Database):
     # Normal execution
 
     def way_nodes(self, prefix):
-        query = """set enable_hashagg = false; create table {}_way_nodes as select
-        way_nodes.way_id as way_id,way_nodes.node_id as node_id,way_nodes.seq_id as
-        seq_id, nodes.geom as geom
-        from (
-        select way_id,node_id,sequence_id as seq_id
-        from way_nodes
-        ) as way_nodes
-        inner join nodes on (way_nodes.node_id=nodes.id);""".format(prefix)
-        self.do_query(query)
-
-    def node_counts(self, prefix):
-        query = """set enable_hashagg = false; create table {}_node_counts as select
-        way_nodes.node_id,count(way_nodes.way_id) as count
-        from way_nodes
-        group by node_id;""".format(prefix)
-        self.do_query(query)
-
-    def way_counts(self, prefix):
-        query = """set enable_hashagg = false; create table {0}_way_counts as select
-        {0}_way_nodes.way_id,{0}_way_nodes.node_id as node_id,{0}_way_nodes.seq_id as seq_id,
-        {0}_way_nodes.geom as geom,{0}_node_counts.count as count \
-        from {0}_way_nodes \
-        inner join {0}_node_counts on
-        ({0}_way_nodes.node_id={0}_node_counts.node_id);
+        query = """
+            SET enable_hashagg = FALSE;
+            CREATE TABLE {}_way_nodes AS
+            SELECT way_nodes.way_id AS way_id,
+                   way_nodes.node_id AS node_id,
+                   way_nodes.seq_id AS seq_id,
+                   nodes.geom AS geom
+            FROM
+              ( SELECT way_id,
+                       node_id,
+                       sequence_id AS seq_id
+               FROM way_nodes ) AS way_nodes
+            INNER JOIN nodes ON (way_nodes.node_id=nodes.id);
         """.format(prefix)
         self.do_query(query)
 
+    def node_counts(self, prefix):
+        query = """
+            SET enable_hashagg = FALSE;
+            CREATE TABLE {}_node_counts AS
+            SELECT way_nodes.node_id,
+                   count(way_nodes.way_id) AS COUNT
+            FROM way_nodes
+            GROUP BY node_id;
+        """.format(prefix)
+        self.do_query(query)
+
+    def way_counts(self, prefix):
+        query = """
+            SET enable_hashagg = FALSE;
+            CREATE TABLE {0}_way_counts AS
+            SELECT {0}_way_nodes.way_id,
+                   {0}_way_nodes.node_id AS node_id,
+                   {0}_way_nodes.seq_id AS seq_id, 
+                   {0}_way_nodes.geom AS geom,
+                   {0}_node_counts.count AS COUNT
+            FROM {0}_way_nodes
+            INNER JOIN {0}_node_counts
+                ON ({0}_way_nodes.node_id={0}_node_counts.node_id);
+        """.format(prefix)  # noqa
+        self.do_query(query)
+
     def way_aggs(self, prefix):
-        query = """set enable_hashagg = false; create table {0}_way_aggs as select
-        {0}_way_counts.way_id, array_agg({0}_way_counts.seq_id) as seq,
-        array_agg({0}_way_counts.node_id) as nodes, array_agg({0}_way_counts.count)
-        as counts,array_agg(ST_AsBinary({0}_way_counts.geom)) as geoms
-        from {0}_way_counts group by  {0}_way_counts.way_id;
+        query = """
+            SET enable_hashagg = FALSE;
+            CREATE TABLE {0}_way_aggs AS
+            SELECT {0}_way_counts.way_id,
+                   array_agg({0}_way_counts.seq_id) AS seq,
+                   array_agg({0}_way_counts.node_id) AS nodes,
+                   array_agg({0}_way_counts.count) AS counts,
+                   array_agg(ST_AsBinary({0}_way_counts.geom)) AS geoms
+            FROM {0}_way_counts
+            GROUP BY {0}_way_counts.way_id;
         """.format(prefix)
         self.do_query(query)
 
     def ways(self, table, prefix):
-        query = """set enable_hashagg = false; create table {0} as
-        select {1}_way_aggs.way_id, ways.tags as tags,{1}_way_aggs.seq
-        as seq,{1}_way_aggs.nodes as nodes,{1}_way_aggs.counts as counts,
-        {1}_way_aggs.geoms as geoms from {1}_way_aggs inner join ways on
-        ({1}_way_aggs.way_id=ways.id);""".format(table, prefix)
+        query = """
+            SET enable_hashagg = FALSE;
+            CREATE TABLE {0} AS
+            SELECT {1}_way_aggs.way_id,
+                   ways.tags AS tags,
+                   {1}_way_aggs.seq AS seq,
+                   {1}_way_aggs.nodes AS nodes,
+                   {1}_way_aggs.counts AS counts,
+                   {1}_way_aggs.geoms AS geoms
+            FROM {1}_way_aggs
+            INNER JOIN ways ON ({1}_way_aggs.way_id=ways.id);
+        """.format(table, prefix)
         self.do_query(query)
 
     def create_index(self, table, column):
         """Setup index on geom"""
-        print("Create index on intermediate table {} ...".format(table))
+        print("Create index on intermediate table {}.".format(table))
         query = "CREATE INDEX idx_{0}_{1} ON {0} ({1});".format(table, column)
         self.do_query(query)
 
@@ -191,25 +223,25 @@ def create_ways_table(options, password):
         db.drop(options.table)
         print("Table '{}' has been removed.".format(options.table))
     if options.slim:
-        print("Execute in slim mode ...")
+        print("Execute in slim mode.")
         db.slim(options.table)
     else:
-        print("Execute in normal mode ...")
+        print("Execute in normal mode.")
         # Way nodes
         way_nodes = "{}_way_nodes".format(options.prefix)
-        print("(1/5) Create intermediate table {} ...".format(way_nodes))
+        print("(1/5) Create intermediate table {}.".format(way_nodes))
         db.drop_if_exists(way_nodes)
         db.way_nodes(options.prefix)
         db.create_index(way_nodes, "node_id")
         # Node counts
         node_counts = "{}_node_counts".format(options.prefix)
-        print("(2/5) Create intermediate table {} ...".format(node_counts))
+        print("(2/5) Create intermediate table {}.".format(node_counts))
         db.drop_if_exists(node_counts)
         db.node_counts(options.prefix)
         db.create_index(node_counts, "node_id")
         # Way counts (joins way nodes and node counts)
         way_counts = "{}_way_counts".format(options.prefix)
-        print("(3/5) Create intermediate table {} ...".format(way_counts))
+        print("(3/5) Create intermediate table {}.".format(way_counts))
         db.drop_if_exists(way_counts)
         db.way_counts(options.prefix)
         db.drop(way_nodes)
@@ -217,13 +249,13 @@ def create_ways_table(options, password):
         db.create_index(way_counts, "way_id")
         # Way aggregations (uses way counts)
         way_aggs = "{}_way_aggs".format(options.prefix)
-        print("(4/5) Create intermediate table {} ...".format(way_aggs))
+        print("(4/5) Create intermediate table {}.".format(way_aggs))
         db.drop_if_exists(way_aggs)
         db.way_aggs(options.prefix)
         db.drop(way_counts)
         db.create_index(way_aggs, "way_id")
         # Target table (uses way aggregations)
-        print("(5/5) Create table {} ...".format(options.table))
+        print("(5/5) Create table {}.".format(options.table))
         db.ways(options.table, options.prefix)
         db.drop(way_aggs)
     db.close_connection()
