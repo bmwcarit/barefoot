@@ -19,7 +19,12 @@ __license__ = "Apache-2.0"
 
 import unittest
 import binascii
+import sys
+
+# Add parent folder to path to make import work in Python 3
+sys.path.insert(0, '../')
 import bfmap
+import ways2bfmap
 
 
 class TestBfmap(unittest.TestCase):
@@ -35,7 +40,8 @@ class TestBfmap(unittest.TestCase):
 
         row = (2557090, hstore, seq, nodes, counts, geoms)
 
-        (tags, way) = bfmap.waysort(row)
+        tags = bfmap.tags_str_to_dict(row[1])
+        way = bfmap.waysort(row)
 
         self.assertEqual(tags["highway"], "trunk")
 
@@ -45,7 +51,7 @@ class TestBfmap(unittest.TestCase):
 
         previous = None
         for e in way[:, 0]:
-            if (previous != None):
+            if previous is not None:
                 self.assertGreater(e, previous)
             previous = e
 
@@ -57,13 +63,13 @@ class TestBfmap(unittest.TestCase):
         config = {
             "highway": {"trunk": (101, 1.0, 120), "teriary": (102, 1.0, 120)}}
         tags = {"highway": "trunk", "lanes": "2"}
-        (key, value) = bfmap.type(config, tags)
+        key, value = bfmap.get_type(config, tags)
 
         self.assertEquals("highway", key)
         self.assertEquals("trunk", value)
 
         tags = {"highway": "primary", "lanes": "2"}
-        (key, value) = bfmap.type(config, tags)
+        key, value = bfmap.get_type(config, tags)
 
         self.assertEquals(None, key)
         self.assertEquals(None, value)
@@ -79,7 +85,7 @@ class TestBfmap(unittest.TestCase):
         row = (2557090, hstore, seq, nodes, counts, geoms)
         config = {"highway": {"trunk": (101, 1.0, 120)}}
 
-        segments = bfmap.segment(config, row)
+        segments = bfmap.create_segments(config, row)
         self.assertEquals(1, len(segments))
         self.assertEquals(564143, int(segments[0][2]))
         self.assertEquals(564144, int(segments[0][3]))
@@ -97,7 +103,7 @@ class TestBfmap(unittest.TestCase):
         row = (2557090, hstore, seq, nodes, counts, geoms)
         config = {"highway": {"trunk": (101, 1.0, 120)}}
 
-        segments = bfmap.segment(config, row)
+        segments = bfmap.create_segments(config, row)
         self.assertEquals(2, len(segments))
 
     def test_maxspeed(self):
@@ -129,12 +135,14 @@ class TestBfmap(unittest.TestCase):
     def test_ways2bfmap(self):
         properties = dict(line.strip().split('=')
                           for line in open('/mnt/map/tools/test/test.properties'))
-        bfmap.schema("localhost", 5432, properties[
-                     "database"], "bfmap_ways", properties["user"], properties["password"], False)
-        config = bfmap.config(properties["config"])
-        bfmap.ways2bfmap("localhost", 5432, properties["database"], "temp_ways", properties["user"], properties[
-                         "password"], "localhost", 5432, properties["database"], "bfmap_ways", properties["user"], properties["password"], config, False)
-        return
+        db = bfmap.Bfmap("localhost", 5432, properties["database"],
+                         properties["user"], properties["password"], False)
+        db.create_schema("bfmap_ways")
+        config = ways2bfmap.read_config_file(properties["config"])
+        db.ways2bfmap("localhost", 5432, properties["database"], "temp_ways",
+                      properties["user"], properties["password"], "bfmap_ways",
+                      config)
+
 
 if __name__ == '__main__':
     unittest.main()
