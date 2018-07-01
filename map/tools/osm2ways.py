@@ -197,19 +197,10 @@ def main():
         options.printonly
     )
     if db.exists(options.table):
-        while True:
-            print("Table '{}' already exists in database '{}'."
-                  .format(options.table, options.database))
-            msg = "Do you want to remove the table (y/n)? [n]: "
-            try:
-                value = raw_input(msg)
-            except NameError:
-                value = input(msg)
-            if value.lower() == 'y':
-                break
-            elif value.lower() == 'n' or value == '':
-                print("Cancelled by user.")
-                exit(0)
+        if not common.get_confirmation_for_table_deletion(options.table,
+                                                          options.database):
+            print("Cancelled by user.")
+            exit(0)
         db.drop(options.table)
         print("Table '{}' has been removed.".format(options.table))
     if options.slim:
