@@ -193,15 +193,14 @@ def maxspeed(tags):
 def _get_maxspeed(tags, key):
     """Get the maximum speed (key) from the tags."""
     if key in tags.keys():
-        if "mph" in tags[key]:
-            try:
+        try:
+            if "mph" in tags[key]:
                 return int(tags[key].split(" ")[0]) * 1.609
-            except ValueError:
-                return 'null'
-        else:
-            return int(tags[key])
-    else:
-        return 'null'
+            else:
+                return int(tags[key])
+        except ValueError:
+            pass
+    return 'null'
 
 
 
