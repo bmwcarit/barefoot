@@ -21,7 +21,7 @@ __license__ = "Apache-2.0"
 import optparse
 import getpass
 
-import database
+import common
 
 
 def create_parser():
@@ -44,35 +44,10 @@ def create_parser():
     return parser
 
 
-class Osm2Ways(database.Database):
+class Osm2Ways(common.Database):
     """Contain methods to create a table with ways."""
     def __init__(self, host, port, database, user, password, printonly):
-        super(Osm2Ways, self).__init__(host, port, database, user,
-                                       password, printonly)
-
-    def exists(self, table):
-        """Check whether the table already exists in the database."""
-        query = """SELECT COUNT(tablename) FROM pg_tables WHERE 
-                schemaname='public' AND tablename=%s;"""
-        self.do_query(query, params=(table, ))
-        if self.printonly:
-            return True
-        if self.cursor.fetchone()[0] == 0:
-            return False
-        else:
-            return True
-
-    def drop(self, table):
-        """Remove a table from the database."""
-        print('Dropping table {}.'.format(table))
-        query = "DROP TABLE {};".format(table)
-        self.do_query(query)
-
-    def drop_if_exists(self, table):
-        """Drop the table if it exists."""
-        if self.exists(table):
-            print('Table {} already exists, dropping it.'.format(table))
-            self.drop(table)
+        super(Osm2Ways, self).__init__(host, port, database, user, password, printonly)
 
     def slim(self, table):
         """Slim execution."""
@@ -114,7 +89,7 @@ class Osm2Ways(database.Database):
             ) AS tmp_way_aggs
             INNER JOIN ways ON (tmp_way_aggs.way_id=ways.id);
         """.format(table)
-        self.do_query(query)
+        self.execute(query)
 
     # Normal execution
 
@@ -133,7 +108,7 @@ class Osm2Ways(database.Database):
                FROM way_nodes ) AS way_nodes
             INNER JOIN nodes ON (way_nodes.node_id=nodes.id);
         """.format(prefix)
-        self.do_query(query)
+        self.execute(query)
 
     def node_counts(self, prefix):
         query = """
@@ -144,7 +119,7 @@ class Osm2Ways(database.Database):
             FROM way_nodes
             GROUP BY node_id;
         """.format(prefix)
-        self.do_query(query)
+        self.execute(query)
 
     def way_counts(self, prefix):
         query = """
@@ -159,7 +134,7 @@ class Osm2Ways(database.Database):
             INNER JOIN {0}_node_counts
                 ON ({0}_way_nodes.node_id={0}_node_counts.node_id);
         """.format(prefix)  # noqa
-        self.do_query(query)
+        self.execute(query)
 
     def way_aggs(self, prefix):
         query = """
@@ -173,7 +148,7 @@ class Osm2Ways(database.Database):
             FROM {0}_way_counts
             GROUP BY {0}_way_counts.way_id;
         """.format(prefix)
-        self.do_query(query)
+        self.execute(query)
 
     def ways(self, table, prefix):
         query = """
@@ -188,13 +163,13 @@ class Osm2Ways(database.Database):
             FROM {1}_way_aggs
             INNER JOIN ways ON ({1}_way_aggs.way_id=ways.id);
         """.format(table, prefix)
-        self.do_query(query)
+        self.execute(query)
 
     def create_index(self, table, column):
         """Setup index on geom"""
         print("Create index on intermediate table {}.".format(table))
         query = "CREATE INDEX idx_{0}_{1} ON {0} ({1});".format(table, column)
-        self.do_query(query)
+        self.execute(query)
 
 
 def create_ways_table(options, password):
@@ -258,7 +233,7 @@ def create_ways_table(options, password):
         print("(5/5) Create table {}.".format(options.table))
         db.ways(options.table, options.prefix)
         db.drop(way_aggs)
-    db.close_connection()
+    db.close()
     print("Finished.")
 
 
