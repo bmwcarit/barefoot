@@ -32,4 +32,4 @@ RUN cd /opt/ \
  && echo "export PATH=${PATH}:/opt/osmosis/package/bin" >> /root/.bashrc
 
 CMD service postgresql start \
-&& /bin/bash --rcfile /root/.bashrc
+ && /bin/bash --rcfile /root/.bashrc
