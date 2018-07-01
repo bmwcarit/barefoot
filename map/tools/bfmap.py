@@ -97,11 +97,12 @@ def create_segments(config, row):
     if len(row[1]) < 1 or len(row[2]) < 2:
         return segments
 
-    tags, way = waysort(row)
+    tags = tags_str_to_dict(row[1])
     key, value = get_type(config, tags)
-
     if key is None or value is None:
         return segments
+
+    way = waysort(row)
 
     osm_id = row[0]
     class_id = int(config[key][value][0])
@@ -139,13 +140,17 @@ def create_segments(config, row):
     return segments
 
 
+def tags_str_to_dict(tags_str):
+    """Convert a single string with tags to a dictionary."""
+    return dict((k.strip(), v.strip()) for k, v in (
+        item.split("\"=>\"") for item in tags_str[1:-1].split("\", \"")))
+
+
 def waysort(row):
-    tags = dict((k.strip(), v.strip()) for k, v in (
-        item.split("\"=>\"") for item in row[1][1:-1].split("\", \"")))
     row[5][:] = [binascii.hexlify(x) for x in row[5]]
     way = numpy.array((row[2], row[3], row[4], row[5])).T
     way = way[numpy.argsort([int(i) for i in way[:, 0]])]
-    return tags, way
+    return way
 
 
 def get_type(config, tags):
