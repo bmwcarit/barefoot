@@ -16,7 +16,20 @@ FROM ubuntu:14.04
 MAINTAINER sebastian.mattheis@bmw-carit.de
 
 ADD /pgsql/ /opt/pgsql/
-RUN apt-get update && apt-get -y install patch postgresql-9.3-postgis-2.1 git openjdk-7-jdk python-psycopg2 python-numpy python-gdal
-RUN patch /etc/postgresql/9.3/main/postgresql.conf < /opt/pgsql/postgresql.conf.patch && patch /etc/postgresql/9.3/main/pg_hba.conf < /opt/pgsql/pg_hba.conf.patch && echo "export HOME=/root" >> /root/.bashrc
-RUN cd /opt/ && git clone https://github.com/openstreetmap/osmosis.git && cd osmosis && git checkout tags/0.43.1 && ./gradlew assemble && echo "export PATH=${PATH}:/opt/osmosis/package/bin" >> /root/.bashrc
-CMD service postgresql start && /bin/bash --rcfile /root/.bashrc
+
+RUN apt-get update \
+ && apt-get -y install patch postgresql-9.3-postgis-2.1 git openjdk-7-jdk python-psycopg2 python-numpy python-gdal
+
+RUN patch /etc/postgresql/9.3/main/postgresql.conf < /opt/pgsql/postgresql.conf.patch \
+ && patch /etc/postgresql/9.3/main/pg_hba.conf < /opt/pgsql/pg_hba.conf.patch \
+ && echo "export HOME=/root" >> /root/.bashrc
+
+RUN cd /opt/ \
+ && git clone https://github.com/openstreetmap/osmosis.git \
+ && cd osmosis \
+ && git checkout tags/0.43.1 \
+ && ./gradlew assemble \
+ && echo "export PATH=${PATH}:/opt/osmosis/package/bin" >> /root/.bashrc
+
+CMD service postgresql start \
+&& /bin/bash --rcfile /root/.bashrc
