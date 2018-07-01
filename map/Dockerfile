@@ -17,8 +17,14 @@ MAINTAINER sebastian.mattheis@bmw-carit.de
 
 ADD /pgsql/ /opt/pgsql/
 
-RUN apt-get update \
- && apt-get -y install patch postgresql-9.3-postgis-2.1 git openjdk-7-jdk python-psycopg2 python-numpy python-gdal
+RUN apt-get update && apt-get -y install \
+    patch \
+    postgresql-9.3-postgis-2.1 \
+    git \
+    openjdk-7-jdk \
+    python-psycopg2 \
+    python-numpy \
+    python-gdal
 
 RUN patch /etc/postgresql/9.3/main/postgresql.conf < /opt/pgsql/postgresql.conf.patch \
  && patch /etc/postgresql/9.3/main/pg_hba.conf < /opt/pgsql/pg_hba.conf.patch \
