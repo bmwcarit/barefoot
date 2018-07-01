@@ -172,7 +172,22 @@ class Osm2Ways(common.Database):
         self.execute(query)
 
 
-def create_ways_table(options, password):
+def main():
+    parser = create_parser()
+    options, args = parser.parse_args()
+    if (options.host is None
+            or options.port is None
+            or options.database is None
+            or options.table is None
+            or options.user is None
+            or (not options.slim and options.prefix is None)):
+        parser.print_help()
+        exit(1)
+    if options.password is None:
+        password = getpass.getpass("Password:")
+    else:
+        password = options.password
+
     db = Osm2Ways(
         options.host,
         options.port,
@@ -235,24 +250,6 @@ def create_ways_table(options, password):
         db.drop(way_aggs)
     db.close()
     print("Finished.")
-
-
-def main():
-    parser = create_parser()
-    options, args = parser.parse_args()
-    if (options.host is None
-            or options.port is None
-            or options.database is None
-            or options.table is None
-            or options.user is None
-            or (not options.slim and options.prefix is None)):
-        parser.print_help()
-        exit(1)
-    if options.password is None:
-        password = getpass.getpass("Password:")
-    else:
-        password = options.password
-    create_ways_table(options, password)
 
 
 if __name__ == '__main__':
