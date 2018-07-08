@@ -141,7 +141,7 @@ def create_segments(config, row):
 
 
 def tags_str_to_dict(tags_str):
-    """Convert a single string with tags to a dictionary."""
+    """Convert a single string with OSM tags to a dictionary."""
     return dict((k.strip(), v.strip()) for k, v in (
         item.split("\"=>\"") for item in tags_str[1:-1].split("\", \"")))
 
@@ -177,12 +177,10 @@ def is_oneway(tags):
 
 def maxspeed(tags):
     """Return the forward and backward maximum speed (or 'null')."""
-    # maxspeed_forward = int(config[key][value][2])
     if "maxspeed:forward" in tags.keys():
         forward = _get_maxspeed(tags, "maxspeed:forward")
     else:
         forward = _get_maxspeed(tags, "maxspeed")
-    # maxspeed_backward = maxspeed_forward
     if "maxspeed:backward" in tags.keys():
         backward = _get_maxspeed(tags, "maxspeed:backward")
     else:
@@ -191,7 +189,11 @@ def maxspeed(tags):
 
 
 def _get_maxspeed(tags, key):
-    """Get the maximum speed (key) from the tags."""
+    """Get the maximum speed with the given key from the tags.
+
+    If it was not found, or could not be converted to int correctly,
+    'null' is returned.
+    """
     if key in tags.keys():
         try:
             if "mph" in tags[key]:

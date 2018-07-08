@@ -103,6 +103,7 @@ def read_config_file(file):
 
 
 def main():
+    """Run the functions that convert ways to Barefoot segments and print the progress."""
     options, source_password, target_password = get_command_line_options()
     config = read_config_file(options.config)
     print("Configuration imported.")

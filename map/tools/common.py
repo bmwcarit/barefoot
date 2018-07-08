@@ -22,6 +22,7 @@ import psycopg2
 
 
 class Database(object):
+    """Communicate with an OSM/Barefoot PostgreSQL database."""
     def __init__(self, host, port, database, user, password, printonly):
         self.host = host
         self.port = port
@@ -32,6 +33,7 @@ class Database(object):
         self.connection, self.cursor = self.open()
 
     def open(self):
+        """Return a new database connection and cursor."""
         try:
             dbcon = psycopg2.connect(
                 host=self.host,
@@ -47,10 +49,12 @@ class Database(object):
         return dbcon, cursor
 
     def close(self):
+        """Close the stored connection."""
         self.cursor.close()
         self.connection.close()
 
     def execute(self, query, params=(), commit=True):
+        """Execute the query after adding the parameters and commit if `commit=True`."""
         if self.printonly:
             print(query % params)
             return

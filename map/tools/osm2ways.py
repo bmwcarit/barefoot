@@ -45,12 +45,12 @@ def create_parser():
 
 
 class Osm2Ways(common.Database):
-    """Contain methods to create a table with ways."""
+    """Convert OSM data into a new table with ways."""
     def __init__(self, host, port, database, user, password, printonly):
         super(Osm2Ways, self).__init__(host, port, database, user, password, printonly)
 
     def slim(self, table):
-        """Slim execution."""
+        """Do all the work in a single query (slim execution)."""
         query = """
             CREATE TABLE {} AS
             SELECT tmp_way_aggs.way_id,
@@ -90,8 +90,6 @@ class Osm2Ways(common.Database):
             INNER JOIN ways ON (tmp_way_aggs.way_id=ways.id);
         """.format(table)
         self.execute(query)
-
-    # Normal execution
 
     def way_nodes(self, prefix):
         query = """
