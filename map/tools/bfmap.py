@@ -154,15 +154,14 @@ def waysort(row):
 
 
 def get_type(config, tags):
-    key = None
-    value = None
-    for tag in tags.keys():
-        tag_ = tag
-        if tag_ in config.keys():
-            if tags[tag_] in config[tag_].keys():
-                key = tag_
-                value = tags[tag_]
-    return key, value
+    """Get the road type from the OSM tags using the road types config file provided.
+
+    Assuming each OSM tag is unique and there is only one tag that appears in the config.
+    """
+    for tag, value in tags.items():
+        if tag in config.keys() and value in config[tag].keys():
+            return tag, value
+    return None, None
 
 
 def is_oneway(tags):
