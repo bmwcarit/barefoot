@@ -335,6 +335,10 @@ limitations under the License.
 
 - Sebastian Mattheis
 
+## Contributing
+
+Barefoot is maintained by volunteers, so your contribution is welcome! Not sure how to proceed? Check our [contributing guidelines](https://github.com/bmwcarit/barefoot/blob/master/CONTRIBUTING.md).
+
 ## Dependencies
 
 #### Barefoot library
