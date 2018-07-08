@@ -30,14 +30,12 @@ import ways2bfmap
 class TestBfmap(unittest.TestCase):
 
     def test_waysort(self):
-        hstore = '"hgv"=>"delivery", "ref"=>"B 2R", "name"=>"Isarring", "lanes"=>"2", "oneway"=>"yes", "highway"=>"trunk", "maxspeed"=>"60", "motorroad"=>"yes"'
+        hstore = get_osm_tags()
         seq = [3, 5, 7, 6, 0, 1, 4, 2]
         nodes = [21092556, 1015838859, 564144, 1015838846,
                  564143, 1015824338, 1015824359, 1015824357]
         counts = [1, 1, 3, 1, 2, 1, 1, 1]
-        geoms = [binascii.unhexlify(x) for x in ['0101000000831f306a523127404908a062e6144840', '010100000048567e198c31274092bd9470d7144840', '01010000007989fbd9d931274028806264c9144840', '0101000000dcedc4f6a4312740651d8eaed2144840',
-                                                 '0101000000427452a9233127404f8f1260fd144840', '0101000000a27197b32d31274059c6866ef6144840', '01010000009cf232d472312740b9c83d5ddd144840', '0101000000f32444543c312740210e6d5bef144840']]
-
+        geoms = get_geom()
         row = (2557090, hstore, seq, nodes, counts, geoms)
 
         tags = bfmap.tags_str_to_dict(row[1])
@@ -74,13 +72,12 @@ class TestBfmap(unittest.TestCase):
         self.assertEquals(None, value)
 
     def test_segment(self):
-        hstore = '"hgv"=>"delivery", "ref"=>"B 2R", "name"=>"Isarring", "lanes"=>"2", "oneway"=>"yes", "highway"=>"trunk", "maxspeed"=>"60", "motorroad"=>"yes"'
+        hstore = get_osm_tags()
         seq = [3, 5, 7, 6, 0, 1, 4, 2]
         nodes = [21092556, 1015838859, 564144, 1015838846,
                  564143, 1015824338, 1015824359, 1015824357]
         counts = [1, 1, 3, 1, 2, 1, 1, 1]
-        geoms = [binascii.unhexlify(x) for x in ['0101000000831f306a523127404908a062e6144840', '010100000048567e198c31274092bd9470d7144840', '01010000007989fbd9d931274028806264c9144840', '0101000000dcedc4f6a4312740651d8eaed2144840',
-                                                 '0101000000427452a9233127404f8f1260fd144840', '0101000000a27197b32d31274059c6866ef6144840', '01010000009cf232d472312740b9c83d5ddd144840', '0101000000f32444543c312740210e6d5bef144840']]
+        geoms = get_geom()
         row = (2557090, hstore, seq, nodes, counts, geoms)
         config = {"highway": {"trunk": (101, 1.0, 120)}}
 
@@ -92,13 +89,12 @@ class TestBfmap(unittest.TestCase):
         self.assertEquals(60, segments[0][6])
 
     def test_segment2(self):
-        hstore = '"hgv"=>"delivery", "ref"=>"B 2R", "name"=>"Isarring", "lanes"=>"2", "oneway"=>"yes", "highway"=>"trunk", "maxspeed"=>"60", "motorroad"=>"yes"'
+        hstore = get_osm_tags()
         seq = [3, 5, 7, 6, 0, 1, 4, 2]
         nodes = [21092556, 1015838859, 564144, 1015838846,
                  564143, 1015824338, 1015824359, 1015824357]
         counts = [1, 1, 3, 1, 2, 1, 2, 1]
-        geoms = [binascii.unhexlify(x) for x in ['0101000000831f306a523127404908a062e6144840', '010100000048567e198c31274092bd9470d7144840', '01010000007989fbd9d931274028806264c9144840', '0101000000dcedc4f6a4312740651d8eaed2144840',
-                                                 '0101000000427452a9233127404f8f1260fd144840', '0101000000a27197b32d31274059c6866ef6144840', '01010000009cf232d472312740b9c83d5ddd144840', '0101000000f32444543c312740210e6d5bef144840']]
+        geoms = get_geom()
         row = (2557090, hstore, seq, nodes, counts, geoms)
         config = {"highway": {"trunk": (101, 1.0, 120)}}
 
@@ -141,6 +137,21 @@ class TestBfmap(unittest.TestCase):
         db.ways2bfmap("localhost", 5432, properties["database"], "temp_ways",
                       properties["user"], properties["password"], "bfmap_ways",
                       config)
+
+
+def get_osm_tags():
+    return ('"hgv"=>"delivery", "ref"=>"B 2R", "name"=>"Isarring", "lanes"=>"2", '
+            '"oneway"=>"yes", "highway"=>"trunk", "maxspeed"=>"60", "motorroad"=>"yes"')
+
+
+def get_geom():
+    geom_strings = [
+        '0101000000831f306a523127404908a062e6144840', '010100000048567e198c31274092bd9470d7144840',
+        '01010000007989fbd9d931274028806264c9144840', '0101000000dcedc4f6a4312740651d8eaed2144840',
+        '0101000000427452a9233127404f8f1260fd144840', '0101000000a27197b32d31274059c6866ef6144840',
+        '01010000009cf232d472312740b9c83d5ddd144840', '0101000000f32444543c312740210e6d5bef144840',
+    ]
+    return [binascii.unhexlify(x) for x in geom_strings]
 
 
 if __name__ == '__main__':
