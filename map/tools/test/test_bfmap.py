@@ -60,8 +60,7 @@ class TestBfmap(unittest.TestCase):
             self.assertEqual(counts_sorted[i], int(way[i, 2]))
 
     def test_type(self):
-        config = {
-            "highway": {"trunk": (101, 1.0, 120), "teriary": (102, 1.0, 120)}}
+        config = {"highway": {"trunk": (101, 1.0, 120), "teriary": (102, 1.0, 120)}}
         tags = {"highway": "trunk", "lanes": "2"}
         key, value = bfmap.get_type(config, tags)
 

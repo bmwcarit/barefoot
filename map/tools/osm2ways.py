@@ -195,8 +195,7 @@ def main():
         options.printonly
     )
     if db.exists(options.table):
-        if not common.get_confirmation_for_table_deletion(options.table,
-                                                          options.database):
+        if not common.get_confirmation_for_table_deletion(options.table, options.database):
             print("Cancelled by user.")
             exit(0)
         db.drop(options.table)

@@ -26,39 +26,30 @@ import common
 
 
 def get_command_line_options():
-    parser = optparse.OptionParser("ways2bfmap.py [options]")
-    parser.add_option(
-        "--source-host", dest="source_host", help="Hostname of the source database.")
-    parser.add_option(
-        "--source-port", dest="source_port", help="Port of the source database.")
-    parser.add_option("--source-database", dest="source_database",
-                      help="Name of the source database.")
-    parser.add_option(
-        "--source-table", dest="source_table", help="Name of the source table.")
-    parser.add_option(
-        "--source-user", dest="source_user", help="User of source database.")
-    parser.add_option("--source-password", dest="source_password",
-                      help="User password of source database.")
-    parser.add_option(
-        "--target-host", dest="target_host", help="Hostname of the target database.")
-    parser.add_option(
-        "--target-port", dest="target_port", help="Port of the target database.")
-    parser.add_option("--target-database", dest="target_database",
-                      help="Name of the target database.")
-    parser.add_option(
-        "--target-table", dest="target_table", help="Name of the target table.")
-    parser.add_option(
-        "--target-user", dest="target_user", help="User of target database.")
-    parser.add_option("--target-password", dest="target_password",
-                      help="User password of target database.")
-    parser.add_option("--config", dest="config",
-                      help="Configuration file for OSM data interpretation. (XML)")
-    parser.add_option("--append", action="store_true",
-                      default=False, help="Append data if target table exists.")
-    parser.add_option("--printonly", action="store_true",
-                      default=False, help="Do not execute commands, but print it.")
+    """Parse the command line options given by the user and ask for a password if needed."""
+    par = optparse.OptionParser("ways2bfmap.py [options]")
+    par.add_option("--source-host", dest="source_host", help="Hostname of the source database.")
+    par.add_option("--source-port", dest="source_port", help="Port of the source database.")
+    par.add_option("--source-database", dest="source_database", help="Name of the source database.")
+    par.add_option("--source-table", dest="source_table", help="Name of the source table.")
+    par.add_option("--source-user", dest="source_user", help="User of source database.")
+    par.add_option("--source-password", dest="source_password",
+                   help="User password of source database.")
+    par.add_option("--target-host", dest="target_host", help="Hostname of the target database.")
+    par.add_option("--target-port", dest="target_port", help="Port of the target database.")
+    par.add_option("--target-database", dest="target_database", help="Name of the target database.")
+    par.add_option("--target-table", dest="target_table", help="Name of the target table.")
+    par.add_option("--target-user", dest="target_user", help="User of target database.")
+    par.add_option("--target-password", dest="target_password",
+                   help="User password of target database.")
+    par.add_option("--config", dest="config",
+                   help="Configuration file for OSM data interpretation. (XML)")
+    par.add_option("--append", action="store_true", default=False,
+                   help="Append data if target table exists.")
+    par.add_option("--printonly", action="store_true",
+                   default=False, help="Do not execute commands, but print it.")
 
-    (options, args) = parser.parse_args()
+    (options, args) = par.parse_args()
 
     if (options.source_host is None
             or options.source_port is None
@@ -71,7 +62,7 @@ def get_command_line_options():
             or options.target_table is None
             or options.target_user is None
             or options.config is None):
-        parser.print_help()
+        par.print_help()
         exit(1)
 
     if options.source_password is None:
@@ -95,9 +86,7 @@ def read_config_file(file):
     for tag in jsondata["tags"]:
         tagconfig = {}
         for value in tag["values"]:
-            tagconfig[value["name"]] = (value["id"],
-                                        value["priority"],
-                                        value["maxspeed"])
+            tagconfig[value["name"]] = (value["id"], value["priority"], value["maxspeed"])
         config[tag["tag"]] = tagconfig
     return config
 

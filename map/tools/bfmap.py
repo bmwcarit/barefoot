@@ -55,11 +55,11 @@ class Bfmap(common.Database):
         query = "CREATE INDEX idx_{0}_geom ON {0} USING gist(geom);".format(table)
         self.execute(query)
 
-    def ways2bfmap(self, src_host, src_port, src_database, src_table, src_user,
-                   src_password, tgt_table, config):
+    def ways2bfmap(self, src_host, src_port, src_database, src_table, src_user, src_password,
+                   tgt_table, config):
         """Make Barefoot segments from ways and insert them in the database."""
-        db_source = common.Database(src_host, src_port, src_database, src_user,
-                                    src_password, self.printonly)
+        db_source = common.Database(src_host, src_port, src_database, src_user, src_password,
+                                    self.printonly)
         db_source.cursor = db_source.connection.cursor('{}_cursor'.format(src_table))
 
         query = "SELECT way_id,tags,seq,nodes,counts,geoms FROM {};".format(src_table)
@@ -169,9 +169,8 @@ def is_oneway(tags):
     """Return a boolean whether the road is one way."""
     if "junction" in tags.keys() or "roundabout" in tags.keys():
         return True
-    elif "oneway" in tags.keys():
-        if tags["oneway"] in ["yes", "true", "1"]:
-            return True
+    elif "oneway" in tags.keys() and tags["oneway"] in ["yes", "true", "1"]:
+        return True
     return False
 
 
