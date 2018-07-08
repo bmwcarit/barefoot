@@ -62,14 +62,14 @@ class TestBfmap(unittest.TestCase):
         tags = {"highway": "trunk", "lanes": "2"}
         key, value = bfmap.get_type(config, tags)
 
-        self.assertEquals("highway", key)
-        self.assertEquals("trunk", value)
+        self.assertEqual("highway", key)
+        self.assertEqual("trunk", value)
 
         tags = {"highway": "primary", "lanes": "2"}
         key, value = bfmap.get_type(config, tags)
 
-        self.assertEquals(None, key)
-        self.assertEquals(None, value)
+        self.assertEqual(None, key)
+        self.assertEqual(None, value)
 
     def test_segment(self):
         hstore = get_osm_tags()
@@ -82,11 +82,11 @@ class TestBfmap(unittest.TestCase):
         config = {"highway": {"trunk": (101, 1.0, 120)}}
 
         segments = bfmap.create_segments(config, row)
-        self.assertEquals(1, len(segments))
-        self.assertEquals(564143, int(segments[0][2]))
-        self.assertEquals(564144, int(segments[0][3]))
-        self.assertEquals(-1, segments[0][5])
-        self.assertEquals(60, segments[0][6])
+        self.assertEqual(1, len(segments))
+        self.assertEqual(564143, int(segments[0][2]))
+        self.assertEqual(564144, int(segments[0][3]))
+        self.assertEqual(-1, segments[0][5])
+        self.assertEqual(60, segments[0][6])
 
     def test_segment2(self):
         hstore = get_osm_tags()
@@ -99,33 +99,33 @@ class TestBfmap(unittest.TestCase):
         config = {"highway": {"trunk": (101, 1.0, 120)}}
 
         segments = bfmap.create_segments(config, row)
-        self.assertEquals(2, len(segments))
+        self.assertEqual(2, len(segments))
 
     def test_maxspeed(self):
         tags = {"maxspeed": "60 mph"}
         (fwd, bwd) = bfmap.maxspeed(tags)
-        self.assertEquals(60 * 1.609, fwd)
-        self.assertEquals(60 * 1.609, bwd)
+        self.assertEqual(60 * 1.609, fwd)
+        self.assertEqual(60 * 1.609, bwd)
 
         tags = {"maxspeed": "60"}
         (fwd, bwd) = bfmap.maxspeed(tags)
-        self.assertEquals(60, fwd)
-        self.assertEquals(60, bwd)
+        self.assertEqual(60, fwd)
+        self.assertEqual(60, bwd)
 
         tags = {"maxspeed:forward": "60 mph", "maxspeed:backward": "60 mph"}
         (fwd, bwd) = bfmap.maxspeed(tags)
-        self.assertEquals(60 * 1.609, fwd)
-        self.assertEquals(60 * 1.609, bwd)
+        self.assertEqual(60 * 1.609, fwd)
+        self.assertEqual(60 * 1.609, bwd)
 
         tags = {"maxspeed:forward": "60", "maxspeed:backward": "60"}
         (fwd, bwd) = bfmap.maxspeed(tags)
-        self.assertEquals(60, fwd)
-        self.assertEquals(60, bwd)
+        self.assertEqual(60, fwd)
+        self.assertEqual(60, bwd)
 
         tags = {"maxspeed": "60mph"}
         (fwd, bwd) = bfmap.maxspeed(tags)
-        self.assertEquals("null", fwd)
-        self.assertEquals("null", bwd)
+        self.assertEqual("null", fwd)
+        self.assertEqual("null", bwd)
 
     def test_ways2bfmap(self):
         properties = dict(line.strip().split('=')
