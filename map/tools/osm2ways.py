@@ -24,24 +24,40 @@ import getpass
 import common
 
 
-def create_parser():
-    parser = optparse.OptionParser("osm2ways.py [options]")
-    parser.add_option("--host", dest="host", help="Hostname of the database.")
-    parser.add_option("--port", dest="port", help="Port of the database.")
-    parser.add_option("--database", dest="database",
-                      help="Name of the database.")
-    parser.add_option("--table", dest="table", help="Name of the table.")
-    parser.add_option("--user", dest="user", help="User of the database.")
-    parser.add_option("--password", dest="password", help="User password.")
-    parser.add_option("--slim", action="store_true", default=False,
-                      help="""Slim mode runs everything in a single query. This requires memory 
-                          to be sufficiently available.""")
-    parser.add_option("--prefix", dest="prefix",
-                      help="If not using slim mode, use this prefix for intermediate tables.")
-    parser.add_option("--printonly", action="store_true",
-                      default=False,
-                      help="Do not execute commands, but print it.")
-    return parser
+def get_command_line_options():
+    """Parse the command line options given by the user and ask for a password if needed."""
+    par = optparse.OptionParser("osm2ways.py [options]")
+    par.add_option("--host", dest="host", help="Hostname of the database.")
+    par.add_option("--port", dest="port", help="Port of the database.")
+    par.add_option("--database", dest="database", help="Name of the database.")
+    par.add_option("--table", dest="table", help="Name of the table.")
+    par.add_option("--user", dest="user", help="User of the database.")
+    par.add_option("--password", dest="password", help="User password.")
+    par.add_option("--slim", action="store_true", default=False,
+                   help=("Slim mode runs everything in a single query. "
+                         "This requires memory to be sufficiently available."))
+    par.add_option("--prefix", dest="prefix", default="_tmp",
+                   help="If not using slim mode, use this prefix for intermediate tables.")
+    par.add_option("--printonly", action="store_true", default=False,
+                   help="Do not execute commands, but print them.")
+
+    options, args = par.parse_args()
+
+    if (options.host is None
+            or options.port is None
+            or options.database is None
+            or options.table is None
+            or options.user is None
+            or (not options.slim and options.prefix is None)):
+        par.print_help()
+        exit(1)
+
+    if options.password is None:
+        password = getpass.getpass("Password:")
+    else:
+        password = options.password
+
+    return options, password
 
 
 class Osm2Ways(common.Database):
@@ -171,21 +187,7 @@ class Osm2Ways(common.Database):
 
 
 def main():
-    parser = create_parser()
-    options, args = parser.parse_args()
-    if (options.host is None
-            or options.port is None
-            or options.database is None
-            or options.table is None
-            or options.user is None
-            or (not options.slim and options.prefix is None)):
-        parser.print_help()
-        exit(1)
-    if options.password is None:
-        password = getpass.getpass("Password:")
-    else:
-        password = options.password
-
+    options, password = get_command_line_options()
     db = Osm2Ways(
         options.host,
         options.port,
