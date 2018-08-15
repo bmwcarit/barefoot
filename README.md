@@ -161,7 +161,7 @@ _Note: The following example is a quick start setup. For further details, see th
     - Maven (e.g. with `sudo apt-get install maven`)
     - Java JDK (Java version 7 or higher, e.g. with `sudo apt-get install openjdk-1.7-jdk`)
     - ZeroMQ (e.g. with `sudo apt-get install libzmq3-dev`)
-    - NodeJS (e.g. with `sudo apt-get install nodejs`)
+    - NodeJS (e.g. with `sudo apt-get install nodejs nodejs-legacy`)
 
 2. Package Barefoot JAR. (Includes dependencies and executable main class.)
 
