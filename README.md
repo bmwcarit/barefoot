@@ -192,7 +192,7 @@ _Note: The following example is a quick start setup. For further details, see th
     node util/monitor/monitor.js 3000 127.0.0.1 1235
       ```
       
-    _Note: In case of "npm error cert_untrusted", just run command `npm config set registry="http://registry.npmjs.org/` and try `npm install` again_
+    _Note: In case of "npm error cert_untrusted", just run command `npm config set registry="http://registry.npmjs.org/"` and try `npm install` again_
 
 5. Test setup with provided sample data.
 
