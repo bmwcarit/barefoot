@@ -162,6 +162,7 @@ _Note: The following example is a quick start setup. For further details, see th
     - Java JDK (Java version 7 or higher, e.g. with `sudo apt-get install openjdk-1.7-jdk`)
     - ZeroMQ (e.g. with `sudo apt-get install libzmq3-dev`)
     - NodeJS (e.g. with `sudo apt-get install nodejs`)
+    - npm (e.g. with `sudo apt-get install npm`)
 
 2. Package Barefoot JAR. (Includes dependencies and executable main class.)
 
