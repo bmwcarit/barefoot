@@ -1,8 +1,7 @@
---- /etc/postgresql/9.3/main/pg_hba.conf.original	2014-10-25 19:55:37.469260394 +0000
-+++ /etc/postgresql/9.3/main/pg_hba.conf	2014-10-25 20:13:38.676594184 +0000
+--- pg_hba.conf	2020-02-25 13:41:54.406030860 -0500
++++ pg_hba.conf.edited	2020-02-25 14:12:28.157052052 -0500
 @@ -97,3 +97,4 @@
- #local   replication     postgres                                peer
- #host    replication     postgres        127.0.0.1/32            md5
- #host    replication     postgres        ::1/128                 md5
-+host	all		all		samenet		md5
-
+ local   replication     all                                     peer
+ host    replication     all             127.0.0.1/32            md5
+ host    replication     all             ::1/128                 md5
++host    all             all             0.0.0.0/0               md5

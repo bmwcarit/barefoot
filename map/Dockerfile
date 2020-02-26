@@ -11,12 +11,14 @@
 # language governing permissions and limitations under the License.
 #
 
-FROM ubuntu:14.04
+FROM ubuntu:18.04
 
 MAINTAINER sebastian.mattheis@bmw-carit.de
 
 ADD /pgsql/ /opt/pgsql/
-RUN apt-get update && apt-get -y install patch postgresql-9.3-postgis-2.1 git openjdk-7-jdk python-psycopg2 python-numpy python-gdal
-RUN patch /etc/postgresql/9.3/main/postgresql.conf < /opt/pgsql/postgresql.conf.patch && patch /etc/postgresql/9.3/main/pg_hba.conf < /opt/pgsql/pg_hba.conf.patch && echo "export HOME=/root" >> /root/.bashrc
-RUN cd /opt/ && git clone https://github.com/openstreetmap/osmosis.git && cd osmosis && git checkout tags/0.43.1 && ./gradlew assemble && echo "export PATH=${PATH}:/opt/osmosis/package/bin" >> /root/.bashrc
+ADD setup_tz.sh /usr/bin/setup_tz.sh
+RUN /usr/bin/setup_tz.sh
+RUN apt-get -y install sudo patch postgresql-10-postgis-2.4 git openjdk-8-jdk-headless python-psycopg2 python-numpy python-gdal
+RUN patch /etc/postgresql/10/main/postgresql.conf < /opt/pgsql/postgresql.conf.patch && patch /etc/postgresql/10/main/pg_hba.conf < /opt/pgsql/pg_hba.conf.patch && echo "export HOME=/root" >> /root/.bashrc
+RUN cd /opt/ && git clone https://github.com/openstreetmap/osmosis.git && cd osmosis && git checkout tags/0.47 && ./gradlew assemble && echo "export PATH=${PATH}:/opt/osmosis/package/bin" >> /root/.bashrc
 CMD service postgresql start && /bin/bash --rcfile /root/.bashrc
