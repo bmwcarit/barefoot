@@ -52,6 +52,15 @@ public class Graph<E extends AbstractEdge<E>> implements Serializable {
     public void remove(E edge) {
         edges.remove(edge.id());
     }
+    
+    /**
+     * Gets the HashMap of edges in this graph.
+     *
+     * @return HashMap of edges in the graph.
+     */
+    public HashMap<Long, E> getEdges() {
+        return edges;
+    }
 
     /**
      * Gets {@link AbstractEdge} by its identifier.
