@@ -18,7 +18,7 @@ public class RoadReaderFactory {
 	 * @param config Configuration of road type data for RoadReader to read
 	 * @return A RoadReader that reads BaseRoad objects from a PostgreSQL/PostGIS database (PostGISReader)
 	 */
-	public RoadReader createPostGISReader(String host, int port, String database, String table, String user,
+	public RoadReader getRoadReader(String host, int port, String database, String table, String user,
 			String password, Map<Short, Tuple<Double, Integer>> config) {
 		return new PostGISReader(host, port, database, table, user, password, config);
 	}
@@ -29,7 +29,7 @@ public class RoadReaderFactory {
 	 * @param path The path to the barefoot map file to read.
 	 * @return A RoadReader that reads BaseRoad objects from a barefoot map file.
 	 */
-	public RoadReader createBfmapReader(String path) {
+	public RoadReader getRoadReader(String path) {
 		return new BfmapReader(path);
 	}
 	
@@ -39,7 +39,7 @@ public class RoadReaderFactory {
 	 * @param src Source of BaseRoad objects to read from.
 	 * @return A RoadReader that reads BaseRoad objects from a RoadMap.
 	 */
-	public RoadReader createRoadMapReader(RoadMap src) {
+	public RoadReader getRoadReader(RoadMap src) {
 		return new RoadMapReader(src);
 	}
 }

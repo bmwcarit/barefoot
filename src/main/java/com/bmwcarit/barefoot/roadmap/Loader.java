@@ -114,7 +114,7 @@ public class Loader {
             logger.info("load map from file {}", file.getAbsolutePath());
             
             RoadReaderFactory factory = new RoadReaderFactory();
-            BfmapReader bfFileReader = factory.createBfmapReader(file.getAbsolutePath());
+            BfmapReader bfFileReader = (BfmapReader) factory.getRoadReader(file.getAbsolutePath());
             map = RoadMap.Load(bfFileReader);
         }
 
@@ -199,7 +199,7 @@ public class Loader {
         }
         
         RoadReaderFactory factory = new RoadReaderFactory();
-        PostGISReader result = (PostGISReader)factory.createPostGISReader(host, port, database, table, user, password, config);
+        PostGISReader result = (PostGISReader) factory.getRoadReader(host, port, database, table, user, password, config);
         return result;
     }
 }
