@@ -35,6 +35,7 @@ import com.bmwcarit.barefoot.road.PostGISReader;
 import com.bmwcarit.barefoot.road.RoadReader;
 import com.bmwcarit.barefoot.road.RoadWriter;
 import com.bmwcarit.barefoot.road.RoadReaderFactory;
+import com.bmwcarit.barefoot.road.RoadMapReader;
 import com.bmwcarit.barefoot.util.SourceException;
 import com.bmwcarit.barefoot.util.Tuple;
 
@@ -90,6 +91,7 @@ public class Loader {
 
         File file = new File(database + ".bfmap");
         RoadMap map = null;
+        RoadReaderFactory factory = new RoadReaderFactory();
 
         if (!file.exists() || !buffer) {
             logger.info("load map from database {}", database);
@@ -97,7 +99,7 @@ public class Loader {
             map = RoadMap.Load(reader);
 
             if (buffer) {
-                reader = map.reader();
+                reader = factory.getRoadReader(map);
                 RoadWriter writer = new BfmapWriter(file.getAbsolutePath());
                 BaseRoad road = null;
                 reader.open();
@@ -113,7 +115,6 @@ public class Loader {
         } else {
             logger.info("load map from file {}", file.getAbsolutePath());
             
-            RoadReaderFactory factory = new RoadReaderFactory();
             BfmapReader bfFileReader = (BfmapReader) factory.getRoadReader(file.getAbsolutePath());
             map = RoadMap.Load(bfFileReader);
         }
