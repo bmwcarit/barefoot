@@ -22,24 +22,9 @@ import json
 import subprocess
 import time
 import datetime
+from .flyweight import Flyweight
 
-parser = optparse.OptionParser("stream.py [options]")
-parser.add_option("--host", dest="host", help="IP address of tracker.")
-parser.add_option("--port", dest="port", help="Port of tracker.")
-parser.add_option("--file", dest="file", help="JSON file with sample data.")
-parser.add_option("--id", dest="id", help="Object id.")
-parser.add_option("--step", action="store_true", dest="step", default=False, help="Send stepwise.")
-
-(options, args) = parser.parse_args()
-
-if options.file == None or options.host == None or options.port == None:
-    parser.print_help()
-    exit(1)
-
-with open(options.file) as jsonfile:
-    samples = json.load(jsonfile)
-
-previous = None
+samples = Flyweight.PARSER.setParser
 
 for sample in samples:
     if options.id != None:
