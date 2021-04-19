@@ -46,6 +46,7 @@ public class PostGISReader extends PostgresSource implements RoadReader {
     private HashSet<Short> exclusions = null;
     private Polygon polygon = null;
     private ResultSet result_set = null;
+    private boolean isReaderOpen = false;
 
     /**
      * Constructs {@link PostGISReader} object.
@@ -66,6 +67,11 @@ public class PostGISReader extends PostgresSource implements RoadReader {
     }
 
     @Override
+    public boolean isOpen() {
+        return isReaderOpen;
+    }
+
+    @Override
     public void open() throws SourceException {
         logger.info("open reader (standard)");
         open(null, null);
@@ -75,6 +81,7 @@ public class PostGISReader extends PostgresSource implements RoadReader {
     public void open(Polygon polygon, HashSet<Short> exclusions) throws SourceException {
         logger.info("open reader (parameterized)");
         super.open();
+        this.isReaderOpen = true;
         this.exclusions = exclusions;
         this.polygon = polygon;
     }
