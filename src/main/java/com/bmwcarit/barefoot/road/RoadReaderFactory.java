@@ -6,7 +6,6 @@ import com.bmwcarit.barefoot.util.Tuple;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
 
 public class RoadReaderFactory {
-	
 	/**
 	 * Creates a RoadReader that can read BaseRoad objects from a PostgreSQL/PostGIS database
 	 * 
@@ -21,7 +20,7 @@ public class RoadReaderFactory {
 	 */
 	public RoadReader createPostGISReader(String host, int port, String database, String table, String user,
 			String password, Map<Short, Tuple<Double, Integer>> config) {
-		return new PostGISReader(host, port, database, table, user, password, config)
+		return new PostGISReader(host, port, database, table, user, password, config);
 	}
 	
 	/**
