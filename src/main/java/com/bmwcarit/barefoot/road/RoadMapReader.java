@@ -16,21 +16,21 @@ import com.bmwcarit.barefoot.util.SourceException;
  * Used to get BaseRoad data from file buffer.
  */
 public class RoadMapReader implements RoadReader{
-	private RoadMap readerSrc;
+    private RoadMap readerSrc;
 	
-	private Iterator<Road> iterator;
-	private HashSet<Short> exclusions;
-	private Polygon polygon;
+    private Iterator<Road> iterator;
+    private HashSet<Short> exclusions;
+    private Polygon polygon;
 	
-	public RoadMapReader(RoadMap src) {
-		iterator = null;
-		exclusions = null;
-		polygon = null;
+    public RoadMapReader(RoadMap src) {
+        iterator = null;
+        exclusions = null;
+        polygon = null;
 		
-		readerSrc = src;
-	}
+        readerSrc = src;
+    }
 	
-	@Override
+    @Override
     public boolean isOpen() {
         return (iterator != null);
     }
