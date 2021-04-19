@@ -34,6 +34,7 @@ import com.bmwcarit.barefoot.road.BfmapWriter;
 import com.bmwcarit.barefoot.road.PostGISReader;
 import com.bmwcarit.barefoot.road.RoadReader;
 import com.bmwcarit.barefoot.road.RoadWriter;
+import com.bmwcarit.barefoot.road.RoadReaderFactory;
 import com.bmwcarit.barefoot.util.SourceException;
 import com.bmwcarit.barefoot.util.Tuple;
 
@@ -111,7 +112,10 @@ public class Loader {
             }
         } else {
             logger.info("load map from file {}", file.getAbsolutePath());
-            map = RoadMap.Load(new BfmapReader(file.getAbsolutePath()));
+            
+            RoadReaderFactory factory = new RoadReaderFactory();
+            BfmapReader bfFileReader = factory.createBfmapReader(file.getAbsolutePath());
+            map = RoadMap.Load(bfFileReader);
         }
 
         return map;
@@ -193,7 +197,9 @@ public class Loader {
         } catch (JSONException | IOException e) {
             throw new SourceException("could not read road types from file " + path);
         }
-
-        return new PostGISReader(host, port, database, table, user, password, config);
+        
+        RoadReaderFactory factory = new RoadReaderFactory();
+        PostGISReader result = (PostGISReader)factory.createPostGISReader(host, port, database, table, user, password, config);
+        return result;
     }
 }
