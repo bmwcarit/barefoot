@@ -31,7 +31,7 @@ public class RoadMapReader implements RoadReader{
 	
     @Override
     public boolean isOpen() {
-        return (iterator != null);
+        return iterator != null;
     }
 
     @Override
