@@ -1,13 +1,12 @@
 package com.bmwcarit.barefoot.road;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
 import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.SpatialReference;
 import com.esri.core.geometry.GeometryEngine;
-
+import com.bmwcarit.barefoot.roadmap.Road;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
 import com.bmwcarit.barefoot.util.SourceException;
 
@@ -32,7 +31,7 @@ public class RoadMapReader implements RoadReader{
 	
     @Override
     public boolean isOpen() {
-        return (iterator != null);
+        return iterator != null;
     }
 
     @Override
