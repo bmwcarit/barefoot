@@ -23,27 +23,9 @@ import random
 import socket
 import os
 import sys
+from .flyweight import Flyweight
 
-parser = optparse.OptionParser("batch.py [options]")
-parser.add_option("--host", dest="host", help="IP address of matcher.")
-parser.add_option("--port", type="int", dest="port", help="Port of matcher.")
-parser.add_option("--file", dest="file", help="JSON file with sample data.")
-parser.add_option("--id", dest="id", help="Object id.")
-parser.add_option("--zone", dest="zone", default="+0000", help="Time zone in '(+/-)HHMM' format.")
-parser.add_option("--format", dest="format", default="geojson", help="Output format: geojson (default) | slimjson | debug")
-
-(options, args) = parser.parse_args()
-
-if options.file is None or options.host is None or options.port is None:
-    parser.print_help()
-    exit(1)
-
-if options.format not in ["geojson", "slimjson", "debug"]:
-    parser.print_help()
-    exit(1)
-
-with open(options.file) as jsonfile:
-    samples = json.load(jsonfile)
+samples = Flyweight.PARSER.setParser
 
 previous = None
 

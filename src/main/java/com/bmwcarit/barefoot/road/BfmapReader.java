@@ -47,11 +47,7 @@ public class BfmapReader implements RoadReader {
 
     @Override
     public boolean isOpen() {
-        if (reader != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return reader != null;
     }
 
     @Override
