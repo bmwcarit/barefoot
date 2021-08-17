@@ -12,7 +12,7 @@ matrix:
         # Osmosis takes about 10 minutes to process the Oberbayern map used for testing, which coincides with
         # Travis' timeout for output updates.  Use `travis_wait` to extend the timeout.
         # Use interactive option to force bash to read .bashrc and add path to Osmosis.
-        - travis_wait docker exec barefoot-database /bin/bash -i /mnt/map/osm/import.sh
+        - docker exec barefoot-database /bin/bash -i /mnt/map/osm/import.sh
         # Start matcher server on port 1234
         - mvn --quiet -Dexec.executable="echo" -Dexec.args='-n ${project.version}' --non-recursive exec:exec > version
         - docker run -t -d --net=host --name="barefoot-matcher" -v ${PWD}:/mnt/barefoot --workdir /mnt/barefoot barefoot-map java -jar target/barefoot-`cat version`-matcher-jar-with-dependencies.jar --geojson config/server.properties config/oberbayern.properties
@@ -50,6 +50,9 @@ before_script:
   # Osmosis takes about 10 minutes to process the Oberbayern map used for testing, which coincides with
   # Travis' timeout for output updates.  Use `travis_wait` to extend the timeout.
   # Use interactive option to force bash to read .bashrc and add path to Osmosis.
-  - travis_wait docker exec barefoot-database /bin/bash -i /mnt/map/osm/import.sh
+  - docker exec barefoot-database /bin/bash -i /mnt/map/osm/import.sh
 script:
   - mvn test --batch-mode --errors
+cache:
+  directories:
+  - $HOME/.m2
