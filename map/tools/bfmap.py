@@ -77,7 +77,7 @@ def ways2bfmap(src_host, src_port, src_database, src_table, src_user, src_passwo
                 maxspeed_forward,maxspeed_backward,priority,geom) VALUES %s;""" % (
                 tgt_table, ",".join("""('%s','%s','%s','%s','%s','%s', %s, %s,'%s',
                 ST_GeomFromText('%s',4326))""" % segment for segment in segments))
-            if printonly == False:
+            if not printonly:
                 tgt_cur.execute(query)
             print("%s segments from %s ways inserted." % (roadcount, rowcount))
         except Exception, e:
@@ -130,46 +130,33 @@ def is_oneway(tags):
         return False
 
 
+def extract_speed_limit(tag):
+    if tag is None:
+        limit = None
+    else:
+        try:
+            if "mph" in tag:
+                limit = int(tag.split("mph")[0]) * 1.609
+            else:
+                limit = int(tag)
+        except:
+            limit = None
+    return limit
+
+
 def maxspeed(tags):
-    # maxspeed_forward = int(config[key][value][2])
-    forward = "null"
-    if ("maxspeed" in tags.keys()):
-        try:
-            if "mph" in tags["maxspeed"]:
-                forward = int(tags["maxspeed"].split(" ")[0]) * 1.609
-            else:
-                forward = int(tags["maxspeed"])
-        except:
-            pass
-    if ("maxspeed:forward" in tags.keys()):
-        try:
-            if "mph" in tags["maxspeed:forward"]:
-                forward = int(tags["maxspeed:forward"].split(" ")[0]) * 1.609
-            else:
-                forward = int(tags["maxspeed:forward"])
-        except:
-            pass
-
-    # maxspeed_backward = maxspeed_forward
-    backward = "null"
-    if ("maxspeed" in tags.keys()):
-        try:
-            if "mph" in tags["maxspeed"]:
-                backward = int(tags["maxspeed"].split(" ")[0]) * 1.609
-            else:
-                backward = int(tags["maxspeed"])
-        except:
-            pass
-    if ("maxspeed:backward" in tags.keys()):
-        try:
-            if "mph" in tags["maxspeed:backward"]:
-                backward = int(tags["maxspeed:backward"].split(" ")[0]) * 1.609
-            else:
-                backward = int(tags["maxspeed:backward"])
-        except:
-            pass
-
+    forward = (
+        extract_speed_limit(tags.get("maxspeed:forward")) or
+        extract_speed_limit(tags.get("maxspeed")) or
+        "null"
+    )
+    backward = (
+        extract_speed_limit(tags.get("maxspeed:backward")) or
+        extract_speed_limit(tags.get("maxspeed")) or
+        "null"
+    )
     return (forward, backward)
+
 
 def segment(config, row):
     segments = []
@@ -180,7 +167,7 @@ def segment(config, row):
     (tags, way) = waysort(row)
     (key, value) = type(config, tags)
 
-    if key == None or value == None:
+    if key is None or value is None:
         return segments
 
     osm_id = row[0]
@@ -232,7 +219,7 @@ def exists(host, port, database, table, user, password):
 
     try:
         cursor.execute(
-            """SELECT COUNT(tablename) FROM pg_tables 
+            """SELECT COUNT(tablename) FROM pg_tables
             WHERE schemaname='public' AND tablename='%s';""" % table)
         dbcon.commit()
     except Exception, e:
@@ -262,7 +249,7 @@ def remove(host, port, database, table, user, password, printonly):
 
     try:
         query = "DROP TABLE %s;" % table
-        if printonly == True:
+        if printonly:
             print(query)
         else:
             cursor.execute(query)
@@ -285,7 +272,7 @@ def schema(host, port, database, table, user, password, printonly):
         except:
             print("Connection to database failed.")
             exit(1)
-    
+
         try:
             query = """CREATE TABLE %s(gid bigserial,
     				osm_id bigint NOT NULL,
@@ -299,25 +286,25 @@ def schema(host, port, database, table, user, password, printonly):
     				priority double precision NOT NULL);
     				SELECT AddGeometryColumn('%s','geom',4326,
     				'LINESTRING',2);""" % (table, table)
-            if printonly == True:
+            if printonly:
                 print(query)
             else:
                 cursor.execute(query)
                 dbcon.commit()
         except Exception, e:
             print("Database transaction failed. (%s)" % e.pgerror)
-            
+
         try:
             query = "CREATE INDEX idx_%s_geom ON %s USING gist(geom);" % (
                 table, table)
-            if printonly == True:
+            if printonly:
                 print(query)
             else:
                 cursor.execute(query)
                 dbcon.commit()
         except Exception, e:
             print("Database transaction failed. (%s)" % e.pgerror)
-    
+
         cursor.close()
         dbcon.close()
 
@@ -335,7 +322,7 @@ def index(host, port, database, table, user, password, printonly):
     try:
         query = "CREATE INDEX idx_%s_geom ON %s USING gist(geom);" % (
             table, table)
-        if printonly == True:
+        if printonly:
             print(query)
         else:
             cursor.execute(query)
