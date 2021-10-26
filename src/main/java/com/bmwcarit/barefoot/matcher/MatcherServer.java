@@ -258,7 +258,7 @@ public class MatcherServer extends AbstractServer {
             matcher.shortenTurns(
                     Boolean.parseBoolean(properties.getProperty("matcher.shortenturns", "true")));
             interval = Integer.parseInt(properties.getProperty("matcher.interval.min", "1000"));
-            distance = Integer.parseInt(properties.getProperty("matcher.distance.min", "0"));
+            distance = Double.parseDouble(properties.getProperty("matcher.distance.min", Double.toString(0d)));
 
             int matcherThreads = Integer.parseInt(properties.getProperty("matcher.threads",
                     Integer.toString(Runtime.getRuntime().availableProcessors())));
