@@ -39,6 +39,7 @@ import com.bmwcarit.barefoot.spatial.Geography;
 import com.bmwcarit.barefoot.topology.Dijkstra;
 import com.bmwcarit.barefoot.util.AbstractServer;
 import com.bmwcarit.barefoot.util.Stopwatch;
+import com.esri.core.geometry.Point;
 
 /**
  * Matcher server (stand-alone) for Hidden Markov Model offline map matching. It is a
@@ -94,6 +95,56 @@ public class MatcherServer extends AbstractServer {
         }
     }
 
+
+    /**
+     * Input formatter for writing map matched positions, represented be road id and fraction, and
+     * the geometry of the routes into a GeoJSON FeatureCollection format response message.
+     */
+    public static class GeoJSONFeaturesInputFormatter extends InputFormatter {
+        @Override
+        public List<MatcherSample> format(String input) {
+        	List<MatcherSample> samples = new LinkedList<MatcherSample>();
+    		try{
+    			Object jsoninput = new JSONTokener(input).nextValue();
+    			JSONArray jsonsamples = null;
+    			JSONArray coordinates = null;
+    			Point point =  null;
+    			String id = null;
+    			Long time = null;
+    			
+    			
+    			
+    			if (jsoninput instanceof JSONObject) {
+    				jsonsamples = ((JSONObject) jsoninput).getJSONArray("features");
+    			} else {
+    				jsonsamples = ((JSONArray) jsoninput);
+    			}
+
+
+    			Set<Long> times = new HashSet<Long>();
+    			for (int i = 0; i < jsonsamples.length(); ++i) {
+    				coordinates = jsonsamples.getJSONObject(i).getJSONObject("geometry").getJSONArray("coordinates");
+    				point =  new Point(coordinates.getDouble(0), coordinates.getDouble(1));
+    				id = jsonsamples.getJSONObject(i).getJSONObject("properties").getString("id");
+    				time = jsonsamples.getJSONObject(i).getJSONObject("properties").getLong("time");
+    				MatcherSample sample = new MatcherSample(id, time, point);
+    				samples.add(sample);
+    				if (times.contains(sample.time())) {
+    					throw new RuntimeException("multiple samples for same time");
+    				} else {
+    					times.add(sample.time());
+    				}
+    			}
+
+
+    		} catch (JSONException e) {
+    			e.printStackTrace();
+    			throw new RuntimeException("parsing JSON request: " + e.getMessage());
+    		}
+    		return samples;
+        }
+    }
+    
     /**
      * Default output formatter for writing the JSON representation of a {@link KState} object with
      * map matching of the input into a response message.
@@ -130,6 +181,7 @@ public class MatcherServer extends AbstractServer {
         }
     }
 
+
     /**
      * Output formatter for writing the geometries of a map matched paths into GeoJSON response
      * message.
@@ -141,6 +193,22 @@ public class MatcherServer extends AbstractServer {
                 return output.toGeoJSON().toString();
             } catch (JSONException e) {
                 throw new RuntimeException("creating JSON response");
+            }
+        }
+    }
+    
+
+    /**
+     * Output formatter for writing the geometries of a map matched paths into 
+     * GeoJSON FeatureCollection format response message.
+     */
+    public static class GeoJSONFeaturesOutputFormatter extends OutputFormatter {
+        @Override
+        public String format(String request, MatcherKState output) {
+            try {
+                return output.toGeoJSONFeatures().toString();
+            } catch (JSONException e) {
+                throw new RuntimeException("creating GeoJSONFeatures response");
             }
         }
     }
@@ -182,6 +250,8 @@ public class MatcherServer extends AbstractServer {
                                 return new SlimJSONOutputFormatter().format(request, output);
                             case "geojson":
                                 return new GeoJSONOutputFormatter().format(request, output);
+                            case "geojsonfeatures":
+                                return new GeoJSONFeaturesOutputFormatter().format(request, output);
                             case "debug":
                                 return new DebugJSONOutputFormatter().format(request, output);
                             default:

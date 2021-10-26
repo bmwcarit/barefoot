@@ -13,13 +13,21 @@
 
 package com.bmwcarit.barefoot.matcher;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.Iterator;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.bmwcarit.barefoot.markov.KState;
+import com.bmwcarit.barefoot.road.BaseRoad;
+import com.bmwcarit.barefoot.road.Heading;
 import com.bmwcarit.barefoot.roadmap.Road;
 import com.bmwcarit.barefoot.roadmap.RoadMap;
+import com.bmwcarit.barefoot.road.RoadOutputPath;
 import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.WktExportFlags;
@@ -154,6 +162,77 @@ public class MatcherKState extends KState<MatcherCandidate, MatcherTransition, M
                 json.put(jsoncandidate);
             }
         }
+        return json;
+    }
+    
+
+    /**
+     * Gets {@link JSONObject} with GeoJSON FeatureCollection format of {@link MatcherKState} matched geometries.
+     *
+     * @return {@link JSONObject} with GeoJSON FeatureCollection format of {@link MatcherKState} matched geometries.
+     * @throws JSONException thrown on JSON extraction or parsing error.
+     */
+    public JSONObject toGeoJSONFeatures() throws JSONException {
+    	
+
+    	JSONObject json = new JSONObject();
+        json.put("type", "FeatureCollection");
+
+        JSONObject jsonFeature = null;
+        JSONObject jsonFeatureProperties = null;
+        MatcherCandidate candidate = null;
+        JSONArray jsonsequenceFeatures = new JSONArray();
+        Polyline localGeometry = null;
+        Hashtable<Integer, RoadOutputPath> roadOutputPathList = null;
+    	BaseRoad baseRoad = null;
+    	ArrayList<Integer>keysCollections =  null;
+    	Integer pathIndex = null;
+    	Integer featuresIndex = 1;
+    	Iterator<Integer> keyIterator = null;
+        Heading heading = null;
+        json.put("features", jsonsequenceFeatures);
+        
+        if (this.sequence() != null) {
+            for (int i = 0; i < this.sequence().size(); ++i) {
+               candidate = this.sequence().get(i);
+                
+                if (candidate.transition() != null) {
+                	
+                	roadOutputPathList = candidate.transition().route().geometryList();
+                	keysCollections = new ArrayList<Integer>(roadOutputPathList.keySet());
+                	Collections.sort(keysCollections);
+                	keyIterator = keysCollections.iterator();
+            		while(keyIterator.hasNext()){
+            			pathIndex = keyIterator.next();
+                    	localGeometry = roadOutputPathList.get(pathIndex).getGeometry();
+                    	baseRoad = roadOutputPathList.get(pathIndex).getBase(); 
+                    	heading = roadOutputPathList.get(pathIndex).getHeading();
+            			if(localGeometry!=null){
+	                    	jsonFeature = new JSONObject();
+	                        jsonFeature.put("type", "Feature");
+	                        jsonFeature.put("geometry", new JSONObject(GeometryEngine.geometryToGeoJson(localGeometry)));                  	
+	                    	
+	                    	jsonFeatureProperties = new JSONObject();	
+	                    	jsonFeatureProperties.put("id", featuresIndex); 
+	                    	featuresIndex++;
+	                    	
+	                        jsonFeatureProperties.put("roadid", baseRoad.refid());
+	                        jsonFeatureProperties.put("time", this.samples().get(i).time() / 1000);
+	                        jsonFeatureProperties.put("oneway", baseRoad.oneway());
+	                        jsonFeatureProperties.put("maxspeed", baseRoad.maxspeed(heading));
+	                        jsonFeatureProperties.put("heading", heading.toString());
+	                        
+	                		jsonFeature.put("properties", jsonFeatureProperties);
+	                        jsonsequenceFeatures.put(jsonFeature);
+                    	}
+            		}
+            		
+                } 
+                
+            }
+            
+        }
+        
         return json;
     }
 
