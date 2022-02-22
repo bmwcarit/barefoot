@@ -24,6 +24,7 @@
 				<version>2.20.1</version>
 				<configuration>
 					<argLine>-Duser.language=en -Duser.country=US</argLine>
+					<forkCount>1.5C</forkCount>
 				</configuration>
 			</plugin>
 			<plugin>
