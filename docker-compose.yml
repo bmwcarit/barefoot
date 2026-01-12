@@ -1,0 +1,105 @@
+services:
+  # ---------------------------------------------------------------------------
+  # Map Server
+  # Provides the PostGIS database with OpenStreetMap data.
+  # ---------------------------------------------------------------------------
+  map-server:
+    container_name: barefoot-map
+    image: ghcr.io/joseedsouza/barefoot/barefoot-map:latest
+    ports:
+      - "5438:5432"
+    environment:
+      MAP_OSM_PBF_PATH: "/mnt/data/map.osm.pbf"
+      POSTGRES_DB: "osm"
+      POSTGRES_USER: "osm"
+      POSTGRES_PASSWORD: "osm"
+      MAP_MODE: "slim"
+    volumes:
+      # Mount the OSM PBF file (read-only)
+      # ! IMPORTANT ! Point to your own OSM PBF file
+      - ./map/osm/map.osm.pbf:/mnt/data/map.osm.pbf:ro
+      # Persistent volumes for map data and database
+      - barefoot-map:/mnt/map
+      - barefoot-db:/var/lib/postgresql/9.3/main
+    healthcheck:
+      test: [ "CMD-SHELL", "su - postgres -c 'pg_isready'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - barefoot-net
+
+  # ---------------------------------------------------------------------------
+  # Matcher Server
+  # Performs map matching of GPS traces.
+  # ---------------------------------------------------------------------------
+  matcher-server:
+    container_name: barefoot-matcher
+    image: ghcr.io/joseedsouza/barefoot/barefoot-matcher:latest
+    ports:
+      - "1234:1234"
+    environment:
+      # --- Server Configuration (Optional Overrides) ---
+      # SERVER__SERVER_PORT: 1234
+      # SERVER__MATCHER_THREADS: 8
+      # SERVER__MATCHER_DISTANCE_MAX: 15000
+      # SERVER__MATCHER_RADIUS_MAX: 200
+
+      # --- Map Database Configuration ---
+      MAP__DATABASE_HOST: map-server
+      MAP__DATABASE_PORT: 5432
+      MAP__DATABASE_NAME: osm
+      MAP__DATABASE_USER: osm
+      MAP__DATABASE_PASSWORD: osm
+    depends_on:
+      map-server:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - barefoot-net
+
+  # ---------------------------------------------------------------------------
+  # Tracker Server
+  # Performs real-time map matching and state tracking.
+  # ---------------------------------------------------------------------------
+  tracker-server:
+    container_name: barefoot-tracker
+    image: ghcr.io/joseedsouza/barefoot/barefoot-tracker:latest
+    ports:
+      - "1235:1234" # Tracker API
+      - "1236:1235" # Tracker State
+    environment:
+      # --- Tracker Configuration (Optional Overrides) ---
+      # SERVER__SERVER_PORT: 1234
+      # SERVER__TRACKER_PORT: 1235
+      # SERVER__TRACKER_STATE_TTL: 60
+      
+      # --- Map Database Configuration ---
+      MAP__DATABASE_HOST: map-server
+      MAP__DATABASE_PORT: 5432
+      MAP__DATABASE_NAME: osm
+      MAP__DATABASE_USER: osm
+      MAP__DATABASE_PASSWORD: osm
+    depends_on:
+      map-server:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - barefoot-net
+
+# -----------------------------------------------------------------------------
+# Volumes
+# -----------------------------------------------------------------------------
+volumes:
+  barefoot-map:
+    driver: local
+  barefoot-db:
+    driver: local
+
+# -----------------------------------------------------------------------------
+# Networks
+# -----------------------------------------------------------------------------
+networks:
+  barefoot-net:
+    driver: bridge

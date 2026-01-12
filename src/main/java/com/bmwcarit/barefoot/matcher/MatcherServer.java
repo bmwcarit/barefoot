@@ -13,13 +13,10 @@
 
 package com.bmwcarit.barefoot.matcher;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.bmwcarit.barefoot.road.BaseRoad;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -103,7 +100,7 @@ public class MatcherServer extends AbstractServer {
          * Converts map matching output from a {@link KState} object into a response message.
          *
          * @param request String message of input data.
-         * @param output {@link MatcherKState} object with the map matching of the input.
+         * @param output  {@link MatcherKState} object with the map matching of the input.
          * @return Response message.
          */
         public String format(String request, MatcherKState output) {
@@ -120,6 +117,7 @@ public class MatcherServer extends AbstractServer {
      * the geometry of the routes into a JSON response message.
      */
     public static class SlimJSONOutputFormatter extends OutputFormatter {
+
         @Override
         public String format(String request, MatcherKState output) {
             try {
@@ -135,10 +133,44 @@ public class MatcherServer extends AbstractServer {
      * message.
      */
     public static class GeoJSONOutputFormatter extends OutputFormatter {
+
+        private static List<Long> dedup(List<Long> ids) {
+            List<Long> result = new ArrayList<>();
+            for (Long id : ids) {
+                if (!result.contains(id)) {
+                    result.add(id);
+                }
+            }
+            return result;
+        }
+
         @Override
         public String format(String request, MatcherKState output) {
             try {
-                return output.toGeoJSON().toString();
+                JSONObject json = output.toGeoJSON();
+
+                List<MatcherCandidate> sequence = output.sequence();
+                if (sequence == null || sequence.isEmpty()) {
+                    sequence = new ArrayList<>();
+                }
+                List<Long> trajectoryOsmIds = new ArrayList<>();
+                for (MatcherCandidate candidate : sequence) {
+                    MatcherTransition transition = candidate.transition();
+                    if (transition != null && transition.route() != null) {
+                        for (Road segment : transition.route().path()) {
+                            trajectoryOsmIds.add(segment.base().refid());
+                        }
+                    } else if (candidate.point() != null) {
+                        RoadPoint pt = candidate.point();
+                        BaseRoad edge = pt.edge().base();
+                        trajectoryOsmIds.add(edge.refid());
+                    }
+                }
+
+                json.put("path_osm_ids", dedup(trajectoryOsmIds));
+
+                return json.toString();
+
             } catch (JSONException e) {
                 throw new RuntimeException("creating JSON response");
             }
@@ -216,12 +248,12 @@ public class MatcherServer extends AbstractServer {
      * </ul>
      *
      * @param properties {@link Properties} object with (optional) server and matcher settings.
-     * @param map {@link RoadMap} object with the map to be matched with.
-     * @param input {@link InputFormatter} object for input formatting.
-     * @param output {@link OutputFormatter} object for output formatting.
+     * @param map        {@link RoadMap} object with the map to be matched with.
+     * @param input      {@link InputFormatter} object for input formatting.
+     * @param output     {@link OutputFormatter} object for output formatting.
      */
     public MatcherServer(Properties properties, RoadMap map, InputFormatter input,
-            OutputFormatter output) {
+                         OutputFormatter output) {
         super(properties, new MatcherResponseFactory(properties, map, input, output));
         this.map = map;
     }
@@ -243,7 +275,7 @@ public class MatcherServer extends AbstractServer {
         private final double distance;
 
         public MatcherResponseFactory(Properties properties, RoadMap map, InputFormatter input,
-                OutputFormatter output) {
+                                      OutputFormatter output) {
             matcher = new Matcher(map, new Dijkstra<Road, RoadPoint>(), new TimePriority(),
                     new Geography());
 

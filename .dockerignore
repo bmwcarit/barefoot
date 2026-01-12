@@ -1,0 +1,22 @@
+internal/
+doc/
+tmp/
+target/
+.project
+.pydevproject
+.settings/
+node_modules
+.classpath
+.DS_Store
+*.osm.pbf
+*.bfmap
+*.pyc
+*.tar.gz
+*.synctex.gz
+*.log
+*.aux
+*~
+
+# code editors
+.vscode
+.idea

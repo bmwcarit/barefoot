@@ -32,7 +32,7 @@ parser.add_option("--step", action="store_true", dest="step", default=False, hel
 
 (options, args) = parser.parse_args()
 
-if options.file == None or options.host == None or options.port == None:
+if any(var is None for var in [options.file, options.host, options.port]):
     parser.print_help()
     exit(1)
 
@@ -42,15 +42,15 @@ with open(options.file) as jsonfile:
 previous = None
 
 for sample in samples:
-    if options.id != None:
+    if options.id is not None:
         sample["id"] = options.id
-    if isinstance(sample['time'], (int, long)):
+    if isinstance(sample['time'], (int, float)):
         current = time.mktime(datetime.datetime.fromtimestamp(sample['time'] / 1000).timetuple())
     else:
         current = time.mktime(datetime.datetime.strptime(sample['time'][:-5], "%Y-%m-%d %H:%M:%S").timetuple())
-    if options.step == True:
-        raw_input("Press Enter to continue...")
-    elif previous != None:
+    if options.step is True:
+        input("Press Enter to continue...")
+    elif previous is not None:
         time.sleep(current - previous)
     previous = current
     print(json.dumps(sample))

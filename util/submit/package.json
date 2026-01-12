@@ -1,0 +1,15 @@
+{
+  "name": "submit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "batch.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^12.0.0",
+    "optparse": "^1.0.5"
+  }
+}

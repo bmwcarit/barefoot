@@ -1,22 +1,53 @@
-#
-# Copyright (C) 2015, BMW Car IT GmbH
-#
-# Author: Sebastian Mattheis <sebastian.mattheis@bmw-carit.de>
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-# in compliance with the License. You may obtain a copy of the License at
-# http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in
-# writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
-# language governing permissions and limitations under the License.
-#
-
 FROM ubuntu:14.04
 
-MAINTAINER sebastian.mattheis@bmw-carit.de
+LABEL maintainer="sebastian.mattheis@bmw-carit.de"
 
 ADD /pgsql/ /opt/pgsql/
-RUN apt-get update && apt-get -y install patch postgresql-9.3-postgis-2.1 git openjdk-7-jdk python-psycopg2 python-numpy python-gdal
-RUN patch /etc/postgresql/9.3/main/postgresql.conf < /opt/pgsql/postgresql.conf.patch && patch /etc/postgresql/9.3/main/pg_hba.conf < /opt/pgsql/pg_hba.conf.patch && echo "export HOME=/root" >> /root/.bashrc
-RUN cd /opt/ && git clone https://github.com/openstreetmap/osmosis.git && cd osmosis && git checkout tags/0.43.1 && ./gradlew assemble && echo "export PATH=${PATH}:/opt/osmosis/package/bin" >> /root/.bashrc
-CMD service postgresql start && /bin/bash --rcfile /root/.bashrc
+
+RUN apt-get update \
+    && apt-get install -y software-properties-common \
+    && add-apt-repository ppa:openjdk-r/ppa \
+    && apt-get update \
+    && apt-get -y install \
+    patch \
+    postgresql-9.3-postgis-2.1 \
+    git \
+    openjdk-8-jdk \
+    python-psycopg2 \
+    python-numpy \
+    python-gdal
+
+# patches do postgres
+RUN patch /etc/postgresql/9.3/main/postgresql.conf < /opt/pgsql/postgresql.conf.patch \
+    && patch /etc/postgresql/9.3/main/pg_hba.conf < /opt/pgsql/pg_hba.conf.patch \
+    && echo "export HOME=/root" >> /root/.bashrc
+
+ENV HOME="/root"
+
+# build osmosis
+RUN cd /opt/ \
+    && git clone https://github.com/openstreetmap/osmosis.git \
+    && cd osmosis \
+    && git fetch --tags \
+    && git checkout tags/0.47.3 \
+    && ./gradlew assemble \
+    && echo "export PATH=\$PATH:/opt/osmosis/package/bin" >> /root/.bashrc
+
+ENV PATH="/opt/osmosis/package/bin:/usr/lib/postgresql/9.3/bin:${PATH}"
+
+ENV POSTGRES_USER="osm" \
+    POSTGRES_PASSWORD="osm" \
+    POSTGRES_DB="osm" \
+    MAP_MODE="slim" \
+    MAP_OSM_PBF_PATH="NULL"
+
+COPY osm/import.sh /mnt/map/osm/
+COPY osm/pgsnapshot_schema_0.6.sql /mnt/map/osm/
+COPY tools /mnt/map/tools/
+COPY pgsql /mnt/map/pgsql/
+COPY samples /mnt/map/samples/
+
+ADD ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

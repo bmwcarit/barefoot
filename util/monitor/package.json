@@ -6,6 +6,6 @@
   "dependencies": {
     "express": "^4.13.4",
     "socket.io": "^1.4.4",
-    "zmq": "^2.14.0"
+    "zeromq": "^6.5.0"
   }
 }

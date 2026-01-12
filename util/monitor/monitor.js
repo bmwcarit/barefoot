@@ -20,37 +20,39 @@ if (process.argv.length != 5 && (process.argv.length != 6 ||
 
 var buffer = process.argv.length < 6 ? false : process.argv[5] == 'buffer=true';
 var objects = [];
-var zmq = require('zmq');
-var subscriber = zmq.socket('sub');
+var zmq = require('zeromq');
+var subscriber = new zmq.Subscriber();
 subscriber.subscribe("");
 
-subscriber.on('message', function(message) {
-	update = JSON.parse(message);
-	id = update['id'];
-	
-	if (buffer && id in objects && objects[id]['time'] >= update['time']) {
-		console.log('warning: out of order update for object ' + id);
-		return;
-	}
+(async function() {
+	for await (const [message] of subscriber) {
+		update = JSON.parse(message);
+		id = update['id'];
+		
+		if (buffer && id in objects && objects[id]['time'] >= update['time']) {
+			console.log('warning: out of order update for object ' + id);
+			continue;
+		}
 
-	if (!('point' in update)) {
-		if (buffer) {
-			console.log('delete object ' + id);
-			delete objects[id];
+		if (!('point' in update)) {
+			if (buffer) {
+				console.log('delete object ' + id);
+				delete objects[id];
+			}
+		} else if (id in objects) {
+			if (buffer) {
+				objects[id] = update;
+			}
+		} else {
+			if (buffer) {
+				console.log('insert object ' + id);
+				objects[id] = update;
+			}
 		}
-	} else if (id in objects) {
-		if (buffer) {
-			objects[id] = update;
-		}
-	} else {
-		if (buffer) {
-			console.log('insert object ' + id);
-			objects[id] = update;
-		}
+		
+		io.emit('message', update);
 	}
-	
-	io.emit('message', update);
-});
+})();
 
 var path = require('path')
 var express = require('express')
